@@ -1140,6 +1140,7 @@
     comparePick = null;
     compareLabel = '';
     setTimeout(() => { if (!briefOpen) briefEl.hidden = true; }, 220);
+    releaseNodeFocus();
   }
 
   function navigateToModule(label) {
@@ -1343,6 +1344,7 @@
   let lastCanvasClickAt = 0;
   let lastNodeClickAt = 0;
   let fxDisabledUntil = 0;
+  let nodeFocusReleasedAt = 0;
   let briefGoTween = null;
   let lowFpsStreak = 0;
   /** Smooth camera drift target — null when idle. */
@@ -1391,6 +1393,7 @@
     if (REDUCED) return;
     const now = performance.now();
     if (now < fxDisabledUntil || now - lastFxClickAt < 450) return;
+    if (now - nodeFocusReleasedAt < 650) return;
     lastFxClickAt = now;
     rapidClickT = now;
     if (now - fxBurstResetAt > 3000) {
@@ -1528,6 +1531,23 @@
       ease: 0.036,
       easeS: 0.03,
     });
+    lastInput = performance.now();
+  }
+
+  function releaseNodeFocus() {
+    showCard(false);
+    lastHover = null;
+    const hadNode = !!(camFocus && camFocus.node);
+    const pv = camPivot();
+    const zoomed = camAnim.scale > 1.02 || Math.hypot(camAnim.x - pv.x, camAnim.y - pv.y) > 12;
+    if (!hadNode && !zoomed) {
+      camFocus = null;
+      return;
+    }
+    camFocus = null;
+    camTween = stopTween(camTween);
+    focusWorldPoint(pv.x, pv.y, W / 2, H / 2, 1, { ease: 0.048, easeS: 0.034 });
+    nodeFocusReleasedAt = performance.now();
     lastInput = performance.now();
   }
 
@@ -2140,9 +2160,10 @@
   bgC.addEventListener('click', () => {
     if (briefOpen) {
       closeDeckBrief();
-      showCard(false);
-      lastHover = null;
-      if (camFocus && camFocus.node) camFocus = null;
+      return;
+    }
+    if (camFocus && camFocus.node) {
+      releaseNodeFocus();
       return;
     }
     recenterWormhole();
@@ -2162,10 +2183,10 @@
     lastCanvasClickAt = now;
     if (briefOpen) {
       closeDeckBrief();
-      showCard(false);
-      lastHover = null;
-      if (camFocus && camFocus.node) camFocus = null;
-      lastInput = performance.now();
+      return;
+    }
+    if (camFocus && camFocus.node) {
+      releaseNodeFocus();
       return;
     }
     const wh = wormholeScreen();
@@ -2177,7 +2198,6 @@
       lastInput = performance.now();
       return;
     }
-    if (camFocus && camFocus.node) camFocus = null;
     showCard(false);
     lastHover = null;
     webCorruptClick(mx, my, '#c4b5fd', '');
