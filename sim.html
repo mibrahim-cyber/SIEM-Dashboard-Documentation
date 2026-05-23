@@ -54,6 +54,9 @@
     var grid=document.getElementById('grid'),actor=document.getElementById('actor'),active=0,t=0,playing=false;
     var pathData='M 20 120 Q 180 40 360 120 T 680 120';
     d3.select('#path-svg').append('path').attr('d',pathData).attr('fill','none').attr('stroke','rgba(56,189,248,0.25)').attr('stroke-width',2);
+    var motionTween=(typeof gsap!=='undefined'&&typeof MotionPathPlugin!=='undefined')
+      ?gsap.to(actor,{motionPath:{path:pathData,alignOrigin:[0.5,0.5],autoRotate:false},duration:1,paused:true,ease:'none'})
+      :null;
     MISSIONS.forEach(function(m,i){
       var el=document.createElement('div');el.className='mission'+(i===0?' active':'');el.textContent=m;
       el.onclick=function(){document.querySelectorAll('.mission').forEach(function(x){x.classList.remove('active');});el.classList.add('active');active=i;runAnim();};
@@ -64,9 +67,8 @@
       document.getElementById('narrator').textContent='Mission: '+MISSIONS[active]+' — Phase: '+PHASES[phase];
       document.getElementById('time-label').textContent='T+'+Math.floor(t*0.8)+'s';
       document.getElementById('scrubber').value=t;
-      if(typeof gsap!=='undefined'&&MotionPathPlugin){
-        gsap.set(actor,{motionPath:{path:pathData,alignOrigin:[0.5,0.5],autoRotate:false},offset: t/100});
-      } else actor.style.left=(20+t*6)+'px';
+      if(motionTween){motionTween.progress(t/100);}
+      else actor.style.left=(20+t*6)+'px';
     }
     document.getElementById('play-btn').onclick=function(){
       playing=!playing;

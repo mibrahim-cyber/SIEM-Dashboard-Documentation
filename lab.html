@@ -48,7 +48,7 @@
   (function(){
     SiemCore.bootPage('lab'); SiemCore.AchievementSystem.check('visit_lab');
     var term=new Terminal({theme:{background:'#000000',foreground:'#34d399',cursor:'#38bdf8'},fontSize:10,fontFamily:'Consolas, monospace'});
-    var fitAddon = typeof FitAddon !== 'undefined' ? new FitAddon() : null;
+    var fitAddon = typeof FitAddon !== 'undefined' ? new FitAddon.FitAddon() : null;
     if (fitAddon) term.loadAddon(fitAddon);
     term.open(document.getElementById('xterm-wrap'));if(fitAddon)fitAddon.fit();
     term.writeln('\x1b[32m> lab session online — tail -f /var/log/siem/alerts.log\x1b[0m');

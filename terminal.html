@@ -195,7 +195,7 @@
       fitAddon = typeof FitAddon !== 'undefined' ? new FitAddon.FitAddon() : null;
       if (fitAddon) term.loadAddon(fitAddon);
       if (typeof WebLinksAddon !== 'undefined') {
-        term.loadAddon(new WebLinksAddon());
+        term.loadAddon(new WebLinksAddon.WebLinksAddon());
       }
       term.open(document.getElementById('terminal'));
       if (fitAddon) fitAddon.fit();

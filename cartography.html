@@ -47,15 +47,21 @@
       el.appendChild(row);
     });
     var arcs=[
-      {startLat:51.5,startLng:-0.1,endLat:40.7,endLng:-74,color:'rgba(248,113,113,0.6)',country:'UK → US'},
-      {startLat:35.6,startLng:139.6,endLat:1.3,endLng:103.8,color:'rgba(251,191,36,0.6)',country:'JP → SG'}
+      {startLat:51.5,startLng:-0.1,endLat:40.7,endLng:-74,color:'rgba(248,113,113,0.6)',country:'UK → US',layer:'Alerts'},
+      {startLat:35.6,startLng:139.6,endLat:1.3,endLng:103.8,color:'rgba(251,191,36,0.6)',country:'JP → SG',layer:'APT'},
+      {startLat:55.7,startLng:37.6,endLat:48.8,endLng:2.3,color:'rgba(99,102,241,0.6)',country:'RU → FR',layer:'Botnets'},
+      {startLat:31.2,startLng:121.4,endLat:37.7,endLng:-122.4,color:'rgba(52,211,153,0.6)',country:'CN → US',layer:'APT'},
+      {startLat:40.7,startLng:-74,endLat:48.1,endLng:16.3,color:'rgba(248,113,113,0.6)',country:'US → AT',layer:'Scanning'},
+      {startLat:1.3,startLng:103.8,endLat:35.6,endLng:139.6,color:'rgba(167,139,250,0.6)',country:'SG → JP',layer:'C2'},
+      {startLat:48.8,startLng:2.3,endLat:-33.8,endLng:151.2,color:'rgba(251,191,36,0.6)',country:'FR → AU',layer:'Exfil'},
+      {startLat:52.3,startLng:4.9,endLat:19.4,endLng:-99.1,color:'rgba(248,113,113,0.6)',country:'NL → MX',layer:'Tor Exit'}
     ];
     var globe=Globe()(document.getElementById('globe'))
       .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
       .arcsData(arcs).arcColor('color').arcDashLength(0.4).arcDashGap(0.2).arcDashAnimateTime(2000)
       .onArcClick(function(d){document.getElementById('country-info').textContent=d.country;});
     el.addEventListener('change',function(e){
-      if(e.target.dataset.layer){layerState[e.target.dataset.layer]=e.target.checked;globe.arcsData(arcs.filter(function(){return true;}));}
+      if(e.target.dataset.layer){layerState[e.target.dataset.layer]=e.target.checked;globe.arcsData(arcs.filter(function(a){return layerState[a.layer]!==false;}));}
     });
   })();
   </script>
