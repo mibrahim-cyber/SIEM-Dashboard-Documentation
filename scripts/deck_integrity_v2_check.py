@@ -57,7 +57,7 @@ FEATURE_CHECKS = [
     ("Landing experience tiles", "index.html", ["terminal.html", "breach.html", "heist.html"]),
     ("Nav labels", "assets/deck-nav.js", ["The War Room", "The Signal Room", "Observation Deck"]),
     ("War room stations", "left.html", ["Signal Feed", "Threat Matrix", "Incident Clock", "Analyst Comms", "Pipeline Gauges"]),
-    ("War room map arcs", "left.html", ["war-map-arcs", "war-ioc-panel", "SIMULATION — DEMO DATA ONLY"]),
+    ("War room tactical defense", "left.html", ["war-tactical", "war-tactical-log", "SIMULATION — DEMO DATA ONLY"]),
     ("War room debrief D", "left.html", ["war-debrief", "e.key === 'd'"]),
     ("War room mobile block", "left.html", ["war-mobile-block", "desktop"]),
     ("Signal room canvas", "right.html", ["sr-canvas", "drawSpectrum", "drawFrame"]),

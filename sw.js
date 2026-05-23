@@ -1,7 +1,7 @@
 /**
  * Meridian-7 service worker — offline cache for core assets
  */
-const CACHE = 'meridian7-v16.1';
+const CACHE = 'meridian7-v16.2';
 const PRECACHE = [
   '/',
   '/index.html',
@@ -25,6 +25,7 @@ const PRECACHE = [
   '/resonance.html',
   '/motd.html',
   '/trophy.html',
+  '/read.html',
   '/favicon.ico',
   '/favicon-32.png',
   '/apple-touch-icon.png',
@@ -34,6 +35,8 @@ const PRECACHE = [
   '/assets/palette.css',
   '/assets/deck-nav.js',
   '/assets/deck-nav.css',
+  '/assets/guides-manifest.json',
+  '/assets/marked.min.js',
 ];
 
 self.addEventListener('install', function (event) {

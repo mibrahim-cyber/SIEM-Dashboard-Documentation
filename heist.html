@@ -50,6 +50,9 @@
     #copy-fill{height:100%;width:0;background:#ffd60a;transition:width .05s linear}
     #alarm-timer{position:absolute;top:48px;left:50%;transform:translateX(-50%);padding:8px 16px;background:rgba(255,45,85,.15);border:1px solid #ff2d55;color:#ff2d55;font-size:11px;font-weight:700;letter-spacing:2px;display:none;z-index:15}
     #alarm-timer.show{display:block}
+    #siem-alert-flash{position:fixed;inset:0;background:rgba(255,45,85,.35);pointer-events:none;z-index:95;opacity:0;transition:opacity .15s}
+    #siem-alert-flash.show{opacity:1;animation:siem-flash .9s ease 2}
+    @keyframes siem-flash{0%,100%{opacity:0}15%,45%{opacity:1}70%{opacity:.2}}
     #overlay-screen{position:fixed;inset:0;background:rgba(5,6,15,.94);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
     #overlay-screen.show{display:flex}
     #overlay-panel{max-width:520px;width:100%;background:#0f1428;border:1px solid rgba(255,45,85,.45);padding:24px;box-shadow:0 0 40px rgba(255,45,85,.15)}
@@ -133,11 +136,13 @@
       <div id="level-select">
         <button class="lvl-btn active" data-lvl="0" type="button">L1 Perimeter</button>
         <button class="lvl-btn" data-lvl="1" type="button">L2 Core Run</button>
+        <button class="lvl-btn" data-lvl="2" type="button">L3 Vault</button>
       </div>
       <div id="status-toast"></div>
       <div id="interact-prompt"></div>
       <div id="copy-bar-wrap"><div id="copy-label">COPYING DATA…</div><div id="copy-bar"><div id="copy-fill"></div></div></div>
       <div id="alarm-timer"></div>
+      <div id="siem-alert-flash" aria-hidden="true"></div>
     </div>
   </div>
   <div id="overlay-screen">
@@ -341,7 +346,8 @@
 
     var LEVELS = [
       { id: 0, name: 'LVL 1 · PERIMETER BREACH', short: 'Perimeter', start: { x: 4, y: 30 }, pw: 'delta2024', sql: "' OR 1=1--", sqlClue: 'Sticky note: OR 1=1 closes the WHERE clause.' },
-      { id: 1, name: 'LVL 2 · CORE INFILTRATION', short: 'Core Run', start: { x: 6, y: 52 }, pw: 'meridian', sql: "admin'--", sqlClue: 'Whiteboard: admin comment bypass on auth table.' }
+      { id: 1, name: 'LVL 2 · CORE INFILTRATION', short: 'Core Run', start: { x: 6, y: 52 }, pw: 'meridian', sql: "admin'--", sqlClue: 'Whiteboard: admin comment bypass on auth table.' },
+      { id: 2, name: 'LVL 3 · VAULT EXTRACTION', short: 'Vault', start: { x: 8, y: 8 }, pw: 'vault7', sql: "' UNION SELECT pass FROM users--", sqlClue: 'Vault runbook: UNION SELECT on cred table.' }
     ];
 
     var host = document.getElementById('canvas-host');
@@ -496,7 +502,8 @@
       backupActive: false,
       modalType: null,
       toastTimer: null,
-      lastZone: 'PERIMETER'
+      lastZone: 'PERIMETER',
+      levelStartTime: null
     };
 
     function toast(msg, ms) {
@@ -551,7 +558,7 @@
         placeDoor(map, 50, 30, T.D8888);
         for (x = 35; x <= 45; x++) map[22][x] = T.CHK;
         for (x = 38; x < 42; x++) map[40][x] = T.WIRE;
-      } else {
+      } else if (levelIdx === 1) {
         carveRect(map, 14, 22, 52, 16, T.NET);
         carveRect(map, 30, 14, 20, 32, T.CORE);
         placeDoor(map, 28, 30, T.D443);
@@ -562,9 +569,20 @@
         for (x = 40; x <= 44; x++) map[18][x] = T.CHK;
         for (x = 32; x <= 48; x++) if (x % 2 === 0) map[24][x] = T.SENS;
         for (x = 34; x <= 46; x++) map[36][x] = T.WIRE;
+      } else {
+        carveRect(map, 10, 10, 60, 40, T.NET);
+        carveRect(map, 28, 20, 24, 20, T.CORE);
+        placeDoor(map, 26, 30, T.D443);
+        placeDoor(map, 18, 38, T.D4444);
+        placeDoor(map, 58, 22, T.D8888);
+        for (x = 14; x <= 18; x++) map[28][x] = T.CHK;
+        for (x = 52; x <= 56; x++) map[28][x] = T.CHK;
+        for (x = 36; x <= 44; x++) map[14][x] = T.CHK;
+        for (x = 30; x <= 50; x++) if (x % 2 === 0) map[22][x] = T.SENS;
+        for (x = 32; x <= 48; x++) map[38][x] = T.WIRE;
       }
       map[LEVELS[levelIdx].start.y][LEVELS[levelIdx].start.x] = T.PERIM;
-      var ex = levelIdx === 0 ? { x: MAP_W - 4, y: 30 } : { x: MAP_W - 4, y: 8 };
+      var ex = levelIdx === 0 ? { x: MAP_W - 4, y: 30 } : (levelIdx === 1 ? { x: MAP_W - 4, y: 8 } : { x: MAP_W - 4, y: 50 });
       map[ex.y][ex.x] = T.EXIT;
       return { map: map, exit: ex };
     }
@@ -602,7 +620,7 @@
         doors.push({ x: 50, y: 30, port: 8888, open: false });
         terminals.push({ x: 36, y: 32, kind: 'password' });
         terminals.push({ x: 40, y: 34, kind: 'sql' });
-      } else {
+      } else if (levelIdx === 1) {
         positions = [{ x: 18, y: 28 }, { x: 28, y: 26 }, { x: 38, y: 22 }, { x: 42, y: 30 }, { x: 48, y: 36 }, { x: 34, y: 38 }];
         guards.push(makeGuard([{ x: 32, y: 18 }, { x: 38, y: 18 }, { x: 38, y: 22 }, { x: 32, y: 22 }], -Math.PI / 2));
         guards.push(makeGuard([{ x: 44, y: 28 }, { x: 50, y: 28 }, { x: 50, y: 34 }, { x: 44, y: 34 }], Math.PI / 4));
@@ -617,6 +635,23 @@
         doors.push({ x: 56, y: 28, port: 8888, open: false });
         terminals.push({ x: 36, y: 28, kind: 'password' });
         terminals.push({ x: 40, y: 32, kind: 'sql' });
+      } else {
+        positions = [{ x: 20, y: 24 }, { x: 32, y: 26 }, { x: 44, y: 24 }, { x: 38, y: 32 }, { x: 28, y: 34 }, { x: 48, y: 30 }];
+        guards.push(makeGuard([{ x: 24, y: 20 }, { x: 32, y: 20 }, { x: 32, y: 26 }, { x: 24, y: 26 }], 0));
+        guards.push(makeGuard([{ x: 42, y: 28 }, { x: 48, y: 28 }, { x: 48, y: 34 }, { x: 42, y: 34 }], Math.PI / 2));
+        guards.push(makeGuard([{ x: 34, y: 36 }, { x: 40, y: 40 }, { x: 46, y: 36 }], Math.PI));
+        guards.push(makeGuard([{ x: 14, y: 32 }, { x: 18, y: 36 }, { x: 14, y: 40 }], -Math.PI / 4));
+        cams.push({ x: 40, y: 16, angle: Math.PI / 2, range: VISION_RANGE });
+        cams.push({ x: 54, y: 30, angle: Math.PI, range: VISION_RANGE });
+        cams.push({ x: 26, y: 38, angle: 0, range: VISION_RANGE });
+        items.admin = { x: 46, y: 22, taken: false };
+        items.tool = { x: 14, y: 28, taken: false };
+        items.social = { x: 52, y: 34, taken: false };
+        doors.push({ x: 26, y: 30, port: 443, open: true });
+        doors.push({ x: 18, y: 38, port: 4444, open: false });
+        doors.push({ x: 58, y: 22, port: 8888, open: false });
+        terminals.push({ x: 34, y: 30, kind: 'password' });
+        terminals.push({ x: 38, y: 34, kind: 'sql' });
       }
 
       for (i = 0; i < TOTAL_OBJECTIVES; i++) {
@@ -630,7 +665,7 @@
         items: items,
         terminals: terminals,
         doors: doors,
-        soar: { x: levelIdx === 0 ? 38 : 42, y: levelIdx === 0 ? 36 : 40 },
+        soar: { x: levelIdx === 0 ? 38 : (levelIdx === 1 ? 42 : 40), y: levelIdx === 0 ? 36 : (levelIdx === 1 ? 40 : 42) },
         exit: exitPos
       };
     }
@@ -654,6 +689,14 @@
       state.gameOver = true;
       state.paused = true;
       playTone('C3', '2n');
+      var flash = document.getElementById('siem-alert-flash');
+      if (flash) {
+        flash.classList.remove('show');
+        void flash.offsetWidth;
+        flash.classList.add('show');
+        setTimeout(function () { flash.classList.remove('show'); }, 1200);
+      }
+      toast('SIEM ALERT — ' + ruleKey.toUpperCase().replace(/-/g, ' '), 2800);
       var info = RULE_DOCS[ruleKey] || RULE_DOCS['guard-vision'];
       document.getElementById('overlay-title').textContent = 'DETECTED — INCIDENT CREATED';
       document.getElementById('overlay-rule').textContent = info.title;
@@ -674,8 +717,12 @@
       state.paused = true;
       playTone('E5', '4n');
       SiemCore.AchievementSystem.check('heist_win');
-      document.getElementById('overlay-title').textContent = 'EXFIL COMPLETE — UNDetected EXIT';
-      document.getElementById('overlay-rule').textContent = 'Objectives secured: ' + Object.keys(state.copied).length + ' / ' + TOTAL_OBJECTIVES;
+      var elapsed = state.levelStartTime ? Math.max(0, (Date.now() - state.levelStartTime) / 1000) : 0;
+      var mins = Math.floor(elapsed / 60);
+      var secs = Math.floor(elapsed % 60);
+      var timeStr = mins + 'm ' + (secs < 10 ? '0' : '') + secs + 's';
+      document.getElementById('overlay-title').textContent = 'EXFIL COMPLETE — UNDETECTED EXIT';
+      document.getElementById('overlay-rule').textContent = 'Objectives secured: ' + Object.keys(state.copied).length + ' / ' + TOTAL_OBJECTIVES + ' · Time: ' + timeStr;
       document.getElementById('overlay-component').textContent = 'SIEM Component: None triggered (this time)';
       document.getElementById('overlay-explain').textContent = 'You copied enough DATA_EXFIL nodes and reached the perimeter exit before correlation, UEBA, or SOAR playbooks materialized a case. The same tactics fail when analysts tune thresholds — revisit the docs linked from each death screen.';
       document.getElementById('overlay-doc').href = 'read.html?doc=guides/rules/detection-basics';
@@ -831,6 +878,7 @@
       ]);
 
       hudLevel.textContent = LEVELS[idx].name;
+      state.levelStartTime = Date.now();
       updateHud();
       camPos(state.player.pos);
       toast('Infiltrate · copy ' + WIN_NEED + '+ nodes · reach EXIT');
@@ -1234,6 +1282,9 @@
     });
     onKeyPress('2', function () {
       document.querySelector('.lvl-btn[data-lvl="1"]').click();
+    });
+    onKeyPress('3', function () {
+      document.querySelector('.lvl-btn[data-lvl="2"]').click();
     });
 
     onError(function (err) {

@@ -98,8 +98,11 @@
     var entry = filtered[idx];
     if (!entry) return;
     closePalette();
+    if (window.SiemCore) {
+      window.SiemCore.AchievementSystem.check('palette_open');
+      if (entry.id) window.SiemCore.AchievementSystem.check(entry.id);
+    }
     if (entry.action === 'achievements') {
-      if (window.SiemCore) window.SiemCore.AchievementSystem.check('palette_open');
       location.assign(entry.href || 'trophy.html');
       return;
     }

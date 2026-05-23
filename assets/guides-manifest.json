@@ -1,0 +1,488 @@
+{
+  "version": 1,
+  "generated": "2026-05-23",
+  "description": "Navigation manifest for the HABIBI-SIEM guides. Each section maps a category/subsection key to its base path, index file, and ordered page list. The read.html viewer uses this to build the left sidebar, breadcrumbs, and prev/next controls.",
+  "categories": {
+    "monitor": { "title": "Monitor", "order": 1 },
+    "investigate": { "title": "Investigate", "order": 2 },
+    "respond": { "title": "Respond", "order": 3 },
+    "configure": { "title": "Configure", "order": 4 },
+    "intelligence": { "title": "Intelligence", "order": 5 },
+    "ingest-config": { "title": "Ingest & Config", "order": 6 },
+    "reporting": { "title": "Reporting", "order": 7 },
+    "infrastructure": { "title": "Infrastructure", "order": 8 }
+  },
+  "sections": {
+    "monitor/alert-manager": {
+      "title": "Alert Manager",
+      "category": "monitor",
+      "base": "guides/monitor/alert-manager/",
+      "index": "INDEX.md",
+      "purpose": "Triage, acknowledge, and resolve alerts with full context.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-alert-lifecycle.md", "title": "The alert lifecycle" },
+        { "file": "03-alert-record-fields.md", "title": "Every field in an alert record" },
+        { "file": "04-mitre-att-and-ck.md", "title": "MITRE ATT&CK integration" },
+        { "file": "05-bulk-actions.md", "title": "Bulk actions and alert fatigue" },
+        { "file": "06-suppression-and-tuning.md", "title": "Alert suppression and tuning" },
+        { "file": "07-sla-timers.md", "title": "SLA timers and compliance" },
+        { "file": "08-alert-vs-case.md", "title": "Alert vs case" }
+      ]
+    },
+    "monitor/overview": {
+      "title": "Overview",
+      "category": "monitor",
+      "base": "guides/monitor/overview/",
+      "index": "INDEX.md",
+      "purpose": "The dashboard-at-a-glance for the SOC analyst.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-dashboard-at-a-glance-philosophy.md", "title": "Dashboard-at-a-glance philosophy" },
+        { "file": "03-metric-cards-explained.md", "title": "Metric cards explained" },
+        { "file": "04-simulate-campaign.md", "title": "Simulate campaign" },
+        { "file": "05-severity-levels.md", "title": "Severity levels" },
+        { "file": "06-auto-refresh-real-time.md", "title": "Auto-refresh and real time" },
+        { "file": "07-alerts-vs-incidents.md", "title": "Alerts vs incidents" }
+      ]
+    },
+    "monitor/live-feed": {
+      "title": "Live Feed",
+      "category": "monitor",
+      "base": "guides/monitor/live-feed/",
+      "index": "INDEX.md",
+      "purpose": "Stream raw events as they arrive in the pipeline.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-live-feed-concept.md", "title": "The live-feed concept" },
+        { "file": "03-event-table-columns.md", "title": "Event table columns" },
+        { "file": "04-log-normalisation-walkthrough.md", "title": "Log normalisation walkthrough" },
+        { "file": "05-filtering-and-search.md", "title": "Filtering and search" },
+        { "file": "06-deduplication.md", "title": "Deduplication" },
+        { "file": "07-pagination-performance.md", "title": "Pagination and performance" },
+        { "file": "08-first-five-minutes.md", "title": "First five minutes" }
+      ]
+    },
+    "monitor/pipeline-health": {
+      "title": "Pipeline Health",
+      "category": "monitor",
+      "base": "guides/monitor/pipeline-health/",
+      "index": "INDEX.md",
+      "purpose": "Confirm logs are flowing end-to-end without parser breakage.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-pipeline-end-to-end.md", "title": "Pipeline end-to-end" },
+        { "file": "03-pipeline-metrics.md", "title": "Pipeline metrics" },
+        { "file": "04-pipeline-as-security-control.md", "title": "Pipeline as a security control" },
+        { "file": "05-log-source-status.md", "title": "Log source status" },
+        { "file": "06-parser-errors.md", "title": "Parser errors" },
+        { "file": "07-capacity-planning.md", "title": "Capacity planning" }
+      ]
+    },
+    "monitor/timeline": {
+      "title": "Timeline",
+      "category": "monitor",
+      "base": "guides/monitor/timeline/",
+      "index": "INDEX.md",
+      "purpose": "Place events on the kill chain to expose campaign structure.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-kill-chain-basics.md", "title": "Kill chain basics" },
+        { "file": "03-mapping-events-to-phases.md", "title": "Mapping events to phases" },
+        { "file": "04-timeline-visualisation.md", "title": "Timeline visualisation" },
+        { "file": "05-why-timeline-beats-lists.md", "title": "Why timeline beats lists" },
+        { "file": "06-cross-source-correlation.md", "title": "Cross-source correlation" },
+        { "file": "07-lateral-movement-on-timeline.md", "title": "Lateral movement on the timeline" },
+        { "file": "08-for-non-technical-managers.md", "title": "For non-technical managers" },
+        { "file": "09-exporting-timeline.md", "title": "Exporting the timeline" }
+      ]
+    },
+    "investigate/event-graph": {
+      "title": "Event Graph",
+      "category": "investigate",
+      "base": "guides/investigate/event-graph/",
+      "index": "INDEX.md",
+      "purpose": "Explore relationships between alerts, IPs, rules, and notes on a canvas.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-graph-theory-basics.md", "title": "Graph theory basics for non-technical readers" },
+        { "file": "03-node-types.md", "title": "What each node type represents" },
+        { "file": "04-edge-types.md", "title": "Edge types and attack relationships" },
+        { "file": "05-building-the-graph.md", "title": "How the Event Graph is built from raw logs" },
+        { "file": "06-tracing-compromise.md", "title": "Using the graph to trace a compromise" },
+        { "file": "07-graph-filtering.md", "title": "Graph filtering" },
+        { "file": "08-pivoting-workflow.md", "title": "Pivoting from Event Graph to raw logs" }
+      ]
+    },
+    "investigate/geo-map": {
+      "title": "Geo Map",
+      "category": "investigate",
+      "base": "guides/investigate/geo-map/",
+      "index": "INDEX.md",
+      "purpose": "Plot source-IP traffic on a world map for fast geo-anomaly review.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-ip-geolocation.md", "title": "IP geolocation" },
+        { "file": "03-geo-map-visual-elements.md", "title": "Geo map visual elements" },
+        { "file": "04-impossible-travel.md", "title": "Impossible travel" },
+        { "file": "05-country-threat-context.md", "title": "Country threat context" },
+        { "file": "06-isp-asn-column.md", "title": "ISP and ASN columns" },
+        { "file": "07-geo-map-during-ddos.md", "title": "Geo map during a DDoS" }
+      ]
+    },
+    "investigate/heatmap-calendar": {
+      "title": "Heatmap Calendar",
+      "category": "investigate",
+      "base": "guides/investigate/heatmap-calendar/",
+      "index": "INDEX.md",
+      "purpose": "Reveal time-of-day and slow-burn attack patterns across weeks.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-heatmap-concept.md", "title": "The heatmap concept" },
+        { "file": "03-time-based-attack-patterns.md", "title": "Time-based attack patterns" },
+        { "file": "04-reading-the-calendar.md", "title": "Reading the calendar" },
+        { "file": "05-layering-metrics.md", "title": "Layering metrics" },
+        { "file": "06-slow-burn-attacks.md", "title": "Slow-burn attacks" },
+        { "file": "07-shift-handover.md", "title": "Shift handover" }
+      ]
+    },
+    "investigate/network-map": {
+      "title": "Network Map",
+      "category": "investigate",
+      "base": "guides/investigate/network-map/",
+      "index": "INDEX.md",
+      "purpose": "Visualise subnets, hosts, and lateral traffic relationships.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-what-the-map-shows.md", "title": "What the map shows" },
+        { "file": "03-data-sources.md", "title": "Data sources" },
+        { "file": "04-normal-vs-anomalous.md", "title": "Normal vs anomalous" },
+        { "file": "05-subnet-grouping.md", "title": "Subnet grouping" },
+        { "file": "06-lateral-movement-visual.md", "title": "Lateral movement visual" },
+        { "file": "07-external-connections.md", "title": "External connections" },
+        { "file": "08-click-through-to-logs.md", "title": "Click-through to logs" }
+      ]
+    },
+    "investigate/threat-hunt": {
+      "title": "Threat Hunt",
+      "category": "investigate",
+      "base": "guides/investigate/threat-hunt/",
+      "index": "INDEX.md",
+      "purpose": "Pose hypotheses, query the data lake, and iterate on hunts.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-threat-hunting-philosophy.md", "title": "Threat-hunting philosophy" },
+        { "file": "03-hypothesis-vs-data-driven.md", "title": "Hypothesis vs data driven" },
+        { "file": "04-query-interface.md", "title": "Query interface" },
+        { "file": "05-built-in-templates.md", "title": "Built-in templates" },
+        { "file": "06-saving-scheduling-hunts.md", "title": "Saving and scheduling hunts" },
+        { "file": "07-documenting-a-hunt.md", "title": "Documenting a hunt" },
+        { "file": "08-hunt-to-detection-rule.md", "title": "From hunt to detection rule" }
+      ]
+    },
+    "investigate/ueba": {
+      "title": "UEBA",
+      "category": "investigate",
+      "base": "guides/investigate/ueba/",
+      "index": "INDEX.md",
+      "purpose": "Behavioural baselines for users and entities with deviation scoring.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-ueba-invented.md", "title": "Why UEBA was invented" },
+        { "file": "03-baselining.md", "title": "Baselining" },
+        { "file": "04-risk-score.md", "title": "Risk score" },
+        { "file": "05-insider-threat.md", "title": "Insider threat" },
+        { "file": "06-entity-behaviour.md", "title": "Entity behaviour" },
+        { "file": "07-false-positive-management.md", "title": "False positive management" },
+        { "file": "08-ueba-and-compliance.md", "title": "UEBA and compliance" }
+      ]
+    },
+    "ingest-config/log-ingestion": {
+      "title": "Log Ingestion",
+      "category": "ingest-config",
+      "base": "guides/ingest-config/log-ingestion/",
+      "index": "INDEX.md",
+      "purpose": "Receive, validate, parse, enrich, and store log events.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-ingestion-pipeline-end-to-end.md", "title": "Ingestion pipeline end-to-end" },
+        { "file": "03-log-source-types.md", "title": "Log source types" },
+        { "file": "04-validate-endpoint.md", "title": "The validate endpoint" },
+        { "file": "05-parsing-grok.md", "title": "Parsing with grok" },
+        { "file": "06-enrichment-at-ingestion.md", "title": "Enrichment at ingestion" },
+        { "file": "07-log-volume-management.md", "title": "Log volume management" },
+        { "file": "08-log-integrity.md", "title": "Log integrity" },
+        { "file": "09-ingestion-errors-retries.md", "title": "Ingestion errors and retries" }
+      ]
+    },
+    "ingest-config/settings": {
+      "title": "Settings",
+      "category": "ingest-config",
+      "base": "guides/ingest-config/settings/",
+      "index": "INDEX.md",
+      "purpose": "Authentication, RBAC, API keys, dedup toggles, and backup.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-settings-architecture.md", "title": "Settings architecture" },
+        { "file": "03-authentication-settings.md", "title": "Authentication settings" },
+        { "file": "04-rbac-roles.md", "title": "RBAC roles" },
+        { "file": "05-threat-feed-api-keys.md", "title": "Threat feed API keys" },
+        { "file": "06-sound-notifications.md", "title": "Sound notifications" },
+        { "file": "07-deduplication-toggle.md", "title": "Deduplication toggle" },
+        { "file": "08-settings-audit-log.md", "title": "Settings audit log" },
+        { "file": "09-backup-restore-config.md", "title": "Backup and restore" }
+      ]
+    },
+    "configure/rules-engine": {
+      "title": "Rules Engine",
+      "category": "configure",
+      "base": "guides/configure/rules-engine/",
+      "index": "INDEX.md",
+      "purpose": "Detection-rule lifecycle from authoring to Sigma import.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-what-is-a-detection-rule.md", "title": "What is a detection rule" },
+        { "file": "03-rule-anatomy.md", "title": "Rule anatomy" },
+        { "file": "04-sliding-window.md", "title": "Sliding window rules" },
+        { "file": "05-sequence-rules.md", "title": "Sequence rules" },
+        { "file": "06-creating-a-rule.md", "title": "Creating a rule" },
+        { "file": "07-tuning-false-positives.md", "title": "Tuning false positives" },
+        { "file": "08-rule-versioning.md", "title": "Rule versioning" },
+        { "file": "09-importing-sigma-rules.md", "title": "Importing Sigma rules" }
+      ]
+    },
+    "configure/correlation-builder": {
+      "title": "Correlation Builder",
+      "category": "configure",
+      "base": "guides/configure/correlation-builder/",
+      "index": "INDEX.md",
+      "purpose": "Compose multi-event correlation logic with time windows.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-what-correlation-means.md", "title": "What correlation means" },
+        { "file": "03-correlation-builder-ui.md", "title": "Correlation builder UI" },
+        { "file": "04-event-pattern-design.md", "title": "Event pattern design" },
+        { "file": "05-time-windows.md", "title": "Time windows" },
+        { "file": "06-testing-before-deployment.md", "title": "Testing before deployment" },
+        { "file": "07-performance-cost.md", "title": "Performance cost" },
+        { "file": "08-real-world-examples.md", "title": "Real-world examples" }
+      ]
+    },
+    "intelligence/ioc-watchlist": {
+      "title": "IOC Watchlist",
+      "category": "intelligence",
+      "base": "guides/intelligence/ioc-watchlist/",
+      "index": "INDEX.md",
+      "purpose": "Organisation-curated IOCs that match against live events.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-ioc-taxonomy.md", "title": "IOC taxonomy" },
+        { "file": "03-organisation-threat-layer.md", "title": "Organisation threat layer" },
+        { "file": "04-adding-an-entry.md", "title": "Adding an entry" },
+        { "file": "05-realtime-matching.md", "title": "Real-time matching" },
+        { "file": "06-removing-stale-entries.md", "title": "Removing stale entries" },
+        { "file": "07-sharing-watchlists.md", "title": "Sharing watchlists" },
+        { "file": "08-audit-trail.md", "title": "Audit trail" }
+      ]
+    },
+    "intelligence/risk-scoring": {
+      "title": "Risk Scoring",
+      "category": "intelligence",
+      "base": "guides/intelligence/risk-scoring/",
+      "index": "INDEX.md",
+      "purpose": "Aggregate signals into a single risk number with history.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-why-single-risk-number.md", "title": "Why a single risk number" },
+        { "file": "03-risk-formula.md", "title": "Risk formula" },
+        { "file": "04-asset-criticality.md", "title": "Asset criticality" },
+        { "file": "05-dynamic-vs-static-scoring.md", "title": "Dynamic vs static scoring" },
+        { "file": "06-risk-appetite-tolerance.md", "title": "Risk appetite and tolerance" },
+        { "file": "07-board-reporting.md", "title": "Board reporting" },
+        { "file": "08-risk-score-history.md", "title": "Risk score history" }
+      ]
+    },
+    "intelligence/threat-intel": {
+      "title": "Threat Intel",
+      "category": "intelligence",
+      "base": "guides/intelligence/threat-intel/",
+      "index": "INDEX.md",
+      "purpose": "External feed ingestion, IOC types, and confidence scoring.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-what-threat-intel-is.md", "title": "What threat intel is" },
+        { "file": "03-external-feeds.md", "title": "External feeds" },
+        { "file": "04-querying-feeds.md", "title": "Querying feeds" },
+        { "file": "05-confidence-score.md", "title": "Confidence score" },
+        { "file": "06-ioc-types.md", "title": "IOC types" },
+        { "file": "07-threat-categories.md", "title": "Threat categories" },
+        { "file": "08-feed-staleness-ttl.md", "title": "Feed staleness and TTL" },
+        { "file": "09-api-keys-rate-limits.md", "title": "API keys and rate limits" }
+      ]
+    },
+    "intelligence/vuln-intel": {
+      "title": "Vuln Intel",
+      "category": "intelligence",
+      "base": "guides/intelligence/vuln-intel/",
+      "index": "INDEX.md",
+      "purpose": "Map CVEs to assets and prioritise patching.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-vuln-exploit-threat.md", "title": "Vuln, exploit, threat" },
+        { "file": "03-cve-and-cvss.md", "title": "CVE and CVSS" },
+        { "file": "04-matching-to-assets.md", "title": "Matching to assets" },
+        { "file": "05-patch-prioritisation.md", "title": "Patch prioritisation" },
+        { "file": "06-zero-day-vs-n-day.md", "title": "Zero day vs n-day" },
+        { "file": "07-compensating-controls.md", "title": "Compensating controls" },
+        { "file": "08-vulnerability-lifecycle.md", "title": "Vulnerability lifecycle" }
+      ]
+    },
+    "respond/case-manager": {
+      "title": "Case Manager",
+      "category": "respond",
+      "base": "guides/respond/case-manager/",
+      "index": "INDEX.md",
+      "purpose": "Group related alerts and incidents into investigative cases.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-cases-incidents-alerts-hierarchy.md", "title": "Cases, incidents, alerts hierarchy" },
+        { "file": "03-when-to-create-a-case.md", "title": "When to create a case" },
+        { "file": "04-case-fields.md", "title": "Case fields" },
+        { "file": "05-evidence-chain.md", "title": "Evidence chain" },
+        { "file": "06-case-statuses.md", "title": "Case statuses" },
+        { "file": "07-collaboration.md", "title": "Collaboration" },
+        { "file": "08-reporting-from-cases.md", "title": "Reporting from cases" }
+      ]
+    },
+    "respond/incidents": {
+      "title": "Incidents",
+      "category": "respond",
+      "base": "guides/respond/incidents/",
+      "index": "INDEX.md",
+      "purpose": "Drive the IR workflow from severity assignment to post-mortem.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-incident-vs-alert-vs-event.md", "title": "Incident vs alert vs event" },
+        { "file": "03-severity-tiers-p1-p4.md", "title": "Severity tiers P1-P4" },
+        { "file": "04-incident-record-fields.md", "title": "Incident record fields" },
+        { "file": "05-ir-workflow.md", "title": "IR workflow" },
+        { "file": "06-containment-actions.md", "title": "Containment actions" },
+        { "file": "07-communication-during-incident.md", "title": "Communication during an incident" },
+        { "file": "08-post-incident-review.md", "title": "Post-incident review" },
+        { "file": "09-legal-compliance-obligations.md", "title": "Legal and compliance obligations" }
+      ]
+    },
+    "respond/soar-console": {
+      "title": "SOAR Console",
+      "category": "respond",
+      "base": "guides/respond/soar-console/",
+      "index": "INDEX.md",
+      "purpose": "Automate response playbooks with human-in-the-loop gates.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-what-soar-means.md", "title": "What SOAR means" },
+        { "file": "03-playbook-concept.md", "title": "Playbook concept" },
+        { "file": "04-soar-log-table.md", "title": "SOAR log table" },
+        { "file": "05-example-playbook-walkthrough.md", "title": "Example playbook walkthrough" },
+        { "file": "06-human-in-the-loop.md", "title": "Human in the loop" },
+        { "file": "07-audit-trail-automation.md", "title": "Audit trail for automation" },
+        { "file": "08-building-playbooks.md", "title": "Building playbooks" },
+        { "file": "09-measuring-soar-effectiveness.md", "title": "Measuring SOAR effectiveness" }
+      ]
+    },
+    "reporting/executive-view": {
+      "title": "Executive View",
+      "category": "reporting",
+      "base": "guides/reporting/executive-view/",
+      "index": "INDEX.md",
+      "purpose": "Board-ready KPIs, posture scoring, and benchmark comparisons.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-why-executives-need-different-view.md", "title": "Why executives need a different view" },
+        { "file": "03-every-kpi-element.md", "title": "Every KPI element" },
+        { "file": "04-security-posture-score.md", "title": "Security posture score" },
+        { "file": "05-so-what-principle.md", "title": "The so-what principle" },
+        { "file": "06-comparing-periods.md", "title": "Comparing periods" },
+        { "file": "07-benchmark-data.md", "title": "Benchmark data" },
+        { "file": "08-board-meeting-use.md", "title": "Board-meeting use" }
+      ]
+    },
+    "reporting/reports": {
+      "title": "Reports",
+      "category": "reporting",
+      "base": "guides/reporting/reports/",
+      "index": "INDEX.md",
+      "purpose": "Compliance-mapped reports with verifiable integrity.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-report-types.md", "title": "Report types" },
+        { "file": "03-compliance-mapping.md", "title": "Compliance mapping" },
+        { "file": "04-report-customisation.md", "title": "Report customisation" },
+        { "file": "05-export-formats.md", "title": "Export formats" },
+        { "file": "06-scheduled-reports-in-reports.md", "title": "Scheduled reports" },
+        { "file": "07-report-integrity.md", "title": "Report integrity" }
+      ]
+    },
+    "reporting/scheduler": {
+      "title": "Scheduler",
+      "category": "reporting",
+      "base": "guides/reporting/scheduler/",
+      "index": "INDEX.md",
+      "purpose": "Cron-driven report delivery with retention and failure handling.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-operational-case-for-scheduling.md", "title": "Operational case for scheduling" },
+        { "file": "03-cron-syntax.md", "title": "Cron syntax" },
+        { "file": "04-schedule-record-fields.md", "title": "Schedule record fields" },
+        { "file": "05-delivery-mechanics.md", "title": "Delivery mechanics" },
+        { "file": "06-failure-handling.md", "title": "Failure handling" },
+        { "file": "07-retention.md", "title": "Retention" }
+      ]
+    },
+    "infrastructure/analytics": {
+      "title": "Analytics",
+      "category": "infrastructure",
+      "base": "guides/infrastructure/analytics/",
+      "index": "INDEX.md",
+      "purpose": "Operational charts on alert volume, MTTD, MTTR, and trends.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-operational-vs-analytics.md", "title": "Operational vs analytics" },
+        { "file": "03-chart-types.md", "title": "Chart types" },
+        { "file": "04-alert-volume-over-time.md", "title": "Alert volume over time" },
+        { "file": "05-top-ranked-lists.md", "title": "Top-ranked lists" },
+        { "file": "06-mttd-mttr.md", "title": "MTTD and MTTR" },
+        { "file": "07-trend-analysis.md", "title": "Trend analysis" },
+        { "file": "08-budget-justification.md", "title": "Budget justification" }
+      ]
+    },
+    "infrastructure/asset-inventory": {
+      "title": "Asset Inventory",
+      "category": "infrastructure",
+      "base": "guides/infrastructure/asset-inventory/",
+      "index": "INDEX.md",
+      "purpose": "Authoritative list of assets the SOC is protecting.",
+      "pages": [
+        { "file": "01-how-to-use.md", "title": "How to use this module" },
+        { "file": "02-cannot-protect-what-you-cannot-see.md", "title": "Cannot protect what you cannot see" },
+        { "file": "03-what-is-an-asset.md", "title": "What is an asset" },
+        { "file": "04-asset-record-fields.md", "title": "Asset record fields" },
+        { "file": "05-asset-discovery.md", "title": "Asset discovery" },
+        { "file": "06-asset-lifecycle.md", "title": "Asset lifecycle" },
+        { "file": "07-orphaned-assets.md", "title": "Orphaned assets" },
+        { "file": "08-compliance-inventory.md", "title": "Compliance inventory" }
+      ]
+    }
+  },
+  "popular": [
+    { "path": "guides/monitor/alert-manager/02-alert-lifecycle.md", "label": "Alert lifecycle" },
+    { "path": "guides/monitor/overview/02-dashboard-at-a-glance-philosophy.md", "label": "Dashboard philosophy" },
+    { "path": "guides/investigate/event-graph/02-graph-theory-basics.md", "label": "Graph theory basics" },
+    { "path": "guides/investigate/threat-hunt/02-threat-hunting-philosophy.md", "label": "Threat-hunting philosophy" },
+    { "path": "guides/configure/rules-engine/02-what-is-a-detection-rule.md", "label": "What is a detection rule" },
+    { "path": "guides/ingest-config/log-ingestion/02-ingestion-pipeline-end-to-end.md", "label": "Ingestion pipeline" },
+    { "path": "guides/respond/incidents/05-ir-workflow.md", "label": "IR workflow" },
+    { "path": "guides/reporting/executive-view/04-security-posture-score.md", "label": "Security posture score" },
+    { "path": "docs/02-architecture/00-system-overview.md", "label": "System overview" }
+  ]
+}

@@ -124,6 +124,19 @@
       resetWipeLayer();
       return;
     }
+    if (window.SiemCore && window.SiemCore.AchievementSystem) {
+      var navMap = {
+        'terminal.html': 'nav-terminal', 'breach.html': 'nav-breach', 'network.html': 'nav-network',
+        'cipher.html': 'nav-cipher', 'sim.html': 'nav-sim', 'intercept.html': 'nav-intercept',
+        'forge.html': 'nav-forge', 'archive.html': 'nav-archive', 'heist.html': 'nav-heist',
+        'cartography.html': 'nav-cartography', 'lab.html': 'nav-lab', 'memorial.html': 'nav-memorial',
+        'resonance.html': 'nav-resonance', 'left.html': 'nav-left', 'right.html': 'nav-right',
+        'index.html': 'nav-landing', 'read.html': 'nav-read', 'trophy.html': 'nav-trophy', 'motd.html': 'nav-motd',
+        'brain/index.html': 'nav-brain',
+      };
+      var key = String(href).replace(/^(\.\.\/)+/, '').split('?')[0];
+      if (navMap[key]) window.SiemCore.AchievementSystem.check(navMap[key]);
+    }
     navigating = true;
     resetWipeLayer();
     setTimeout(function () { navigating = false; }, 1800);

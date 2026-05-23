@@ -1,54 +1,982 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-deck-page="trophy">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Achievement Room — Meridian-7</title>
   <link rel="icon" href="favicon.ico" sizes="any" />
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <meta name="description" content="Unlock deck achievements by visiting experiences and completing challenges." />
-  <meta property="og:title" content="Achievements — HABIBI-SIEM" />
-  <meta property="og:description" content="Unlock deck achievements by visiting experiences and completing challenges." />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <meta name="description" content="The MERIDIAN-7 Achievement Room — track your progress across 44 trophies earned through navigation, experiences, secrets, and milestones." />
+  <meta name="theme-color" content="#0a0618" />
+  <meta property="og:title" content="Achievement Room — HABIBI-SIEM" />
+  <meta property="og:description" content="Track your progress across 44 trophies earned through navigation, experiences, secrets, and milestones." />
   <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/trophy-og.png" />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/trophy.html" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Achievements — HABIBI-SIEM" />
-  <meta name="twitter:description" content="Unlock deck achievements by visiting experiences and completing challenges." />
-  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/trophy-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Achievements — Meridian-7</title>
+  <meta name="twitter:title" content="Achievement Room — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Track your progress across 44 trophies earned through navigation, experiences, secrets, and milestones." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/trophy-og.png" />
   <link rel="stylesheet" href="assets/palette.css" />
+  <link rel="stylesheet" href="assets/deck-nav.css" />
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}body{min-height:100%;background:#020617;color:#e2e8f0;font-family:system-ui,sans-serif;padding:24px}
-    h1{font:700 24px/1 Orbitron,sans-serif;margin-bottom:8px}#count{color:#64748b;font-size:14px;margin-bottom:24px}
-    #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;max-width:960px}
-    .ach{padding:16px;border:1px solid rgba(148,163,184,.15);border-radius:8px;background:rgba(15,23,42,.6)}
-    .ach.unlocked{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.06)}
-    .ach-icon{font-size:24px;margin-bottom:8px}.ach-title{font-weight:600;margin-bottom:4px}.ach-desc{font-size:13px;color:#94a3b8}
-    .ach.locked{opacity:.45}
-    a{color:#38bdf8}
+    :root {
+      --bg: #0a0618;
+      --bg-elev: #110a25;
+      --bg-card: rgba(20, 14, 38, 0.72);
+      --bg-card-locked: rgba(12, 8, 24, 0.78);
+      --border: rgba(99, 102, 241, 0.18);
+      --border-strong: rgba(99, 102, 241, 0.42);
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --text-muted: #64748b;
+      --indigo: #6366f1;
+      --sky: #38bdf8;
+      --amber: #fbbf24;
+      --emerald: #34d399;
+      --violet: #a78bfa;
+      --rose: #fb7185;
+      --grad: linear-gradient(90deg, #6366f1 0%, #38bdf8 100%);
+      --mono: "IBM Plex Mono", "JetBrains Mono", Consolas, "Courier New", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100vh; background: var(--bg); color: var(--text); }
+    body {
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 0;
+      overflow-x: hidden;
+      background:
+        radial-gradient(ellipse 90% 60% at 20% -10%, rgba(99, 102, 241, 0.10), transparent 60%),
+        radial-gradient(ellipse 70% 50% at 110% 110%, rgba(56, 189, 248, 0.07), transparent 60%),
+        var(--bg);
+    }
+
+    a { color: var(--sky); text-decoration: none; }
+    a:hover { color: #7dd3fc; }
+    button { font: inherit; color: inherit; }
+
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 32px 28px 96px;
+    }
+
+    /* ── Header ── */
+    .room-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+    .room-title-block { flex: 1 1 360px; min-width: 0; }
+    .room-tag {
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: var(--violet);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .room-tag::before {
+      content: "";
+      display: inline-block;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--violet);
+      box-shadow: 0 0 8px var(--violet);
+    }
+    .room-title {
+      font: 700 26px/1.15 var(--mono);
+      letter-spacing: 1.5px;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+      word-wrap: break-word;
+    }
+    .room-subtitle {
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+    }
+    .count-badge {
+      flex: 0 0 auto;
+      padding: 14px 22px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(56, 189, 248, 0.10));
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      text-align: right;
+      box-shadow: 0 0 24px rgba(99, 102, 241, 0.18);
+    }
+    .count-badge .count-num {
+      font: 700 28px/1 var(--mono);
+      color: #e0e7ff;
+      letter-spacing: 2px;
+    }
+    .count-badge .count-num .of {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    .count-badge .count-label {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* ── Progress Section ── */
+    .progress-section {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px 22px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 24px;
+    }
+    .progress-main { min-width: 0; }
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .progress-row .label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+    .progress-row .value {
+      font: 600 13px/1 var(--mono);
+      color: #f1f5f9;
+      letter-spacing: 1px;
+    }
+    .progress-bar {
+      position: relative;
+      height: 10px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .progress-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0%;
+      background: var(--grad);
+      border-radius: 999px;
+      transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    }
+    .progress-fill::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+      animation: shimmer 2.4s linear infinite;
+    }
+    @keyframes shimmer {
+      from { transform: translateX(-100%); }
+      to   { transform: translateX(100%); }
+    }
+    .progress-pct {
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+    }
+
+    .rarity-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .rarity-cell {
+      padding: 10px 12px;
+      background: rgba(15, 12, 30, 0.65);
+      border: 1px solid rgba(99, 102, 241, 0.18);
+      border-radius: 4px;
+      text-align: center;
+    }
+    .rarity-cell.common  { border-color: rgba(56, 189, 248, 0.32); }
+    .rarity-cell.rare    { border-color: rgba(167, 139, 250, 0.40); }
+    .rarity-cell.secret  { border-color: rgba(251, 191, 36, 0.42); }
+    .rarity-cell .num {
+      font: 700 18px/1 var(--mono);
+      color: #f1f5f9;
+      letter-spacing: 1px;
+    }
+    .rarity-cell.common .num  { color: var(--sky); }
+    .rarity-cell.rare .num    { color: var(--violet); }
+    .rarity-cell.secret .num  { color: var(--amber); }
+    .rarity-cell .lbl {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .session-stats {
+      border-left: 1px solid var(--border);
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .stat-block {
+      padding: 10px 12px;
+      background: rgba(15, 12, 30, 0.55);
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      border-radius: 4px;
+    }
+    .stat-block .stat-lbl {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .stat-block .stat-val {
+      font: 600 14px/1.2 var(--mono);
+      color: #f1f5f9;
+      letter-spacing: 1px;
+    }
+    .stat-block .stat-val .accent { color: var(--amber); }
+
+    /* ── Category Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+      padding-bottom: 16px;
+      border-bottom: 1px dashed rgba(99, 102, 241, 0.16);
+    }
+    .tab-btn {
+      padding: 9px 16px;
+      background: rgba(20, 14, 38, 0.55);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-dim);
+      font: 600 11px/1 var(--mono);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab-btn:hover {
+      color: #f1f5f9;
+      border-color: var(--border-strong);
+      background: rgba(99, 102, 241, 0.08);
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(56, 189, 248, 0.12));
+      border-color: var(--sky);
+      color: #f0f9ff;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.22);
+    }
+    .tab-btn .tab-count {
+      font-size: 10px;
+      color: var(--text-muted);
+      padding: 2px 6px;
+      background: rgba(15, 23, 42, 0.7);
+      border-radius: 999px;
+      letter-spacing: 1px;
+    }
+    .tab-btn.active .tab-count { color: var(--sky); }
+
+    /* ── Achievement Grid ── */
+    .ach-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .ach-card {
+      position: relative;
+      padding: 18px 16px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-card-locked);
+      min-height: 188px;
+      overflow: hidden;
+      transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+      will-change: transform;
+    }
+    .ach-card .ach-icon {
+      font-size: 38px;
+      line-height: 1;
+      text-align: center;
+      margin: 6px 0 12px;
+      filter: grayscale(1);
+      opacity: 0.45;
+      color: #475569;
+      transition: filter 0.22s ease, opacity 0.22s ease, color 0.22s ease;
+    }
+    .ach-card .ach-title {
+      font: 700 13px/1.25 var(--mono);
+      letter-spacing: 1px;
+      text-align: center;
+      margin-bottom: 6px;
+      color: #cbd5e1;
+      filter: blur(4px);
+      transition: filter 0.22s ease, color 0.22s ease;
+    }
+    .ach-card .ach-desc {
+      font-size: 11px;
+      line-height: 1.45;
+      text-align: center;
+      color: var(--text-muted);
+      letter-spacing: 0.4px;
+    }
+    .ach-card .ach-meta {
+      position: absolute;
+      bottom: 8px;
+      right: 10px;
+      font: 500 9px/1 var(--mono);
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+    .ach-card .ach-rarity {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      font-size: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 2px 5px;
+      border: 1px solid rgba(99, 102, 241, 0.22);
+      border-radius: 2px;
+      background: rgba(10, 6, 24, 0.7);
+    }
+
+    /* Locked: scanline overlay */
+    .ach-card.locked::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(99, 102, 241, 0.04) 0px,
+        rgba(99, 102, 241, 0.04) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      pointer-events: none;
+      opacity: 0.65;
+      mix-blend-mode: screen;
+    }
+    .ach-card.locked::after {
+      content: "";
+      position: absolute;
+      left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.35), transparent);
+      animation: scan 4.2s linear infinite;
+      pointer-events: none;
+      top: 0;
+    }
+    @keyframes scan {
+      0%   { top: -2%; opacity: 0; }
+      10%  { opacity: 0.9; }
+      90%  { opacity: 0.9; }
+      100% { top: 102%; opacity: 0; }
+    }
+
+    /* Unlocked: glow + clear text */
+    .ach-card.unlocked {
+      background: var(--bg-card);
+      border-color: rgba(56, 189, 248, 0.45);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.06), 0 0 22px rgba(56, 189, 248, 0.10);
+    }
+    .ach-card.unlocked .ach-icon {
+      filter: none;
+      opacity: 1;
+      color: var(--sky);
+      text-shadow: 0 0 14px rgba(56, 189, 248, 0.55);
+    }
+    .ach-card.unlocked .ach-title {
+      color: #f0f9ff;
+      filter: none;
+    }
+    .ach-card.unlocked .ach-desc { color: #cbd5e1; }
+    .ach-card.unlocked .ach-rarity {
+      color: var(--sky);
+      border-color: rgba(56, 189, 248, 0.45);
+      background: rgba(8, 47, 73, 0.55);
+    }
+    .ach-card.unlocked.rarity-rare .ach-rarity {
+      color: var(--violet);
+      border-color: rgba(167, 139, 250, 0.5);
+      background: rgba(46, 16, 101, 0.4);
+    }
+    .ach-card.unlocked.rarity-secret .ach-rarity {
+      color: var(--amber);
+      border-color: rgba(251, 191, 36, 0.55);
+      background: rgba(69, 26, 3, 0.5);
+    }
+    .ach-card.unlocked.rarity-rare {
+      border-color: rgba(167, 139, 250, 0.5);
+      box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.08), 0 0 22px rgba(167, 139, 250, 0.14);
+    }
+    .ach-card.unlocked.rarity-rare .ach-icon { color: var(--violet); text-shadow: 0 0 14px rgba(167, 139, 250, 0.6); }
+    .ach-card.unlocked.rarity-secret {
+      border-color: rgba(251, 191, 36, 0.55);
+      box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.10), 0 0 24px rgba(251, 191, 36, 0.20);
+    }
+    .ach-card.unlocked.rarity-secret .ach-icon { color: var(--amber); text-shadow: 0 0 16px rgba(251, 191, 36, 0.7); }
+
+    .ach-card.unlocked:hover {
+      transform: translateY(-3px);
+      animation: glow-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes glow-pulse {
+      0%, 100% { box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.10), 0 0 22px rgba(56, 189, 248, 0.18); }
+      50%      { box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.20), 0 0 36px rgba(56, 189, 248, 0.40); }
+    }
+    .ach-card.unlocked.rarity-rare:hover {
+      animation: glow-pulse-rare 1.6s ease-in-out infinite;
+    }
+    @keyframes glow-pulse-rare {
+      0%, 100% { box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.12), 0 0 22px rgba(167, 139, 250, 0.20); }
+      50%      { box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.24), 0 0 38px rgba(167, 139, 250, 0.46); }
+    }
+    .ach-card.unlocked.rarity-secret:hover {
+      animation: glow-pulse-secret 1.6s ease-in-out infinite;
+    }
+    @keyframes glow-pulse-secret {
+      0%, 100% { box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.14), 0 0 22px rgba(251, 191, 36, 0.24); }
+      50%      { box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.28), 0 0 40px rgba(251, 191, 36, 0.52); }
+    }
+
+    /* Empty state */
+    .empty-state {
+      grid-column: 1 / -1;
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--text-muted);
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      background: rgba(15, 12, 30, 0.4);
+    }
+    .empty-state .emoji { font-size: 32px; margin-bottom: 10px; }
+    .empty-state .title { font-size: 13px; color: var(--text-dim); letter-spacing: 1.5px; margin-bottom: 4px; }
+
+    /* Footer */
+    .room-footer {
+      margin-top: 36px;
+      padding-top: 18px;
+      border-top: 1px dashed rgba(99, 102, 241, 0.18);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .room-footer a {
+      color: var(--text-dim);
+      border-bottom: 1px dotted rgba(148, 163, 184, 0.4);
+      padding-bottom: 1px;
+    }
+    .room-footer a:hover { color: var(--sky); border-color: var(--sky); }
+
+    /* ── Responsive ── */
+    @media (max-width: 1080px) {
+      .ach-grid { grid-template-columns: repeat(3, 1fr); }
+      .progress-section { grid-template-columns: 1fr; }
+      .session-stats { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: 16px; }
+    }
+    @media (max-width: 720px) {
+      .wrap { padding: 22px 16px 80px; }
+      .ach-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .room-title { font-size: 20px; letter-spacing: 1px; }
+      .count-badge { width: 100%; text-align: left; }
+      .count-badge .count-num { font-size: 22px; }
+      .tabs { gap: 4px; }
+      .tab-btn { padding: 8px 12px; font-size: 10px; letter-spacing: 1.5px; }
+      .ach-card { min-height: 168px; padding: 16px 12px 14px; }
+      .ach-card .ach-icon { font-size: 32px; }
+    }
+    @media (max-width: 420px) {
+      .rarity-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .progress-fill::after,
+      .ach-card.locked::after,
+      .ach-card.unlocked:hover { animation: none !important; }
+      .ach-card { transition: none; }
+    }
   </style>
 </head>
 <body>
-  <h1>Achievements</h1>
-  <p id="count"></p>
-  <div id="grid"></div>
-  <p style="margin-top:24px"><a href="index.html">← Return to Approach</a></p>
+  <div class="wrap" id="trophy-wrap">
+    <header class="room-header">
+      <div class="room-title-block">
+        <div class="room-tag">MERIDIAN-7</div>
+        <h1 class="room-title">MERIDIAN-7 · ACHIEVEMENT ROOM</h1>
+        <div class="room-subtitle">Persistent record of every trophy earned across the deck.</div>
+      </div>
+      <div class="count-badge" id="count-badge" aria-live="polite">
+        <div class="count-num"><span id="count-unlocked">0</span><span class="of"> / 44</span></div>
+        <div class="count-label">UNLOCKED</div>
+      </div>
+    </header>
+
+    <section class="progress-section" aria-label="Progression summary">
+      <div class="progress-main">
+        <div class="progress-row">
+          <span class="label">OVERALL PROGRESS</span>
+          <span class="value"><span id="prog-unlocked">0</span> / <span id="prog-total">44</span></span>
+        </div>
+        <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="44" aria-valuenow="0">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-pct" id="progress-pct">0% complete</div>
+        <div class="rarity-grid" id="rarity-grid">
+          <div class="rarity-cell common">
+            <div class="num" id="rarity-common">0</div>
+            <div class="lbl">Common</div>
+          </div>
+          <div class="rarity-cell rare">
+            <div class="num" id="rarity-rare">0</div>
+            <div class="lbl">Rare</div>
+          </div>
+          <div class="rarity-cell secret">
+            <div class="num" id="rarity-secret">0</div>
+            <div class="lbl">Secret</div>
+          </div>
+        </div>
+      </div>
+      <div class="session-stats">
+        <div class="stat-block">
+          <div class="stat-lbl">SESSION EGGS FOUND</div>
+          <div class="stat-val"><span class="accent" id="egg-count">0</span> hidden tokens</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-lbl">PAGES VISITED</div>
+          <div class="stat-val"><span id="pages-visited">0</span> distinct decks</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-lbl">SESSION DURATION</div>
+          <div class="stat-val"><span id="session-mins">0</span> minutes</div>
+        </div>
+      </div>
+    </section>
+
+    <nav class="tabs" id="category-tabs" aria-label="Filter by category">
+      <button type="button" class="tab-btn active" data-category="all">All <span class="tab-count" id="tab-count-all">0</span></button>
+      <button type="button" class="tab-btn" data-category="navigation">Navigation <span class="tab-count" id="tab-count-navigation">0</span></button>
+      <button type="button" class="tab-btn" data-category="experiences">Experiences <span class="tab-count" id="tab-count-experiences">0</span></button>
+      <button type="button" class="tab-btn" data-category="secrets">Secrets <span class="tab-count" id="tab-count-secrets">0</span></button>
+      <button type="button" class="tab-btn" data-category="milestones">Milestones <span class="tab-count" id="tab-count-milestones">0</span></button>
+    </nav>
+
+    <main class="ach-grid" id="ach-grid" aria-live="polite">
+      <!-- cards rendered by trophy script -->
+    </main>
+
+    <footer class="room-footer">
+      <span>MERIDIAN-7 · ACHIEVEMENT MANIFEST · v15.2</span>
+      <a href="brain/index.html">↩ RETURN TO OBSERVATION DECK</a>
+    </footer>
+  </div>
+
+  <div id="deck-nav-root"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
   <script src="assets/siem-core.js"></script>
   <script src="assets/palette.js"></script>
   <script>
-  (function(){
-    SiemCore.bootPage('trophy');
-    var list=SiemCore.AchievementSystem.list();
-    document.getElementById('count').textContent=SiemCore.AchievementSystem.count()+' / '+list.length+' unlocked';
-    var grid=document.getElementById('grid');
-    list.forEach(function(a){
-      var el=document.createElement('div');
-      el.className='ach '+(a.unlocked?'unlocked':'locked');
-      el.innerHTML='<div class="ach-icon">'+(a.unlocked?a.icon:'?')+'</div><div class="ach-title">'+a.title+'</div><div class="ach-desc">'+a.desc+'</div>';
-      grid.appendChild(el);
-    });
-  })();
+    /* trophy.html — Achievement Room renderer */
+    (function () {
+      'use strict';
+
+      var TOTAL = 44;
+
+      /**
+       * Canonical roster of all 44 achievements with category + rarity metadata.
+       * Used as a fallback when SiemCore.AchievementSystem.list() definitions
+       * do not yet expose category/rarity fields. When the core eventually carries
+       * these fields, the values from list() take precedence.
+       */
+      var ROSTER = [
+        { id: 'visit_terminal',    title: 'Shell Access',       desc: 'Enter The Terminal.',                 icon: '▸', category: 'experiences', rarity: 'common' },
+        { id: 'visit_breach',      title: 'Red Team',           desc: 'Enter The Breach simulation.',        icon: '◈', category: 'experiences', rarity: 'common' },
+        { id: 'visit_network',     title: 'Ghost Walker',       desc: 'Enter The Ghost Network.',            icon: '◎', category: 'experiences', rarity: 'common' },
+        { id: 'visit_cipher',      title: 'Cryptographer',      desc: 'Enter The Cipher vault.',             icon: '⬢', category: 'experiences', rarity: 'common' },
+        { id: 'visit_sim',         title: 'War Games',          desc: 'Enter The Simulation.',               icon: '◉', category: 'experiences', rarity: 'common' },
+        { id: 'visit_intercept',   title: 'Interrogator',       desc: 'Enter The Interrogation Room.',       icon: '◫', category: 'experiences', rarity: 'common' },
+        { id: 'visit_forge',       title: 'Rule Smith',         desc: 'Enter The Forge.',                    icon: '⬛', category: 'experiences', rarity: 'common' },
+        { id: 'visit_archive',     title: 'Archivist',          desc: 'Enter The Deep Archive.',             icon: '▣', category: 'experiences', rarity: 'common' },
+        { id: 'visit_heist',       title: 'Inside Job',         desc: 'Enter The Heist.',                    icon: '◆', category: 'experiences', rarity: 'common' },
+        { id: 'visit_cartography', title: 'Cartographer',       desc: 'Enter The Cartography globe.',        icon: '◐', category: 'experiences', rarity: 'common' },
+        { id: 'visit_lab',         title: 'Lab Rat',            desc: 'Enter The Lab.',                      icon: '⬤', category: 'experiences', rarity: 'common' },
+        { id: 'visit_memorial',    title: 'Remembrance',        desc: 'Enter The Memorial.',                 icon: '◌', category: 'experiences', rarity: 'common' },
+        { id: 'visit_resonance',   title: 'Resonance',          desc: 'Enter The Resonance board.',          icon: '♫', category: 'experiences', rarity: 'common' },
+        { id: 'visit_signal',      title: 'Signal Lock',        desc: 'Enter The Signal Room.',              icon: '◓', category: 'experiences', rarity: 'common' },
+        { id: 'visit_warroom',     title: 'War Room',           desc: 'Enter The War Room.',                 icon: '◒', category: 'experiences', rarity: 'common' },
+        { id: 'visit_brain',       title: 'Observation Deck',   desc: 'Visit the brain deck.',               icon: '◑', category: 'experiences', rarity: 'common' },
+        { id: 'first_boot',        title: 'Cold Start',         desc: 'Boot the deck for the first time.',   icon: '⬡', category: 'milestones', rarity: 'common' },
+        { id: 'explorer',          title: 'Full Tour',          desc: 'Visit 10 distinct deck pages.',       icon: '✦', category: 'milestones', rarity: 'rare' },
+        { id: 'palette_open',      title: 'Command Line',       desc: 'Open the global command palette.',    icon: '⌘', category: 'milestones', rarity: 'common' },
+        { id: 'breach_win',        title: 'Containment',        desc: 'Complete a breach scenario.',         icon: '✓', category: 'milestones', rarity: 'rare' },
+        { id: 'cipher_alpha',      title: 'Alpha Chamber',      desc: 'Solve the ALPHA cipher puzzle.',      icon: 'Α', category: 'milestones', rarity: 'rare' },
+        { id: 'cipher_vault',      title: 'Vault Cracked',      desc: 'Unlock the OMEGA classified brief.',  icon: 'Ω', category: 'milestones', rarity: 'secret' },
+        { id: 'egg_secret',        title: 'SIEM_SECRET',        desc: 'Discover the SIEM_SECRET easter egg.', icon: '★', category: 'secrets',    rarity: 'secret' },
+        { id: 'egg_habibi',        title: 'man habibi',         desc: 'Read the habibi manual page.',        icon: '☆', category: 'secrets',    rarity: 'secret' },
+        { id: 'deck_transition',   title: 'Phase Shift',        desc: 'Cycle deck transition styles.',       icon: '↻', category: 'milestones', rarity: 'rare' },
+        { id: 'nav-terminal',      title: 'Terminal Linked',    desc: 'Route to The Terminal via palette.',  icon: '▸', category: 'navigation', rarity: 'common' },
+        { id: 'nav-breach',        title: 'Breach Linked',      desc: 'Route to The Breach via palette.',    icon: '◈', category: 'navigation', rarity: 'common' },
+        { id: 'nav-network',       title: 'Network Linked',     desc: 'Route to Ghost Network via palette.', icon: '◎', category: 'navigation', rarity: 'common' },
+        { id: 'nav-cipher',        title: 'Cipher Linked',      desc: 'Route to The Cipher via palette.',    icon: '⬢', category: 'navigation', rarity: 'common' },
+        { id: 'nav-sim',           title: 'Simulation Linked',  desc: 'Route to The Simulation via palette.', icon: '◉', category: 'navigation', rarity: 'common' },
+        { id: 'nav-intercept',     title: 'Intercept Linked',   desc: 'Route to Interrogation via palette.', icon: '◫', category: 'navigation', rarity: 'common' },
+        { id: 'nav-forge',         title: 'Forge Linked',       desc: 'Route to The Forge via palette.',     icon: '⬛', category: 'navigation', rarity: 'common' },
+        { id: 'nav-archive',       title: 'Archive Linked',     desc: 'Route to Deep Archive via palette.',  icon: '▣', category: 'navigation', rarity: 'common' },
+        { id: 'nav-heist',         title: 'Heist Linked',       desc: 'Route to The Heist via palette.',     icon: '◆', category: 'navigation', rarity: 'common' },
+        { id: 'nav-cartography',   title: 'Cartography Linked', desc: 'Route to Cartography via palette.',   icon: '◐', category: 'navigation', rarity: 'common' },
+        { id: 'nav-lab',           title: 'Lab Linked',         desc: 'Route to The Lab via palette.',       icon: '⬤', category: 'navigation', rarity: 'common' },
+        { id: 'nav-memorial',      title: 'Memorial Linked',    desc: 'Route to The Memorial via palette.',  icon: '◌', category: 'navigation', rarity: 'common' },
+        { id: 'nav-resonance',     title: 'Resonance Linked',   desc: 'Route to The Resonance via palette.', icon: '♫', category: 'navigation', rarity: 'common' },
+        { id: 'nav-right',         title: 'Signal Linked',      desc: 'Route to The Signal Room via palette.', icon: '◓', category: 'navigation', rarity: 'common' },
+        { id: 'nav-left',          title: 'War Room Linked',    desc: 'Route to The War Room via palette.',  icon: '◒', category: 'navigation', rarity: 'common' },
+        { id: 'nav-brain',         title: 'Deck Linked',        desc: 'Route to Observation Deck via palette.', icon: '◑', category: 'navigation', rarity: 'common' },
+        { id: 'nav-landing',       title: 'Approach Linked',    desc: 'Route to Approach Vector via palette.', icon: '⌂', category: 'navigation', rarity: 'common' },
+        { id: 'nav-read',          title: 'Reader Linked',      desc: 'Route to Documentation Reader.',      icon: '📖', category: 'navigation', rarity: 'common' },
+        { id: 'nav-trophy',        title: 'Trophy Linked',      desc: 'Route to the Achievement Room.',      icon: '🏆', category: 'navigation', rarity: 'common' },
+        { id: 'nav-motd',          title: 'Briefing Linked',    desc: 'Route to the Daily Briefing.',        icon: '📡', category: 'navigation', rarity: 'common' }
+      ];
+
+      var ROSTER_BY_ID = {};
+      ROSTER.forEach(function (r) { ROSTER_BY_ID[r.id] = r; });
+
+      function inferCategory(id) {
+        if (typeof id !== 'string') return 'milestones';
+        if (id.indexOf('nav-') === 0)      return 'navigation';
+        if (id.indexOf('visit_') === 0)    return 'experiences';
+        if (id.indexOf('egg_') === 0)      return 'secrets';
+        return 'milestones';
+      }
+
+      function inferRarity(id) {
+        if (typeof id !== 'string') return 'common';
+        if (id.indexOf('egg_') === 0) return 'secret';
+        if (id.indexOf('cipher_vault') === 0) return 'secret';
+        if (id.indexOf('cipher_') === 0) return 'rare';
+        if (id === 'breach_win' || id === 'explorer' || id === 'deck_transition') return 'rare';
+        return 'common';
+      }
+
+      function readRoster() {
+        var fromCore = [];
+        try {
+          if (window.SiemCore && window.SiemCore.AchievementSystem && typeof window.SiemCore.AchievementSystem.list === 'function') {
+            fromCore = window.SiemCore.AchievementSystem.list() || [];
+          }
+        } catch (err) {
+          console.warn('[trophy] AchievementSystem.list() failed', err);
+        }
+
+        var coreById = {};
+        fromCore.forEach(function (a) { if (a && a.id) coreById[a.id] = a; });
+
+        var merged = ROSTER.map(function (r) {
+          var core = coreById[r.id];
+          var category = (core && core.category) || r.category || inferCategory(r.id);
+          var rarity   = (core && core.rarity)   || r.rarity   || inferRarity(r.id);
+          return {
+            id: r.id,
+            title: (core && core.title) || r.title,
+            desc: (core && core.desc) || r.desc,
+            icon: (core && core.icon) || r.icon,
+            category: category,
+            rarity: rarity,
+            unlocked: !!(core && core.unlocked),
+            at: (core && core.at) || null
+          };
+        });
+
+        // Append any extra defs the core declares that aren't in our roster.
+        fromCore.forEach(function (a) {
+          if (!a || !a.id || ROSTER_BY_ID[a.id]) return;
+          merged.push({
+            id: a.id,
+            title: a.title || a.id,
+            desc: a.desc || '',
+            icon: a.icon || '◇',
+            category: a.category || inferCategory(a.id),
+            rarity: a.rarity || inferRarity(a.id),
+            unlocked: !!a.unlocked,
+            at: a.at || null
+          });
+        });
+        return merged;
+      }
+
+      function formatDate(ts) {
+        if (!ts) return '';
+        try {
+          var d = new Date(ts);
+          var y = d.getFullYear();
+          var m = String(d.getMonth() + 1).padStart(2, '0');
+          var day = String(d.getDate()).padStart(2, '0');
+          var hh = String(d.getHours()).padStart(2, '0');
+          var mm = String(d.getMinutes()).padStart(2, '0');
+          return y + '-' + m + '-' + day + ' ' + hh + ':' + mm;
+        } catch (_) {
+          return '';
+        }
+      }
+
+      function escHtml(str) {
+        return String(str == null ? '' : str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function buildCard(a) {
+        var locked = !a.unlocked;
+        var rarity = a.rarity || 'common';
+        var classes = ['ach-card', locked ? 'locked' : 'unlocked', 'rarity-' + rarity];
+        var rarityLabel = rarity.charAt(0).toUpperCase() + rarity.slice(1);
+        var meta = locked ? 'LOCKED' : (formatDate(a.at) || 'UNLOCKED');
+        var icon = locked ? '?' : a.icon;
+        var title = locked ? a.title : a.title;
+        var desc = locked ? '???' : a.desc;
+        var html =
+          '<article class="' + classes.join(' ') + '" data-id="' + escHtml(a.id) + '" data-category="' + escHtml(a.category) + '" data-rarity="' + escHtml(rarity) + '">' +
+            '<span class="ach-rarity">' + escHtml(rarityLabel) + '</span>' +
+            '<div class="ach-icon">' + escHtml(icon) + '</div>' +
+            '<div class="ach-title">' + escHtml(title) + '</div>' +
+            '<div class="ach-desc">' + escHtml(desc) + '</div>' +
+            '<div class="ach-meta">' + escHtml(meta) + '</div>' +
+          '</article>';
+        return html;
+      }
+
+      var state = {
+        roster: [],
+        category: 'all',
+        animated: false
+      };
+
+      function applyFilter() {
+        var grid = document.getElementById('ach-grid');
+        if (!grid) return;
+        var filtered = state.category === 'all'
+          ? state.roster
+          : state.roster.filter(function (a) { return a.category === state.category; });
+
+        if (!filtered.length) {
+          grid.innerHTML =
+            '<div class="empty-state">' +
+              '<div class="emoji">◇</div>' +
+              '<div class="title">NO ENTRIES IN THIS CATEGORY</div>' +
+              '<div>Roster will populate as the core registers more trophies.</div>' +
+            '</div>';
+          return;
+        }
+
+        var html = filtered.map(buildCard).join('');
+        grid.innerHTML = html;
+        animateGridIn();
+      }
+
+      function animateGridIn() {
+        var cards = document.querySelectorAll('#ach-grid .ach-card');
+        if (!cards.length) return;
+        var reduce = !!(window.SiemCore && window.SiemCore.REDUCED_MOTION);
+        if (reduce || typeof window.gsap === 'undefined') {
+          for (var i = 0; i < cards.length; i++) {
+            cards[i].style.opacity = '1';
+            cards[i].style.transform = 'none';
+          }
+          return;
+        }
+        try {
+          window.gsap.from(cards, {
+            opacity: 0,
+            y: 20,
+            duration: 0.55,
+            ease: 'power2.out',
+            stagger: 0.03,
+            clearProps: 'opacity,transform,y'
+          });
+        } catch (err) {
+          for (var j = 0; j < cards.length; j++) {
+            cards[j].style.opacity = '1';
+            cards[j].style.transform = 'none';
+          }
+        }
+      }
+
+      function updateCounts() {
+        var roster = state.roster;
+        var unlocked = 0;
+        var rarity = { common: 0, rare: 0, secret: 0 };
+        var byCat = { navigation: 0, experiences: 0, secrets: 0, milestones: 0 };
+        roster.forEach(function (a) {
+          if (a.unlocked) {
+            unlocked++;
+            if (rarity[a.rarity] !== undefined) rarity[a.rarity]++;
+          }
+          if (byCat[a.category] !== undefined) byCat[a.category]++;
+        });
+
+        var total = TOTAL;
+        var setText = function (id, val) {
+          var el = document.getElementById(id);
+          if (el) el.textContent = String(val);
+        };
+        setText('count-unlocked', unlocked);
+        setText('prog-unlocked', unlocked);
+        setText('prog-total', total);
+        setText('rarity-common', rarity.common);
+        setText('rarity-rare', rarity.rare);
+        setText('rarity-secret', rarity.secret);
+        setText('tab-count-all', roster.length);
+        setText('tab-count-navigation', byCat.navigation);
+        setText('tab-count-experiences', byCat.experiences);
+        setText('tab-count-secrets', byCat.secrets);
+        setText('tab-count-milestones', byCat.milestones);
+
+        var pct = total > 0 ? Math.round((unlocked / total) * 100) : 0;
+        var fill = document.getElementById('progress-fill');
+        if (fill) fill.style.width = Math.min(100, pct) + '%';
+        var pctLabel = document.getElementById('progress-pct');
+        if (pctLabel) pctLabel.textContent = pct + '% complete';
+        var bar = document.querySelector('.progress-bar');
+        if (bar) {
+          bar.setAttribute('aria-valuenow', String(unlocked));
+          bar.setAttribute('aria-valuemax', String(total));
+        }
+      }
+
+      function updateSessionStats() {
+        var eggs = 0, mins = 0, visited = 0;
+        try {
+          if (window.SiemCore && window.SiemCore.SessionState) {
+            eggs = window.SiemCore.SessionState.get('eggCount', 0) || 0;
+            if (typeof window.SiemCore.SessionState.sessionMinutes === 'function') {
+              mins = window.SiemCore.SessionState.sessionMinutes();
+            }
+            var v = window.SiemCore.SessionState.get('visited', []);
+            if (Array.isArray(v)) visited = v.length;
+          }
+        } catch (err) {
+          console.warn('[trophy] session stats failed', err);
+        }
+        var setText = function (id, val) {
+          var el = document.getElementById(id);
+          if (el) el.textContent = String(val);
+        };
+        setText('egg-count', eggs);
+        setText('session-mins', mins);
+        setText('pages-visited', visited);
+      }
+
+      function bindTabs() {
+        var tabs = document.querySelectorAll('#category-tabs .tab-btn');
+        for (var i = 0; i < tabs.length; i++) {
+          tabs[i].addEventListener('click', function (ev) {
+            var btn = ev.currentTarget;
+            var cat = btn.getAttribute('data-category') || 'all';
+            for (var j = 0; j < tabs.length; j++) tabs[j].classList.remove('active');
+            btn.classList.add('active');
+            state.category = cat;
+            applyFilter();
+          });
+        }
+      }
+
+      function refreshAll() {
+        state.roster = readRoster();
+        updateCounts();
+        updateSessionStats();
+        applyFilter();
+      }
+
+      function bootstrap() {
+        try {
+          if (window.SiemCore && typeof window.SiemCore.bootPage === 'function') {
+            window.SiemCore.bootPage('trophy');
+          }
+        } catch (err) {
+          console.warn('[trophy] bootPage failed', err);
+        }
+
+        try {
+          if (window.SiemCore && window.SiemCore.AchievementSystem && typeof window.SiemCore.AchievementSystem.check === 'function') {
+            window.SiemCore.AchievementSystem.check('nav-trophy');
+          }
+        } catch (err) {
+          console.warn('[trophy] check(nav-trophy) failed', err);
+        }
+
+        bindTabs();
+        refreshAll();
+
+        document.addEventListener('siem-achievement', function () {
+          refreshAll();
+        });
+        document.addEventListener('siem-broadcast', function (ev) {
+          if (ev && ev.detail && ev.detail.type === 'achievement') refreshAll();
+        });
+        document.addEventListener('visibilitychange', function () {
+          if (!document.hidden) updateSessionStats();
+        });
+        setInterval(updateSessionStats, 30000);
+
+        // Re-run stagger once GSAP arrives if it loaded after first paint.
+        var gsapWait = 0;
+        var gsapPoll = setInterval(function () {
+          gsapWait += 1;
+          if (window.gsap) {
+            clearInterval(gsapPoll);
+            if (!state.animated) {
+              state.animated = true;
+              animateGridIn();
+            }
+          } else if (gsapWait > 25) {
+            clearInterval(gsapPoll);
+          }
+        }, 120);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootstrap);
+      } else {
+        bootstrap();
+      }
+    })();
   </script>
+  <script src="assets/deck-nav.js"></script>
 </body>
 </html>

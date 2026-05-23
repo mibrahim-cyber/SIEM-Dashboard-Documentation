@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-deck-page="motd">
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" href="favicon.ico" sizes="any" />
@@ -7,7 +7,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <meta name="description" content="Daily threat summary and analyst tips from Meridian-7 SOC." />
+  <meta name="description" content="Meridian-7 cinematic daily briefing — system status, threat intelligence, analyst bulletins, and quick navigation." />
   <meta property="og:title" content="Daily Briefing — HABIBI-SIEM" />
   <meta property="og:description" content="Daily threat summary and analyst tips from Meridian-7 SOC." />
   <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/motd-og.png" />
@@ -17,33 +17,930 @@
   <meta name="twitter:description" content="Daily threat summary and analyst tips from Meridian-7 SOC." />
   <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/motd-og.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Daily Briefing — Meridian-7</title>
+  <title>SYSTEM BROADCAST — Meridian-7 Daily Briefing</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/palette.css" />
+  <link rel="stylesheet" href="assets/deck-nav.css" />
   <style>
-    body { min-height: 100vh; margin: 0; background: #020617; color: #cbd5e1; font: 13px/1.7 "IBM Plex Mono", Consolas, monospace; display: flex; align-items: center; justify-content: center; padding: 24px; }
-    .card { max-width: 520px; border: 1px solid rgba(56,189,248,.35); background: rgba(8,4,18,.98); padding: 28px; border-radius: 6px; }
-    h1 { font-size: 12px; letter-spacing: 4px; color: #38bdf8; margin-bottom: 16px; }
-    a { color: #a78bfa; }
+    :root {
+      --bg: #030a04;
+      --bg-soft: rgba(3, 10, 4, 0.94);
+      --panel: rgba(8, 22, 12, 0.78);
+      --phosphor: #39ff14;
+      --phosphor-soft: rgba(57, 255, 20, 0.65);
+      --phosphor-dim: rgba(57, 255, 20, 0.32);
+      --phosphor-faint: rgba(57, 255, 20, 0.14);
+      --muted: #6b7280;
+      --grid-line: rgba(57, 255, 20, 0.07);
+      --accent-blue: #38bdf8;
+      --accent-amber: #fbbf24;
+      --accent-amber-soft: rgba(251, 191, 36, 0.18);
+      --accent-red: #f87171;
+      --accent-red-soft: rgba(248, 113, 113, 0.16);
+      --header-h: 44px;
+      --soft-border: 1px solid rgba(57, 255, 20, 0.22);
+      --hard-border: 1px solid rgba(57, 255, 20, 0.38);
+      --boot-shadow: 0 0 22px rgba(57, 255, 20, 0.35);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      background: var(--bg);
+      font-family: "IBM Plex Mono", Consolas, monospace;
+      color: var(--phosphor);
+    }
+
+    body {
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding-top: var(--header-h);
+      background:
+        radial-gradient(ellipse at top, rgba(57, 255, 20, 0.06), transparent 55%),
+        linear-gradient(180deg, #020806 0%, #030a04 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      background: linear-gradient(180deg, rgba(57, 255, 20, 0.04) 0%, transparent 38%, rgba(0, 0, 0, 0.46) 100%);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.22) 2px,
+        rgba(0, 0, 0, 0.22) 4px
+      );
+    }
+
+    #broadcast-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-h);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 18px;
+      background: var(--bg-soft);
+      border-bottom: var(--soft-border);
+      z-index: 10;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-size: 10px;
+      backdrop-filter: blur(4px);
+    }
+
+    #live-led {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--phosphor);
+      box-shadow: 0 0 12px var(--phosphor);
+      animation: ledPulse 1.8s ease infinite;
+      flex: 0 0 auto;
+    }
+
+    #host-label { color: var(--phosphor); }
+    #version-label { color: #16a34a; }
+
+    #classification-pill {
+      padding: 3px 10px;
+      border: 1px solid var(--accent-amber);
+      color: var(--accent-amber);
+      background: var(--accent-amber-soft);
+      letter-spacing: 3px;
+      font-size: 9px;
+      font-weight: 700;
+      animation: classBlink 4s ease infinite;
+    }
+
+    #utc-clock {
+      margin-left: auto;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    main.briefing {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 36px 24px 80px;
+      position: relative;
+      z-index: 4;
+    }
+
+    /* ── Banner / Header block ─────────────────────────────── */
+    .banner {
+      border: var(--hard-border);
+      background: var(--panel);
+      padding: 28px 28px 24px;
+      margin-bottom: 32px;
+      box-shadow: var(--boot-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .banner::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 32px 32px,
+        linear-gradient(0deg, var(--grid-line) 1px, transparent 1px) 0 0 / 32px 32px;
+      opacity: 0.55;
+    }
+
+    .banner-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 24px;
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--phosphor-soft);
+      margin-bottom: 14px;
+      position: relative;
+    }
+
+    .banner-meta span strong { color: var(--accent-amber); font-weight: 500; }
+
+    .banner-title {
+      font-size: clamp(22px, 3.4vw, 36px);
+      font-weight: 700;
+      letter-spacing: 4px;
+      line-height: 1.2;
+      color: var(--phosphor);
+      text-shadow: 0 0 14px rgba(57, 255, 20, 0.45);
+      position: relative;
+      min-height: 1.2em;
+    }
+
+    .banner-title .caret {
+      display: inline-block;
+      width: 0.55em;
+      margin-left: 4px;
+      color: var(--phosphor);
+      animation: caretBlink 1s steps(1) infinite;
+    }
+
+    .banner-sub {
+      margin-top: 14px;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      color: var(--phosphor-soft);
+      position: relative;
+    }
+
+    .banner-sub strong { color: var(--accent-amber); }
+
+    /* ── Section scaffold ─────────────────────────────── */
+    section.brief-section {
+      margin-bottom: 34px;
+      border-left: 2px solid var(--phosphor-dim);
+      padding: 4px 0 4px 18px;
+      position: relative;
+    }
+
+    section.brief-section::before {
+      content: "";
+      position: absolute;
+      left: -5px;
+      top: 8px;
+      width: 8px;
+      height: 8px;
+      background: var(--phosphor);
+      box-shadow: 0 0 10px var(--phosphor);
+      transform: rotate(45deg);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .section-tag {
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--muted);
+    }
+
+    .section-title {
+      font-size: 16px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--phosphor);
+      text-shadow: 0 0 8px rgba(57, 255, 20, 0.35);
+    }
+
+    /* ── Section 1 · Stats ─────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .stat {
+      border: var(--soft-border);
+      background: var(--panel);
+      padding: 18px 18px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--phosphor);
+      box-shadow: 0 0 12px var(--phosphor);
+    }
+
+    .stat.warn::after { background: var(--accent-amber); box-shadow: 0 0 12px var(--accent-amber); }
+    .stat.crit::after { background: var(--accent-red); box-shadow: 0 0 12px var(--accent-red); }
+
+    .stat-label {
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--phosphor);
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 0 10px rgba(57, 255, 20, 0.35);
+    }
+
+    .stat.warn .stat-value { color: var(--accent-amber); text-shadow: 0 0 10px rgba(251, 191, 36, 0.45); }
+    .stat.crit .stat-value { color: var(--accent-red); text-shadow: 0 0 10px rgba(248, 113, 113, 0.45); }
+
+    .stat-foot {
+      margin-top: 8px;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: var(--phosphor-soft);
+      text-transform: uppercase;
+    }
+
+    .stat.crit .stat-foot { color: var(--accent-red); }
+    .stat.warn .stat-foot { color: var(--accent-amber); }
+
+    /* ── Section 2 · Threat brief paragraph ─────────────── */
+    .threat-brief {
+      border: var(--soft-border);
+      background: var(--panel);
+      padding: 20px 22px;
+      font-size: 13px;
+      line-height: 1.85;
+      color: #d7f5cc;
+      letter-spacing: 0.4px;
+    }
+
+    .threat-brief strong { color: var(--accent-amber); font-weight: 500; }
+    .threat-brief em { color: var(--accent-blue); font-style: normal; }
+    .threat-brief .crit { color: var(--accent-red); font-weight: 500; }
+
+    .threat-brief .signoff {
+      display: block;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* ── Section 3 · Analyst notes ─────────────────────── */
+    .notes {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .note {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 18px;
+      align-items: start;
+      border: var(--soft-border);
+      background: rgba(8, 22, 12, 0.55);
+      padding: 14px 18px;
+      transition: border-color 200ms ease, transform 200ms ease;
+    }
+
+    .note:hover {
+      border-color: var(--phosphor-soft);
+      transform: translateX(2px);
+    }
+
+    .note-stamp {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--accent-blue);
+      text-transform: uppercase;
+      padding-top: 2px;
+    }
+
+    .note-body {
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #d7f5cc;
+    }
+
+    .note-body .tag {
+      display: inline-block;
+      padding: 1px 8px;
+      margin-right: 8px;
+      font-size: 9px;
+      letter-spacing: 2px;
+      border: 1px solid var(--phosphor-dim);
+      color: var(--phosphor);
+      text-transform: uppercase;
+    }
+
+    .note-body .tag.warn { color: var(--accent-amber); border-color: var(--accent-amber); }
+    .note-body .tag.crit { color: var(--accent-red); border-color: var(--accent-red); }
+
+    /* ── Section 4 · Navigation grid ───────────────────── */
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 10px;
+    }
+
+    .nav-tile {
+      display: block;
+      text-decoration: none;
+      border: var(--soft-border);
+      background: rgba(8, 22, 12, 0.5);
+      padding: 12px 14px;
+      color: var(--phosphor);
+      transition: background 180ms ease, border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-tile::before {
+      content: ">";
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--phosphor-dim);
+      font-weight: 700;
+      transition: color 180ms ease, transform 180ms ease;
+    }
+
+    .nav-tile:hover,
+    .nav-tile:focus-visible {
+      background: rgba(57, 255, 20, 0.08);
+      border-color: var(--phosphor);
+      box-shadow: 0 0 14px rgba(57, 255, 20, 0.18);
+      outline: none;
+    }
+
+    .nav-tile:hover::before,
+    .nav-tile:focus-visible::before {
+      color: var(--phosphor);
+      transform: translateY(-50%) translateX(2px);
+    }
+
+    .nav-tile .tile-tag {
+      display: block;
+      font-size: 9px;
+      letter-spacing: 2.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .nav-tile .tile-title {
+      display: block;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      color: var(--phosphor);
+      text-transform: uppercase;
+    }
+
+    /* ── Section 5 · Keyboard reference table ──────────── */
+    .keys-wrap {
+      border: var(--soft-border);
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .keys-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+
+    .keys-table th,
+    .keys-table td {
+      padding: 10px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--phosphor-faint);
+    }
+
+    .keys-table tr:last-child td { border-bottom: none; }
+
+    .keys-table th {
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: rgba(57, 255, 20, 0.04);
+    }
+
+    .keys-table td.key {
+      width: 160px;
+      color: var(--accent-amber);
+      letter-spacing: 1.5px;
+      font-weight: 500;
+    }
+
+    .keys-table td .kbd {
+      display: inline-block;
+      padding: 2px 8px;
+      border: 1px solid var(--accent-amber);
+      background: var(--accent-amber-soft);
+      color: var(--accent-amber);
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      margin-right: 6px;
+    }
+
+    .keys-table td.desc { color: #d7f5cc; }
+
+    /* ── Footer ────────────────────────────────────────── */
+    .briefing-foot {
+      margin-top: 36px;
+      padding-top: 18px;
+      border-top: 1px solid var(--phosphor-faint);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .briefing-foot a {
+      color: var(--accent-blue);
+      text-decoration: none;
+    }
+
+    .briefing-foot a:hover { color: var(--phosphor); }
+
+    /* ── Animations ────────────────────────────────────── */
+    @keyframes ledPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    @keyframes classBlink {
+      0%, 92%, 100% { opacity: 1; }
+      94%, 98% { opacity: 0.35; }
+    }
+
+    @keyframes caretBlink {
+      50% { opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #live-led,
+      #classification-pill,
+      .banner-title .caret { animation: none; }
+    }
+
+    @media (max-width: 700px) {
+      main.briefing { padding: 24px 14px 60px; }
+      .banner { padding: 20px 18px 18px; }
+      .note { grid-template-columns: 1fr; gap: 6px; }
+      .note-stamp { padding-top: 0; }
+      #broadcast-header { font-size: 9px; gap: 10px; padding: 0 12px; }
+      #classification-pill { display: none; }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1 id="motd-date">DAILY BRIEFING</h1>
-    <p id="motd-body">Loading threat summary…</p>
-    <p style="margin-top:20px"><a href="index.html">← Return to Approach Vector</a> · <a href="terminal.html">Open Terminal</a></p>
-  </div>
+  <header id="broadcast-header" aria-label="Broadcast header">
+    <span id="live-led" aria-hidden="true"></span>
+    <span id="host-label">meridian-7-broadcast</span>
+    <span id="version-label">v15.2</span>
+    <span id="classification-pill">CLASSIFICATION · INTERNAL</span>
+    <span id="utc-clock" aria-live="off">--:--:-- UTC</span>
+  </header>
+
+  <main class="briefing" id="briefing-root">
+    <div class="banner" aria-labelledby="banner-title">
+      <div class="banner-meta">
+        <span>BROADCAST · <strong id="broadcast-id">MTD-0000</strong></span>
+        <span>STAMP · <strong id="broadcast-stamp">----.--.-- --:--:-- UTC</strong></span>
+        <span>CHANNEL · <strong>SOC-PRIMARY</strong></span>
+        <span>CLASSIFICATION · <strong>INTERNAL</strong></span>
+      </div>
+      <h1 class="banner-title" id="banner-title">
+        <span id="typewriter-text"></span><span class="caret" aria-hidden="true">█</span>
+      </h1>
+      <p class="banner-sub">
+        Standing transmission from <strong>MERIDIAN-7</strong> SOC.
+        Read the briefing before opening your queue.
+        Acknowledgement is implicit on first key event.
+      </p>
+    </div>
+
+    <section class="brief-section" id="sec-status" aria-labelledby="sec-status-title">
+      <div class="section-head">
+        <span class="section-tag">[ § 01 ]</span>
+        <h2 class="section-title" id="sec-status-title">System Status</h2>
+        <span class="section-tag">// live counters · rolling 60s</span>
+      </div>
+      <div class="stats-grid" id="stats-grid">
+        <article class="stat" data-stat="rules">
+          <div class="stat-label">Active Rules</div>
+          <div class="stat-value" data-counter data-target="847" data-suffix="">0</div>
+          <div class="stat-foot">policy bundle v15.2.0</div>
+        </article>
+        <article class="stat" data-stat="ingest">
+          <div class="stat-label">Ingest Rate</div>
+          <div class="stat-value" data-counter data-target="12400" data-suffix=" eps">0 eps</div>
+          <div class="stat-foot">queue depth nominal · 12</div>
+        </article>
+        <article class="stat crit" data-stat="alert">
+          <div class="stat-label">Last Alert</div>
+          <div class="stat-value">CRIT</div>
+          <div class="stat-foot">brute-force · 3 min ago</div>
+        </article>
+        <article class="stat" data-stat="cluster">
+          <div class="stat-label">Cluster Health</div>
+          <div class="stat-value">NOMINAL</div>
+          <div class="stat-foot">7/7 nodes · replication green</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="brief-section" id="sec-threat" aria-labelledby="sec-threat-title">
+      <div class="section-head">
+        <span class="section-tag">[ § 02 ]</span>
+        <h2 class="section-title" id="sec-threat-title">Today's Threat Brief</h2>
+        <span class="section-tag">// authored by SOC duty officer</span>
+      </div>
+      <div class="threat-brief">
+        Overnight telemetry showed a <strong>sustained credential stuffing wave</strong>
+        against the public edge API, sourced primarily from rotating residential
+        ranges in <em>AS14061</em> and <em>AS396982</em>. Volume crested at
+        roughly <strong>3.4k attempts per minute</strong> between 02:10 and 04:45 UTC
+        before our adaptive rate limiter throttled the offending JA3 fingerprints.
+        Three accounts triggered <span class="crit">CRITICAL brute-force</span> rules
+        and were preemptively rotated; one of those accounts later showed an
+        anomalous OAuth grant from an unfamiliar device — that grant has been revoked
+        and the session token blacklisted. Beyond the noise, the lateral-movement
+        detectors flagged a single SMB enumeration burst inside the
+        <em>finance-east VLAN</em> that resolved cleanly to a scheduled vulnerability
+        scan, but the pattern is close enough to known TTPs that I want eyes on the
+        next two shifts. Priority for the day: triage the brute-force fallout, watch
+        for follow-on MFA fatigue prompts, and complete the
+        <strong>INC-2026-0447</strong> isolation validation before standup.
+        <span class="signoff">— Meridian-7 SOC · duty officer log</span>
+      </div>
+    </section>
+
+    <section class="brief-section" id="sec-notes" aria-labelledby="sec-notes-title">
+      <div class="section-head">
+        <span class="section-tag">[ § 03 ]</span>
+        <h2 class="section-title" id="sec-notes-title">Analyst Notes</h2>
+        <span class="section-tag">// 3 bulletins</span>
+      </div>
+      <div class="notes">
+        <article class="note">
+          <div class="note-stamp">11:07 UTC</div>
+          <div class="note-body">
+            <span class="tag crit">BULLETIN-01</span>
+            DNS tunnel detector confidence raised from <strong>0.86 → 0.93</strong> after the
+            parser patch on rules-engine. Re-baseline the suppression list for
+            <em>finance-east</em> and <em>edge-svc</em> before EOD; the previous tuning is
+            now over-aggressive for known beacon intervals.
+          </div>
+        </article>
+        <article class="note">
+          <div class="note-stamp">10:42 UTC</div>
+          <div class="note-body">
+            <span class="tag warn">BULLETIN-02</span>
+            Ticketing integration is still in <em>degraded</em> state — alerts above HIGH
+            are being queued locally with a 90s replay window. If your dashboard shows
+            a missing ticket ID, run <em>siemctl replay --since 30m</em> on the relay
+            host before opening a manual incident.
+          </div>
+        </article>
+        <article class="note">
+          <div class="note-stamp">09:58 UTC</div>
+          <div class="note-body">
+            <span class="tag">BULLETIN-03</span>
+            SOC manager requested a <strong>timeline export</strong> for INC-2026-0447
+            before end of shift. Pull the artifact set from The Archive, attach the
+            decrypted manifest from The Cipher, and stage it under
+            <em>/exports/2026-05-23/</em>. Memorial entry already drafted — needs sign-off.
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="brief-section" id="sec-nav" aria-labelledby="sec-nav-title">
+      <div class="section-head">
+        <span class="section-tag">[ § 04 ]</span>
+        <h2 class="section-title" id="sec-nav-title">Navigation · Quick Links</h2>
+        <span class="section-tag">// 17 experience surfaces</span>
+      </div>
+      <nav class="nav-grid" aria-label="Quick links to experience surfaces">
+        <a class="nav-tile" href="terminal.html">
+          <span class="tile-tag">[ 01 ] shell</span>
+          <span class="tile-title">The Terminal</span>
+        </a>
+        <a class="nav-tile" href="breach.html">
+          <span class="tile-tag">[ 02 ] incident</span>
+          <span class="tile-title">The Breach</span>
+        </a>
+        <a class="nav-tile" href="network.html">
+          <span class="tile-tag">[ 03 ] graph</span>
+          <span class="tile-title">The Ghost Network</span>
+        </a>
+        <a class="nav-tile" href="cipher.html">
+          <span class="tile-tag">[ 04 ] crypto</span>
+          <span class="tile-title">The Cipher</span>
+        </a>
+        <a class="nav-tile" href="sim.html">
+          <span class="tile-tag">[ 05 ] sandbox</span>
+          <span class="tile-title">The Simulation</span>
+        </a>
+        <a class="nav-tile" href="intercept.html">
+          <span class="tile-tag">[ 06 ] interview</span>
+          <span class="tile-title">The Interrogation Room</span>
+        </a>
+        <a class="nav-tile" href="forge.html">
+          <span class="tile-tag">[ 07 ] rules</span>
+          <span class="tile-title">The Forge</span>
+        </a>
+        <a class="nav-tile" href="archive.html">
+          <span class="tile-tag">[ 08 ] storage</span>
+          <span class="tile-title">The Deep Archive</span>
+        </a>
+        <a class="nav-tile" href="heist.html">
+          <span class="tile-tag">[ 09 ] redteam</span>
+          <span class="tile-title">The Heist</span>
+        </a>
+        <a class="nav-tile" href="cartography.html">
+          <span class="tile-tag">[ 10 ] map</span>
+          <span class="tile-title">The Cartography</span>
+        </a>
+        <a class="nav-tile" href="lab.html">
+          <span class="tile-tag">[ 11 ] research</span>
+          <span class="tile-title">The Lab</span>
+        </a>
+        <a class="nav-tile" href="memorial.html">
+          <span class="tile-tag">[ 12 ] history</span>
+          <span class="tile-title">The Memorial</span>
+        </a>
+        <a class="nav-tile" href="resonance.html">
+          <span class="tile-tag">[ 13 ] signals</span>
+          <span class="tile-title">The Resonance</span>
+        </a>
+        <a class="nav-tile" href="brain/index.html">
+          <span class="tile-tag">[ 14 ] hub</span>
+          <span class="tile-title">Observation Deck</span>
+        </a>
+        <a class="nav-tile" href="left.html">
+          <span class="tile-tag">[ 15 ] tactical</span>
+          <span class="tile-title">The War Room</span>
+        </a>
+        <a class="nav-tile" href="right.html">
+          <span class="tile-tag">[ 16 ] telemetry</span>
+          <span class="tile-title">The Signal Room</span>
+        </a>
+        <a class="nav-tile" href="index.html">
+          <span class="tile-tag">[ 17 ] landing</span>
+          <span class="tile-title">Approach Vector</span>
+        </a>
+      </nav>
+    </section>
+
+    <section class="brief-section" id="sec-keys" aria-labelledby="sec-keys-title">
+      <div class="section-head">
+        <span class="section-tag">[ § 05 ]</span>
+        <h2 class="section-title" id="sec-keys-title">Keyboard Reference</h2>
+        <span class="section-tag">// global shortcuts</span>
+      </div>
+      <div class="keys-wrap">
+        <table class="keys-table" aria-label="Keyboard shortcuts">
+          <thead>
+            <tr>
+              <th scope="col">Combo</th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="key"><span class="kbd">Ctrl</span><span class="kbd">K</span></td>
+              <td class="desc">Open the command palette · jump to any experience surface or run a quick action.</td>
+            </tr>
+            <tr>
+              <td class="key"><span class="kbd">?</span></td>
+              <td class="desc">Toggle the contextual help overlay for the current page.</td>
+            </tr>
+            <tr>
+              <td class="key"><span class="kbd">T</span></td>
+              <td class="desc">Cycle the deck transition style between WIPE, GLITCH, and DISSOLVE.</td>
+            </tr>
+            <tr>
+              <td class="key"><span class="kbd">Esc</span></td>
+              <td class="desc">Dismiss overlays, palettes, and in-flight transitions; return focus to the briefing root.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="briefing-foot">
+      <span>Meridian-7 SOC · Daily Broadcast · v15.2.0</span>
+      <span><a href="index.html">← Approach Vector</a> · <a href="terminal.html">Open Terminal →</a></span>
+    </footer>
+  </main>
+
+  <div id="deck-nav-root"></div>
+
   <script src="assets/siem-core.js"></script>
   <script src="assets/siem-qol.js"></script>
   <script src="assets/palette.js"></script>
+  <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
   <script>
-    SiemCore.bootPage('motd');
-    var today = new Date().toISOString().slice(0, 10);
-    document.getElementById('motd-date').textContent = 'DAILY BRIEFING · ' + today;
-    document.getElementById('motd-body').innerHTML =
-      'Threat level: <strong style="color:#fbbf24">ELEVATED</strong><br>' +
-      'Simulated credential stuffing against edge API.<br><br>' +
-      'Tip: Run <code>grep CRITICAL /var/log/siem/alerts.log</code> in The Terminal.<br><br>' +
-      '<em>— Meridian-7 SOC</em>';
+    (function () {
+      "use strict";
+
+      if (window.SiemCore && typeof SiemCore.bootPage === "function") {
+        SiemCore.bootPage("motd");
+      }
+      if (window.SiemCore && SiemCore.AchievementSystem && typeof SiemCore.AchievementSystem.check === "function") {
+        SiemCore.AchievementSystem.check("visit_motd");
+      }
+
+      var clockEl = document.getElementById("utc-clock");
+      var stampEl = document.getElementById("broadcast-stamp");
+      var idEl = document.getElementById("broadcast-id");
+      var typeEl = document.getElementById("typewriter-text");
+
+      var HEADER_TEXT = "MERIDIAN-7 SYSTEM BROADCAST";
+      var TYPE_INTERVAL_MS = 55;
+      var REDUCED_MOTION = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function pad(n, len) {
+        var s = String(n);
+        while (s.length < (len || 2)) s = "0" + s;
+        return s;
+      }
+
+      function formatIsoStamp(d) {
+        return d.getUTCFullYear() + "." +
+          pad(d.getUTCMonth() + 1) + "." +
+          pad(d.getUTCDate()) + " " +
+          pad(d.getUTCHours()) + ":" +
+          pad(d.getUTCMinutes()) + ":" +
+          pad(d.getUTCSeconds()) + " UTC";
+      }
+
+      function formatClock(d) {
+        return pad(d.getUTCHours()) + ":" +
+          pad(d.getUTCMinutes()) + ":" +
+          pad(d.getUTCSeconds()) + " UTC";
+      }
+
+      function dayOfYear(d) {
+        var start = Date.UTC(d.getUTCFullYear(), 0, 0);
+        var diff = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - start;
+        return Math.floor(diff / 86400000);
+      }
+
+      function updateBroadcastId() {
+        var now = new Date();
+        var doy = dayOfYear(now);
+        idEl.textContent = "MTD-" + String(now.getUTCFullYear()).slice(-2) + pad(doy, 3);
+      }
+
+      function updateClocks() {
+        var now = new Date();
+        clockEl.textContent = formatClock(now);
+        stampEl.textContent = formatIsoStamp(now);
+      }
+
+      function startTypewriter() {
+        if (REDUCED_MOTION) {
+          typeEl.textContent = HEADER_TEXT;
+          return;
+        }
+        typeEl.textContent = "";
+        var i = 0;
+        var timer = setInterval(function () {
+          typeEl.textContent = HEADER_TEXT.slice(0, i + 1);
+          i += 1;
+          if (i >= HEADER_TEXT.length) {
+            clearInterval(timer);
+          }
+        }, TYPE_INTERVAL_MS);
+      }
+
+      function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
+      }
+
+      function formatCounter(value, suffix) {
+        var rounded = Math.round(value);
+        var str = rounded >= 1000 ? rounded.toLocaleString("en-US") : String(rounded);
+        return str + (suffix || "");
+      }
+
+      function animateCounter(el) {
+        var target = parseFloat(el.getAttribute("data-target")) || 0;
+        var suffix = el.getAttribute("data-suffix") || "";
+        if (REDUCED_MOTION) {
+          el.textContent = formatCounter(target, suffix);
+          return;
+        }
+        var duration = 1400 + Math.random() * 400;
+        var start = performance.now();
+        function frame(now) {
+          var t = Math.min(1, (now - start) / duration);
+          var eased = easeOutCubic(t);
+          el.textContent = formatCounter(target * eased, suffix);
+          if (t < 1) {
+            requestAnimationFrame(frame);
+          } else {
+            el.textContent = formatCounter(target, suffix);
+          }
+        }
+        requestAnimationFrame(frame);
+      }
+
+      function startCounters() {
+        var nodes = document.querySelectorAll("[data-counter]");
+        if (!nodes.length) return;
+        if (typeof IntersectionObserver === "function") {
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                animateCounter(entry.target);
+                io.unobserve(entry.target);
+              }
+            });
+          }, { threshold: 0.4 });
+          nodes.forEach(function (n) { io.observe(n); });
+        } else {
+          nodes.forEach(animateCounter);
+        }
+      }
+
+      function bindShortcuts() {
+        document.addEventListener("keydown", function (evt) {
+          if (evt.defaultPrevented) return;
+          var key = evt.key;
+          if (key === "Escape") {
+            var root = document.getElementById("briefing-root");
+            if (root) root.focus({ preventScroll: true });
+          }
+        });
+      }
+
+      updateBroadcastId();
+      updateClocks();
+      setInterval(updateClocks, 1000);
+      startTypewriter();
+      startCounters();
+      bindShortcuts();
+    })();
   </script>
 </body>
 </html>

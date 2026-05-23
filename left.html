@@ -7,18 +7,19 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <meta name="description" content="Live threat matrix, analyst comms, and pipeline gauges for tier-two SOC operations." />
+  <meta name="description" content="Tactical defense grid, live threat matrix, analyst comms, and pipeline gauges for tier-two SOC operations." />
   <meta property="og:title" content="The War Room — HABIBI-SIEM" />
-  <meta property="og:description" content="Live threat matrix, analyst comms, and pipeline gauges for tier-two SOC operations." />
+  <meta property="og:description" content="Tactical defense grid, live threat matrix, analyst comms, and pipeline gauges for tier-two SOC operations." />
   <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/war-room-og.png" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="The War Room — HABIBI-SIEM" />
-  <meta name="twitter:description" content="Live threat matrix, analyst comms, and pipeline gauges for tier-two SOC operations." />
+  <meta name="twitter:description" content="Tactical defense grid, live threat matrix, analyst comms, and pipeline gauges for tier-two SOC operations." />
   <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/war-room-og.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The War Room — Meridian-7</title>
   <link rel="stylesheet" href="assets/deck-nav.css" />
+  <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
@@ -70,10 +71,11 @@
       background: rgba(30,10,12,0.9); border: 1px solid #991b1b;
       color: #fecaca; padding: 6px 12px; font: 10px Consolas, monospace; cursor: pointer;
     }
+    #war-audio-toggle:hover { border-color: #f87171; }
     #war-grid {
       position: fixed; inset: 48px 16px 16px; z-index: 10;
       display: grid;
-      grid-template-columns: 1fr 1.4fr 1fr;
+      grid-template-columns: 1fr 1.6fr 1fr;
       grid-template-rows: 1fr 1fr;
       gap: 10px;
     }
@@ -97,12 +99,92 @@
       font-size: 9px; letter-spacing: 2px; color: #f87171;
       text-transform: uppercase; margin-bottom: 8px;
     }
-    #war-map-wrap {
+    #war-tactical-wrap {
       grid-column: 2; grid-row: 1 / span 2;
-      padding: 0;
-      cursor: default;
+      padding: 8px; cursor: default;
+      display: flex; flex-direction: column; gap: 6px;
     }
-    #war-map { width: 100%; height: 100%; display: block; }
+    #war-tactical-hud {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+      font-size: 9px; letter-spacing: 1.4px; text-transform: uppercase;
+    }
+    .war-hud-cell {
+      background: rgba(40,10,12,0.85);
+      border: 1px solid rgba(153,27,27,0.55);
+      padding: 6px 8px; display: flex; flex-direction: column; gap: 2px;
+    }
+    .war-hud-label { font-size: 7px; color: #7f1d1d; }
+    .war-hud-value { font-size: 13px; color: #fef2f2; letter-spacing: 1px; }
+    .war-hud-cell.danger .war-hud-value { color: #ef4444; }
+    .war-hud-cell.ok .war-hud-value { color: #4ade80; }
+    #war-tactical-stage {
+      flex: 1; position: relative; min-height: 0;
+      background: #0a0306;
+      border: 1px solid rgba(153,27,27,0.55);
+      overflow: hidden;
+    }
+    #war-tactical {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; display: block;
+      cursor: crosshair;
+    }
+    #war-tactical-overlay {
+      position: absolute; inset: 0; pointer-events: none;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(8,2,4,0.8); z-index: 5;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    #war-tactical-overlay.on { opacity: 1; pointer-events: auto; }
+    .war-overlay-panel {
+      background: rgba(24,8,10,0.98);
+      border: 1px solid #991b1b;
+      padding: 20px 28px; max-width: 360px;
+      text-align: center;
+    }
+    .war-overlay-panel h3 {
+      font-size: 14px; letter-spacing: 4px; color: #f87171;
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .war-overlay-panel p { font-size: 10px; line-height: 1.6; color: #fecaca; margin-bottom: 12px; }
+    .war-overlay-panel button {
+      background: rgba(127,29,29,0.55); border: 1px solid #b91c1c;
+      color: #fef2f2; padding: 6px 14px; cursor: pointer;
+      font: 10px Consolas, monospace; letter-spacing: 1.5px; text-transform: uppercase;
+    }
+    .war-overlay-panel button:hover { background: rgba(185,28,28,0.7); }
+    #war-tactical-controls {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .war-defense-btn {
+      flex: 1; background: rgba(30,10,12,0.9);
+      border: 1px solid rgba(153,27,27,0.55);
+      color: #fecaca; padding: 6px 8px; cursor: pointer;
+      font: 9px Consolas, monospace; letter-spacing: 1px; text-transform: uppercase;
+      display: flex; flex-direction: column; align-items: flex-start;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .war-defense-btn:hover { border-color: #f87171; }
+    .war-defense-btn.active {
+      border-color: #fbbf24;
+      background: rgba(120,53,15,0.45);
+      box-shadow: 0 0 12px rgba(251,191,36,0.25);
+    }
+    .war-defense-btn .war-defense-name { color: #fef2f2; font-size: 10px; }
+    .war-defense-btn .war-defense-cost { color: #fbbf24; font-size: 8px; margin-top: 2px; }
+    .war-defense-btn .war-defense-desc { color: #7f1d1d; font-size: 7px; margin-top: 1px; }
+    .war-defense-btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+    #war-tactical-log {
+      max-height: 84px; overflow: auto;
+      background: rgba(10,4,6,0.85); border: 1px solid rgba(127,29,29,0.4);
+      padding: 6px 8px; font-size: 8.5px; line-height: 1.5;
+    }
+    #war-tactical-log p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .war-log-time { color: #7f1d1d; }
+    .war-log-neutralized { color: #4ade80; }
+    .war-log-breach { color: #ef4444; font-weight: bold; }
+    .war-log-spawn { color: #fca5a5; }
+    .war-log-deploy { color: #fbbf24; }
+    .war-log-wave { color: #f87171; letter-spacing: 2px; }
     #war-feed { font-size: 9px; line-height: 1.5; max-height: 100%; overflow: auto; }
     #war-matrix {
       display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px;
@@ -121,13 +203,6 @@
       display: flex; justify-content: space-between; font-size: 9px;
       padding: 4px 0; border-bottom: 1px solid rgba(127,29,29,0.25);
     }
-    #war-ioc-panel {
-      position: fixed; right: 20px; bottom: 20px; z-index: 60;
-      width: 260px; max-height: 40vh; overflow: auto;
-      background: rgba(12,4,6,0.97); border: 1px solid #b91c1c;
-      padding: 12px; font-size: 10px; display: none;
-    }
-    #war-ioc-panel.on { display: block; }
     #war-debrief {
       position: fixed; inset: 0; z-index: 80; display: none;
       background: rgba(0,0,0,0.92); align-items: center; justify-content: center;
@@ -138,14 +213,25 @@
       max-width: 640px; background: rgba(24,8,10,0.98);
       border: 1px solid #991b1b; padding: 24px; line-height: 1.6; font-size: 12px;
     }
-    .war-arc-label { font-size: 8px; fill: #fca5a5; }
+    .war-toast {
+      position: fixed; top: 56px; right: 24px; z-index: 90;
+      background: rgba(24,8,10,0.95); border: 1px solid #b91c1c;
+      color: #fecaca; padding: 8px 14px; font-size: 10px;
+      letter-spacing: 1.5px; opacity: 0; transform: translateY(-8px);
+      transition: opacity 0.25s, transform 0.25s; pointer-events: none;
+    }
+    .war-toast.on { opacity: 1; transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) {
+      .war-mitre-cell.hot { animation: none; }
+      .war-toast { transition: none; }
+    }
   </style>
 </head>
 <body>
   <div id="war-mobile-block">War Room runs on desktop width only. Widen the window or use a larger display.</div>
   <div id="war-sim-label">SIMULATION — DEMO DATA ONLY</div>
   <header id="war-header">
-    <h1>The War Room</h1>
+    <h1>The War Room · Tactical Defense Grid</h1>
     <button id="war-audio-toggle" type="button" aria-pressed="false">Audio off</button>
   </header>
   <div id="war-grid">
@@ -157,15 +243,62 @@
       <h2>Threat Matrix</h2>
       <div id="war-matrix" aria-label="MITRE 8x8 matrix"></div>
     </section>
-    <section class="war-station" id="war-map-wrap" data-station="map">
-      <svg id="war-map" viewBox="0 0 400 300" aria-label="Attack map">
-        <defs>
-          <filter id="war-glow"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-        </defs>
-        <rect width="400" height="300" fill="#18080a"/>
-        <g id="war-map-nodes"></g>
-        <g id="war-map-arcs" filter="url(#war-glow)"></g>
-      </svg>
+    <section class="war-station" id="war-tactical-wrap" data-station="tactical" aria-label="Tactical defense grid">
+      <div id="war-tactical-hud" role="status" aria-live="polite">
+        <div class="war-hud-cell">
+          <span class="war-hud-label">Wave</span>
+          <span class="war-hud-value" id="war-hud-wave">1</span>
+        </div>
+        <div class="war-hud-cell">
+          <span class="war-hud-label">Score</span>
+          <span class="war-hud-value" id="war-hud-score">0</span>
+        </div>
+        <div class="war-hud-cell">
+          <span class="war-hud-label">Credits</span>
+          <span class="war-hud-value" id="war-hud-credits">12</span>
+        </div>
+        <div class="war-hud-cell">
+          <span class="war-hud-label">Threats Live</span>
+          <span class="war-hud-value" id="war-hud-threats">0</span>
+        </div>
+        <div class="war-hud-cell ok" id="war-hud-core-cell">
+          <span class="war-hud-label">Core Integrity</span>
+          <span class="war-hud-value" id="war-hud-core">100%</span>
+        </div>
+      </div>
+      <div id="war-tactical-stage">
+        <canvas id="war-tactical" aria-label="Tactical defense canvas"></canvas>
+        <div id="war-tactical-overlay" role="dialog" aria-live="assertive">
+          <div class="war-overlay-panel">
+            <h3 id="war-overlay-title">Stand By</h3>
+            <p id="war-overlay-text">Brief incoming.</p>
+            <button id="war-overlay-action" type="button">Begin</button>
+          </div>
+        </div>
+      </div>
+      <div id="war-tactical-controls" role="toolbar" aria-label="Deploy countermeasures">
+        <button class="war-defense-btn active" type="button" data-defense="firewall" aria-pressed="true">
+          <span class="war-defense-name">Firewall</span>
+          <span class="war-defense-cost">Cost 3</span>
+          <span class="war-defense-desc">Hard block · area</span>
+        </button>
+        <button class="war-defense-btn" type="button" data-defense="ids" aria-pressed="false">
+          <span class="war-defense-name">IDS Sensor</span>
+          <span class="war-defense-cost">Cost 4</span>
+          <span class="war-defense-desc">Detect · slow · alert</span>
+        </button>
+        <button class="war-defense-btn" type="button" data-defense="honeypot" aria-pressed="false">
+          <span class="war-defense-name">Honeypot</span>
+          <span class="war-defense-cost">Cost 5</span>
+          <span class="war-defense-desc">Divert · neutralize</span>
+        </button>
+        <button class="war-defense-btn" type="button" data-defense="clear" aria-pressed="false" style="flex:0 0 90px">
+          <span class="war-defense-name">Recycle</span>
+          <span class="war-defense-cost">Refund 1</span>
+          <span class="war-defense-desc">Clear sector</span>
+        </button>
+      </div>
+      <div id="war-tactical-log" aria-live="polite" aria-label="Event log strip"></div>
     </section>
     <section class="war-station" id="station-clock" data-station="clock">
       <h2>Incident Clock</h2>
@@ -180,10 +313,6 @@
       <div id="war-gauges"></div>
     </section>
   </div>
-  <aside id="war-ioc-panel" aria-label="Arc IOC panel">
-    <strong style="color:#f87171">Arc IOC</strong>
-    <div id="war-ioc-body"></div>
-  </aside>
   <div id="war-debrief" role="dialog" aria-modal="true" aria-labelledby="war-debrief-title">
     <div id="war-debrief-panel">
       <h2 id="war-debrief-title">Shift debrief</h2>
@@ -191,6 +320,7 @@
       <p style="margin-top:16px;font-size:10px;color:#991b1b">Press D to close</p>
     </div>
   </div>
+  <div id="war-toast" class="war-toast" role="alert"></div>
   <div id="deck-nav-root"></div>
   <link rel="stylesheet" href="assets/palette.css" />
   <script src="assets/siem-core.js"></script>
@@ -200,17 +330,26 @@
   <script>
   (function () {
     'use strict';
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // STATIC DATA — feed/comms/gauges (preserved war room periphery)
+    // ─────────────────────────────────────────────────────────────────────────
     const FEED_LINES = [
       'AUTH fail 10.4.2.18 — 5/min threshold',
       'WAF rule 4421 — union select pattern',
       'DNS tunnel score 0.71 — staging host',
       'EDR isolate request queued — host FIN-23',
       'Mailbox rule added — user svc-backup',
+      'TLS handshake error spike — egress-gw-02',
+      'Sysmon EID 11 burst — host DEV-117',
+      'Sigma rule WIN-PERSIST-04 — fired x3',
     ];
     const COMMS = [
       'Tier-2: holding bridge for finance queue',
       'IR: snapshotting ingest partition 3',
       'Lead: customer comms draft in channel #inc-441',
+      'Threat intel: APT-flex resurfacing in EU',
+      'Detect eng: rule WAF-4421 hit rate normal',
     ];
     const GAUGE_ROWS = [
       ['Ingest EPS', '12.4k'],
@@ -219,29 +358,131 @@
       ['DLQ depth', '3'],
       ['Parser errors', '0.02%'],
     ];
-    const MAP_NODES = [
-      { id: 'n1', x: 80, y: 140, label: 'DMZ' },
-      { id: 'n2', x: 200, y: 80, label: 'API' },
-      { id: 'n3', x: 320, y: 150, label: 'DB' },
-      { id: 'n4', x: 180, y: 220, label: 'SOC' },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TACTICAL GAME DATA — threat catalog, defense catalog, wave schedule
+    // ─────────────────────────────────────────────────────────────────────────
+    const THREAT_CATALOG = [
+      { name: 'Mirai-Echo',   vector: 'IoT botnet',         hp: 2, speed: 0.55, color: '#fb7185' },
+      { name: 'Lazarus-IX',   vector: 'Spear-phish',        hp: 3, speed: 0.45, color: '#f97316' },
+      { name: 'CryptoLink',   vector: 'Ransomware',         hp: 4, speed: 0.40, color: '#facc15' },
+      { name: 'Hydra-Probe',  vector: 'Brute force',        hp: 2, speed: 0.62, color: '#fb923c' },
+      { name: 'NullByte',     vector: 'SQL injection',      hp: 3, speed: 0.50, color: '#ef4444' },
+      { name: 'GhostShell',   vector: 'Reverse shell',      hp: 3, speed: 0.55, color: '#a855f7' },
+      { name: 'PhantomDNS',   vector: 'DNS tunnel',         hp: 4, speed: 0.42, color: '#22d3ee' },
+      { name: 'SiegeNet',     vector: 'Volumetric DDoS',    hp: 5, speed: 0.35, color: '#e11d48' },
+      { name: 'WormTrace-7',  vector: 'Lateral worm',       hp: 4, speed: 0.48, color: '#f43f5e' },
+      { name: 'BeaconFox',    vector: 'C2 beacon',          hp: 3, speed: 0.52, color: '#fbbf24' },
+      { name: 'BlackPearl',   vector: 'APT staging',        hp: 6, speed: 0.32, color: '#dc2626' },
+      { name: 'PayloadX',     vector: 'Drive-by download',  hp: 2, speed: 0.60, color: '#ea580c' },
     ];
+
+    const DEFENSE_CATALOG = {
+      firewall: {
+        name: 'Firewall',
+        cost: 3,
+        range: 78,
+        damage: 1.4,
+        cooldown: 700,
+        color: '#3b82f6',
+        slow: 0,
+        description: 'Blocks packets in radius',
+      },
+      ids: {
+        name: 'IDS Sensor',
+        cost: 4,
+        range: 110,
+        damage: 0.7,
+        cooldown: 520,
+        color: '#22d3ee',
+        slow: 0.4,
+        description: 'Detects and slows incoming',
+      },
+      honeypot: {
+        name: 'Honeypot',
+        cost: 5,
+        range: 95,
+        damage: 2.3,
+        cooldown: 1400,
+        color: '#a78bfa',
+        slow: 0.7,
+        description: 'Lures and traps high-HP threats',
+      },
+    };
+
+    const SECTOR_DEFS = [
+      { id: 'north', label: 'North',  angle: -Math.PI / 2, color: 'rgba(56,189,248,0.18)' },
+      { id: 'east',  label: 'East',   angle: 0,            color: 'rgba(248,113,113,0.18)' },
+      { id: 'south', label: 'South',  angle: Math.PI / 2,  color: 'rgba(132,204,22,0.18)' },
+      { id: 'west',  label: 'West',   angle: Math.PI,      color: 'rgba(168,85,247,0.18)' },
+    ];
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // STATE
+    // ─────────────────────────────────────────────────────────────────────────
     let clockSec = 0;
     let audioOn = false;
     let debriefOn = false;
     let criticalTimer = null;
+    let toneInitialized = false;
+    let synth = null;
+    let alertSynth = null;
+    let breachSynth = null;
 
+    const game = {
+      running: false,
+      paused: true,
+      wave: 1,
+      score: 0,
+      credits: 12,
+      coreHp: 100,
+      coreMaxHp: 100,
+      threats: [],
+      defenses: [],
+      shots: [],
+      sparks: [],
+      selectedDefense: 'firewall',
+      hoverPoint: null,
+      spawnQueue: 0,
+      spawnTimer: 0,
+      waveCooldown: 0,
+      waveInProgress: false,
+      breached: false,
+      stats: { totalNeutralized: 0, totalSpawned: 0, totalBreaches: 0 },
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // DOM REFS
+    // ─────────────────────────────────────────────────────────────────────────
     const feedEl = document.getElementById('war-feed');
     const matrixEl = document.getElementById('war-matrix');
     const commsEl = document.getElementById('war-comms');
     const gaugesEl = document.getElementById('war-gauges');
     const clockEl = document.getElementById('war-clock');
-    const mapNodes = document.getElementById('war-map-nodes');
-    const mapArcs = document.getElementById('war-map-arcs');
-    const iocPanel = document.getElementById('war-ioc-panel');
-    const iocBody = document.getElementById('war-ioc-body');
     const debrief = document.getElementById('war-debrief');
     const debriefText = document.getElementById('war-debrief-text');
+    const toastEl = document.getElementById('war-toast');
 
+    const canvas = document.getElementById('war-tactical');
+    const ctx = canvas.getContext('2d');
+    const stage = document.getElementById('war-tactical-stage');
+    const overlay = document.getElementById('war-tactical-overlay');
+    const overlayTitle = document.getElementById('war-overlay-title');
+    const overlayText = document.getElementById('war-overlay-text');
+    const overlayAction = document.getElementById('war-overlay-action');
+    const logEl = document.getElementById('war-tactical-log');
+    const hud = {
+      wave: document.getElementById('war-hud-wave'),
+      score: document.getElementById('war-hud-score'),
+      credits: document.getElementById('war-hud-credits'),
+      threats: document.getElementById('war-hud-threats'),
+      core: document.getElementById('war-hud-core'),
+      coreCell: document.getElementById('war-hud-core-cell'),
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // PERIPHERAL STATIONS — feed / matrix / comms / gauges
+    // ─────────────────────────────────────────────────────────────────────────
     for (let i = 0; i < 64; i++) {
       const c = document.createElement('div');
       c.className = 'war-mitre-cell';
@@ -257,45 +498,8 @@
       gaugesEl.appendChild(d);
     });
 
-    MAP_NODES.forEach(function (n) {
-      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      g.innerHTML =
-        '<circle cx="' + n.x + '" cy="' + n.y + '" r="14" fill="#450a0a" stroke="#f87171"/>' +
-        '<text class="war-arc-label" x="' + n.x + '" y="' + (n.y + 28) + '" text-anchor="middle">' + n.label + '</text>';
-      g.dataset.id = n.id;
-      mapNodes.appendChild(g);
-    });
-
-    function drawArc(from, to, hot) {
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      const mx = (from.x + to.x) / 2;
-      const my = Math.min(from.y, to.y) - 40;
-      line.setAttribute(
-        'd',
-        'M' + from.x + ',' + from.y + ' Q' + mx + ',' + my + ' ' + to.x + ',' + to.y
-      );
-      line.setAttribute('fill', 'none');
-      line.setAttribute('stroke', hot ? '#ef4444' : '#7f1d1d');
-      line.setAttribute('stroke-width', hot ? '2.5' : '1.2');
-      line.dataset.from = from.id;
-      line.dataset.to = to.id;
-      line.style.cursor = 'pointer';
-      line.addEventListener('click', function () {
-        iocBody.innerHTML =
-          '<p>Source: ' + from.label + ' → ' + to.label + '</p>' +
-          '<p>IOC hash: demo-' + Math.random().toString(16).slice(2, 10) + '</p>' +
-          '<p>Port sweep · 14 hosts · 6 min window</p>';
-        iocPanel.classList.add('on');
-      });
-      mapArcs.appendChild(line);
-    }
-
-    drawArc(MAP_NODES[0], MAP_NODES[1], false);
-    drawArc(MAP_NODES[1], MAP_NODES[2], true);
-    drawArc(MAP_NODES[2], MAP_NODES[3], false);
-
-    function pushFeed() {
-      const line = FEED_LINES[(Math.random() * FEED_LINES.length) | 0];
+    function pushFeed(text) {
+      const line = text || FEED_LINES[(Math.random() * FEED_LINES.length) | 0];
       const p = document.createElement('p');
       p.textContent = new Date().toISOString().slice(11, 19) + ' · ' + line;
       feedEl.insertBefore(p, feedEl.firstChild);
@@ -311,19 +515,767 @@
       }
     }
 
+    function pushComms(text, accent) {
+      const p = document.createElement('p');
+      if (accent) p.style.color = accent;
+      p.textContent = text;
+      commsEl.insertBefore(p, commsEl.firstChild);
+      while (commsEl.children.length > 8) commsEl.removeChild(commsEl.lastChild);
+    }
+
     function scheduleCritical() {
       const delay = 45000 + Math.random() * 45000;
       criticalTimer = setTimeout(function () {
-        pushFeed();
-        FEED_LINES.unshift('CRITICAL — coordinated auth burst across 3 regions');
+        pushFeed('CRITICAL — coordinated auth burst across 3 regions');
         pulseMatrix();
-        commsEl.innerHTML = '<p style="color:#f87171">CRITICAL incident declared — bridge open</p>' + commsEl.innerHTML;
+        pushComms('CRITICAL incident declared — bridge open', '#f87171');
         scheduleCritical();
       }, delay);
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // TACTICAL LOG STRIP
+    // ─────────────────────────────────────────────────────────────────────────
+    function logEvent(kind, text) {
+      const p = document.createElement('p');
+      const stamp = new Date().toISOString().slice(11, 19);
+      const cls = 'war-log-' + kind;
+      p.innerHTML = '<span class="war-log-time">' + stamp + '</span> · <span class="' + cls + '">' + text + '</span>';
+      logEl.insertBefore(p, logEl.firstChild);
+      while (logEl.children.length > 40) logEl.removeChild(logEl.lastChild);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // CANVAS SIZING — DPR-aware, resize handler
+    // ─────────────────────────────────────────────────────────────────────────
+    const layout = { width: 600, height: 600, cx: 300, cy: 300, coreR: 38, sectorR: 240 };
+
+    function resizeCanvas() {
+      const rect = stage.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const w = Math.max(320, Math.floor(rect.width));
+      const h = Math.max(320, Math.floor(rect.height));
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      layout.width = w;
+      layout.height = h;
+      layout.cx = w / 2;
+      layout.cy = h / 2;
+      layout.coreR = Math.max(28, Math.min(w, h) * 0.07);
+      layout.sectorR = Math.min(w, h) * 0.46;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(resizeCanvas).observe(stage);
+    }
+    resizeCanvas();
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GAME HELPERS — sector lookup, distance, RNG
+    // ─────────────────────────────────────────────────────────────────────────
+    function sectorAt(x, y) {
+      const dx = x - layout.cx;
+      const dy = y - layout.cy;
+      const d = Math.hypot(dx, dy);
+      if (d <= layout.coreR + 6) return 'core';
+      if (d > layout.sectorR) return null;
+      const a = Math.atan2(dy, dx);
+      if (a >= -Math.PI / 4 && a < Math.PI / 4) return 'east';
+      if (a >= Math.PI / 4 && a < 3 * Math.PI / 4) return 'south';
+      if (a >= -3 * Math.PI / 4 && a < -Math.PI / 4) return 'north';
+      return 'west';
+    }
+
+    function spawnPointForEdge() {
+      const sectors = ['north', 'east', 'south', 'west'];
+      const pick = sectors[(Math.random() * sectors.length) | 0];
+      const margin = 12;
+      if (pick === 'north') return { x: layout.cx + (Math.random() - 0.5) * layout.width * 0.6, y: margin, sector: pick };
+      if (pick === 'south') return { x: layout.cx + (Math.random() - 0.5) * layout.width * 0.6, y: layout.height - margin, sector: pick };
+      if (pick === 'east')  return { x: layout.width - margin, y: layout.cy + (Math.random() - 0.5) * layout.height * 0.6, sector: pick };
+      return { x: margin, y: layout.cy + (Math.random() - 0.5) * layout.height * 0.6, sector: pick };
+    }
+
+    function rngThreat() {
+      const wave = game.wave;
+      const pool = THREAT_CATALOG.filter(function (t) {
+        if (wave <= 2) return t.hp <= 3;
+        if (wave <= 4) return t.hp <= 4;
+        return true;
+      });
+      const base = pool[(Math.random() * pool.length) | 0];
+      const scale = 1 + (wave - 1) * 0.12;
+      return {
+        template: base,
+        hp: base.hp * scale,
+        maxHp: base.hp * scale,
+        speed: base.speed * (1 + (wave - 1) * 0.05),
+      };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // WAVE LIFECYCLE
+    // ─────────────────────────────────────────────────────────────────────────
+    function waveThreatCount(w) { return 2 + w; }
+
+    function startWave() {
+      game.spawnQueue = waveThreatCount(game.wave);
+      game.spawnTimer = 0;
+      game.waveInProgress = true;
+      game.waveCooldown = 0;
+      logEvent('wave', '── WAVE ' + game.wave + ' — ' + game.spawnQueue + ' inbound ──');
+      pushComms('Tactical: Wave ' + game.wave + ' inbound, ' + game.spawnQueue + ' hostiles', '#f87171');
+      playTone('wave');
+    }
+
+    function endWave() {
+      game.waveInProgress = false;
+      game.waveCooldown = 4500;
+      const bonus = 4 + game.wave;
+      game.credits += bonus;
+      logEvent('neutralized', 'Wave ' + game.wave + ' contained · +' + bonus + ' credits');
+      pushComms('Wave ' + game.wave + ' contained. Stand by.', '#4ade80');
+      if (game.wave >= 10) {
+        winGame();
+        return;
+      }
+      game.wave += 1;
+      updateHud();
+      showToast('Wave cleared · next wave in 4s');
+    }
+
+    function spawnThreat() {
+      const spec = rngThreat();
+      const pt = spawnPointForEdge();
+      const threat = {
+        id: 'th-' + Math.random().toString(16).slice(2, 8),
+        name: spec.template.name,
+        vector: spec.template.vector,
+        color: spec.template.color,
+        x: pt.x,
+        y: pt.y,
+        hp: spec.hp,
+        maxHp: spec.maxHp,
+        speed: spec.speed,
+        baseSpeed: spec.speed,
+        slowedUntil: 0,
+        spawnSector: pt.sector,
+        radius: 7 + Math.min(6, spec.maxHp * 0.6),
+      };
+      game.threats.push(threat);
+      game.stats.totalSpawned += 1;
+      logEvent('spawn', threat.name + ' · ' + threat.vector + ' · from ' + pt.sector.toUpperCase());
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // DEFENSE PLACEMENT
+    // ─────────────────────────────────────────────────────────────────────────
+    function tryPlaceDefense(x, y) {
+      if (!game.running || game.breached) return;
+      const sector = sectorAt(x, y);
+      if (!sector || sector === 'core') {
+        showToast('Cannot deploy on Core');
+        return;
+      }
+      if (game.selectedDefense === 'clear') {
+        const idx = game.defenses.findIndex(function (d) {
+          return Math.hypot(d.x - x, d.y - y) <= d.radius + 4;
+        });
+        if (idx >= 0) {
+          const removed = game.defenses.splice(idx, 1)[0];
+          game.credits += 1;
+          logEvent('deploy', removed.name + ' recycled · refund 1');
+          updateHud();
+        } else {
+          showToast('No defense to recycle here');
+        }
+        return;
+      }
+      const spec = DEFENSE_CATALOG[game.selectedDefense];
+      if (!spec) return;
+      if (game.credits < spec.cost) {
+        showToast('Insufficient credits');
+        playTone('deny');
+        return;
+      }
+      const tooClose = game.defenses.some(function (d) {
+        return Math.hypot(d.x - x, d.y - y) < d.radius + 18;
+      });
+      if (tooClose) {
+        showToast('Too close to existing defense');
+        return;
+      }
+      game.credits -= spec.cost;
+      const def = {
+        id: 'df-' + Math.random().toString(16).slice(2, 8),
+        type: game.selectedDefense,
+        name: spec.name,
+        x: x,
+        y: y,
+        sector: sector,
+        range: spec.range,
+        damage: spec.damage,
+        cooldown: spec.cooldown,
+        nextShot: 0,
+        slow: spec.slow,
+        color: spec.color,
+        radius: 12,
+        pulse: 0,
+      };
+      game.defenses.push(def);
+      logEvent('deploy', spec.name + ' deployed in ' + sector.toUpperCase() + ' · -' + spec.cost);
+      playTone('deploy');
+      updateHud();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // COMBAT — defenses fire on nearest threat in range
+    // ─────────────────────────────────────────────────────────────────────────
+    function tickDefenses(dt, now) {
+      for (let i = 0; i < game.defenses.length; i++) {
+        const d = game.defenses[i];
+        d.pulse = Math.max(0, d.pulse - dt * 2);
+        if (now < d.nextShot) continue;
+        let target = null;
+        let bestDist = Infinity;
+        for (let j = 0; j < game.threats.length; j++) {
+          const t = game.threats[j];
+          const dist = Math.hypot(t.x - d.x, t.y - d.y);
+          if (dist <= d.range && dist < bestDist) {
+            target = t;
+            bestDist = dist;
+          }
+        }
+        if (target) {
+          d.nextShot = now + d.cooldown;
+          d.pulse = 1;
+          game.shots.push({
+            from: { x: d.x, y: d.y },
+            to: { x: target.x, y: target.y },
+            color: d.color,
+            life: 0.25,
+          });
+          target.hp -= d.damage;
+          if (d.slow > 0) {
+            target.speed = target.baseSpeed * (1 - d.slow);
+            target.slowedUntil = now + 900;
+          }
+          if (target.hp <= 0) {
+            game.score += Math.round(target.maxHp * 5);
+            game.stats.totalNeutralized += 1;
+            game.credits += 1;
+            spawnSparks(target.x, target.y, target.color);
+            logEvent('neutralized', target.name + ' neutralized by ' + d.name);
+            playTone('hit');
+            game.threats.splice(game.threats.indexOf(target), 1);
+          } else {
+            playTone('zap');
+          }
+        }
+      }
+    }
+
+    function tickThreats(dt, now) {
+      for (let i = game.threats.length - 1; i >= 0; i--) {
+        const t = game.threats[i];
+        if (t.slowedUntil > 0 && now > t.slowedUntil) {
+          t.speed = t.baseSpeed;
+          t.slowedUntil = 0;
+        }
+        const dx = layout.cx - t.x;
+        const dy = layout.cy - t.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist <= layout.coreR + t.radius) {
+          const dmg = Math.ceil(t.maxHp * 6);
+          game.coreHp = Math.max(0, game.coreHp - dmg);
+          game.stats.totalBreaches += 1;
+          logEvent('breach', t.name + ' breached Core · -' + dmg + ' integrity');
+          pushComms('CORE HIT · ' + t.name + ' got through', '#ef4444');
+          playTone('breach');
+          game.threats.splice(i, 1);
+          updateHud();
+          if (game.coreHp <= 0) {
+            failGame();
+            return;
+          }
+          continue;
+        }
+        const step = t.speed * dt * 60;
+        t.x += (dx / dist) * step;
+        t.y += (dy / dist) * step;
+      }
+    }
+
+    function tickShots(dt) {
+      for (let i = game.shots.length - 1; i >= 0; i--) {
+        game.shots[i].life -= dt;
+        if (game.shots[i].life <= 0) game.shots.splice(i, 1);
+      }
+    }
+
+    function spawnSparks(x, y, color) {
+      for (let i = 0; i < 14; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 40 + Math.random() * 110;
+        game.sparks.push({
+          x: x, y: y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 0.5 + Math.random() * 0.3,
+          color: color,
+        });
+      }
+    }
+
+    function tickSparks(dt) {
+      for (let i = game.sparks.length - 1; i >= 0; i--) {
+        const s = game.sparks[i];
+        s.x += s.vx * dt;
+        s.y += s.vy * dt;
+        s.vx *= 0.92;
+        s.vy *= 0.92;
+        s.life -= dt;
+        if (s.life <= 0) game.sparks.splice(i, 1);
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // RENDER
+    // ─────────────────────────────────────────────────────────────────────────
+    function drawGrid() {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(127,29,29,0.18)';
+      ctx.lineWidth = 1;
+      const step = 36;
+      for (let x = 0; x <= layout.width; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, layout.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y <= layout.height; y += step) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(layout.width, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawSectors() {
+      ctx.save();
+      ctx.translate(layout.cx, layout.cy);
+      for (let i = 0; i < SECTOR_DEFS.length; i++) {
+        const s = SECTOR_DEFS[i];
+        const start = s.angle - Math.PI / 4;
+        const end = s.angle + Math.PI / 4;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, layout.sectorR, start, end);
+        ctx.closePath();
+        ctx.fillStyle = s.color;
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(248,113,113,0.32)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        const lx = Math.cos(s.angle) * (layout.sectorR - 26);
+        const ly = Math.sin(s.angle) * (layout.sectorR - 26);
+        ctx.fillStyle = 'rgba(254,202,202,0.55)';
+        ctx.font = 'bold 10px Consolas, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(s.label.toUpperCase(), lx, ly);
+      }
+      ctx.restore();
+    }
+
+    function drawCore() {
+      const integ = game.coreHp / game.coreMaxHp;
+      const pulse = 0.55 + 0.25 * Math.sin(performance.now() / 380);
+      ctx.save();
+      ctx.translate(layout.cx, layout.cy);
+      ctx.beginPath();
+      ctx.arc(0, 0, layout.coreR + 8, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(15,4,6,0.85)';
+      ctx.fill();
+      const grad = ctx.createRadialGradient(0, 0, 2, 0, 0, layout.coreR);
+      const r1 = integ > 0.5 ? 220 : 250;
+      const g1 = integ > 0.5 ? 80 + 80 * integ : 60 * integ;
+      const b1 = 60 * integ;
+      grad.addColorStop(0, 'rgba(' + r1 + ',' + g1 + ',' + b1 + ',' + pulse + ')');
+      grad.addColorStop(1, 'rgba(' + r1 + ',' + g1 + ',' + b1 + ',0)');
+      ctx.beginPath();
+      ctx.arc(0, 0, layout.coreR, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(0, 0, layout.coreR, 0, Math.PI * 2);
+      ctx.strokeStyle = integ > 0.4 ? '#f87171' : '#ef4444';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#fef2f2';
+      ctx.font = 'bold 9px Consolas, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('CORE', 0, -2);
+      ctx.font = '8px Consolas, monospace';
+      ctx.fillStyle = integ > 0.4 ? '#fca5a5' : '#fee2e2';
+      ctx.fillText(Math.round(integ * 100) + '%', 0, 9);
+      ctx.restore();
+    }
+
+    function drawDefenses() {
+      for (let i = 0; i < game.defenses.length; i++) {
+        const d = game.defenses[i];
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.range, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.02)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+        ctx.setLineDash([3, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.radius + d.pulse * 6, 0, Math.PI * 2);
+        ctx.fillStyle = d.color;
+        ctx.globalAlpha = 0.6 + d.pulse * 0.4;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = '#fef2f2';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = '#0a0306';
+        ctx.font = 'bold 9px Consolas, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const glyph = d.type === 'firewall' ? 'F' : d.type === 'ids' ? 'I' : 'H';
+        ctx.fillText(glyph, d.x, d.y);
+        ctx.restore();
+      }
+    }
+
+    function drawThreats() {
+      for (let i = 0; i < game.threats.length; i++) {
+        const t = game.threats[i];
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
+        ctx.fillStyle = t.color;
+        ctx.globalAlpha = 0.85;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = '#fef2f2';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        const barW = 24;
+        const ratio = Math.max(0, t.hp / t.maxHp);
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        ctx.fillRect(t.x - barW / 2, t.y - t.radius - 8, barW, 3);
+        ctx.fillStyle = ratio > 0.5 ? '#4ade80' : ratio > 0.25 ? '#fbbf24' : '#ef4444';
+        ctx.fillRect(t.x - barW / 2, t.y - t.radius - 8, barW * ratio, 3);
+        if (t.slowedUntil > 0) {
+          ctx.strokeStyle = 'rgba(34,211,238,0.6)';
+          ctx.setLineDash([2, 3]);
+          ctx.beginPath();
+          ctx.arc(t.x, t.y, t.radius + 4, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+        ctx.restore();
+      }
+    }
+
+    function drawShots() {
+      for (let i = 0; i < game.shots.length; i++) {
+        const s = game.shots[i];
+        ctx.save();
+        ctx.strokeStyle = s.color;
+        ctx.globalAlpha = Math.max(0, s.life / 0.25);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(s.from.x, s.from.y);
+        ctx.lineTo(s.to.x, s.to.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    function drawSparks() {
+      for (let i = 0; i < game.sparks.length; i++) {
+        const s = game.sparks[i];
+        ctx.save();
+        ctx.fillStyle = s.color;
+        ctx.globalAlpha = Math.max(0, s.life);
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function drawHoverGhost() {
+      if (!game.hoverPoint || !game.running || game.breached) return;
+      if (game.selectedDefense === 'clear') return;
+      const spec = DEFENSE_CATALOG[game.selectedDefense];
+      if (!spec) return;
+      const x = game.hoverPoint.x;
+      const y = game.hoverPoint.y;
+      const sec = sectorAt(x, y);
+      const valid = sec && sec !== 'core' && game.credits >= spec.cost;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, spec.range, 0, Math.PI * 2);
+      ctx.strokeStyle = valid ? 'rgba(74,222,128,0.5)' : 'rgba(239,68,68,0.5)';
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.arc(x, y, 12, 0, Math.PI * 2);
+      ctx.fillStyle = spec.color;
+      ctx.globalAlpha = 0.55;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, layout.width, layout.height);
+      drawGrid();
+      drawSectors();
+      drawShots();
+      drawDefenses();
+      drawThreats();
+      drawSparks();
+      drawHoverGhost();
+      drawCore();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // MAIN LOOP
+    // ─────────────────────────────────────────────────────────────────────────
+    let lastFrame = performance.now();
+    function loop(now) {
+      const dt = Math.min(0.05, (now - lastFrame) / 1000);
+      lastFrame = now;
+      if (game.running && !game.paused && !game.breached) {
+        if (game.waveInProgress) {
+          if (game.spawnQueue > 0) {
+            game.spawnTimer -= dt * 1000;
+            if (game.spawnTimer <= 0) {
+              spawnThreat();
+              game.spawnQueue -= 1;
+              game.spawnTimer = 900 + Math.random() * 600;
+            }
+          } else if (game.threats.length === 0) {
+            endWave();
+          }
+        } else if (game.waveCooldown > 0) {
+          game.waveCooldown -= dt * 1000;
+          if (game.waveCooldown <= 0) startWave();
+        }
+        tickThreats(dt, now);
+        tickDefenses(dt, now);
+        tickShots(dt);
+        tickSparks(dt);
+        updateHud();
+      }
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // HUD UPDATES
+    // ─────────────────────────────────────────────────────────────────────────
+    function updateHud() {
+      hud.wave.textContent = String(game.wave);
+      hud.score.textContent = String(game.score);
+      hud.credits.textContent = String(game.credits);
+      hud.threats.textContent = String(game.threats.length);
+      const pct = Math.round((game.coreHp / game.coreMaxHp) * 100);
+      hud.core.textContent = pct + '%';
+      hud.coreCell.classList.remove('ok', 'danger');
+      if (pct > 60) hud.coreCell.classList.add('ok');
+      else if (pct <= 30) hud.coreCell.classList.add('danger');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // WIN / FAIL
+    // ─────────────────────────────────────────────────────────────────────────
+    function failGame() {
+      game.running = false;
+      game.breached = true;
+      logEvent('breach', '──── CORE BREACHED · MISSION FAILED ────');
+      pushComms('CORE BREACH — escalate to ops lead', '#ef4444');
+      playTone('breach');
+      showOverlay(
+        'Core Breached',
+        'Adversaries reached the Core. Score: ' + game.score +
+        '. Threats neutralized: ' + game.stats.totalNeutralized +
+        '. Re-deploy defenses and try again.',
+        'Restart Shift'
+      );
+    }
+
+    function winGame() {
+      game.running = false;
+      logEvent('neutralized', '──── ALL WAVES CONTAINED · MISSION SUCCESS ────');
+      pushComms('All waves contained. Stand down.', '#4ade80');
+      playTone('win');
+      showOverlay(
+        'Containment Achieved',
+        'Ten waves repelled. Final score ' + game.score +
+        '. Neutralized ' + game.stats.totalNeutralized +
+        ' hostiles with ' + game.stats.totalBreaches + ' partial breaches. Outstanding.',
+        'Run again'
+      );
+    }
+
+    function resetGame() {
+      game.running = true;
+      game.paused = false;
+      game.breached = false;
+      game.wave = 1;
+      game.score = 0;
+      game.credits = 12;
+      game.coreHp = 100;
+      game.threats.length = 0;
+      game.defenses.length = 0;
+      game.shots.length = 0;
+      game.sparks.length = 0;
+      game.spawnQueue = 0;
+      game.spawnTimer = 0;
+      game.waveInProgress = false;
+      game.waveCooldown = 0;
+      game.stats.totalNeutralized = 0;
+      game.stats.totalSpawned = 0;
+      game.stats.totalBreaches = 0;
+      logEl.innerHTML = '';
+      logEvent('wave', 'Shift start — defenders weapons free');
+      updateHud();
+      startWave();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // OVERLAY (briefing + win/fail dialog)
+    // ─────────────────────────────────────────────────────────────────────────
+    function showOverlay(title, text, actionLabel) {
+      overlayTitle.textContent = title;
+      overlayText.textContent = text;
+      overlayAction.textContent = actionLabel || 'Begin';
+      overlay.classList.add('on');
+    }
+    function hideOverlay() { overlay.classList.remove('on'); }
+
+    overlayAction.addEventListener('click', function () {
+      hideOverlay();
+      resetGame();
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // INPUT — canvas pointer
+    // ─────────────────────────────────────────────────────────────────────────
+    function canvasPoint(e) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+
+    canvas.addEventListener('mousemove', function (e) {
+      game.hoverPoint = canvasPoint(e);
+    });
+    canvas.addEventListener('mouseleave', function () {
+      game.hoverPoint = null;
+    });
+    canvas.addEventListener('click', function (e) {
+      const p = canvasPoint(e);
+      tryPlaceDefense(p.x, p.y);
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // DEFENSE PICKER
+    // ─────────────────────────────────────────────────────────────────────────
+    const defenseButtons = document.querySelectorAll('.war-defense-btn');
+    defenseButtons.forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const choice = btn.dataset.defense;
+        game.selectedDefense = choice;
+        defenseButtons.forEach(function (b) {
+          const active = b === btn;
+          b.classList.toggle('active', active);
+          b.setAttribute('aria-pressed', String(active));
+        });
+      });
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TONE.JS — audio gated behind user gesture on the existing toggle
+    // ─────────────────────────────────────────────────────────────────────────
+    function initTone() {
+      if (toneInitialized || typeof Tone === 'undefined') return;
+      try {
+        synth = new Tone.Synth({
+          oscillator: { type: 'square' },
+          envelope: { attack: 0.001, decay: 0.06, sustain: 0, release: 0.08 },
+        }).toDestination();
+        alertSynth = new Tone.Synth({
+          oscillator: { type: 'sawtooth' },
+          envelope: { attack: 0.001, decay: 0.18, sustain: 0, release: 0.12 },
+        }).toDestination();
+        breachSynth = new Tone.MembraneSynth({
+          pitchDecay: 0.05,
+          octaves: 6,
+          envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.2 },
+        }).toDestination();
+        synth.volume.value = -18;
+        alertSynth.volume.value = -16;
+        breachSynth.volume.value = -10;
+        toneInitialized = true;
+      } catch (err) {
+        toneInitialized = false;
+      }
+    }
+
+    function playTone(kind) {
+      if (!audioOn || !toneInitialized) return;
+      try {
+        if (kind === 'zap' && synth)        synth.triggerAttackRelease('C5', '32n');
+        else if (kind === 'hit' && synth)   synth.triggerAttackRelease('E5', '16n');
+        else if (kind === 'deploy' && synth) synth.triggerAttackRelease('G4', '16n');
+        else if (kind === 'deny' && alertSynth) alertSynth.triggerAttackRelease('A3', '16n');
+        else if (kind === 'wave' && alertSynth) alertSynth.triggerAttackRelease('E4', '8n');
+        else if (kind === 'win' && synth)   synth.triggerAttackRelease('C6', '4n');
+        else if (kind === 'breach' && breachSynth) breachSynth.triggerAttackRelease('C2', '4n');
+      } catch (err) {
+        // swallow — audio is non-critical
+      }
+    }
+
+    document.getElementById('war-audio-toggle').addEventListener('click', function () {
+      if (!audioOn && typeof Tone !== 'undefined') {
+        Tone.start().then(function () {
+          initTone();
+          audioOn = true;
+          this.textContent = 'Audio on';
+          this.setAttribute('aria-pressed', 'true');
+        }.bind(this)).catch(function () {
+          audioOn = false;
+        });
+      } else {
+        audioOn = false;
+        this.textContent = 'Audio off';
+        this.setAttribute('aria-pressed', 'false');
+      }
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // STATION EXPAND — preserve interaction for periphery; skip game station
+    // ─────────────────────────────────────────────────────────────────────────
     document.querySelectorAll('.war-station').forEach(function (st) {
-      if (st.id === 'war-map-wrap') return;
+      if (st.id === 'war-tactical-wrap') return;
       st.addEventListener('click', function () {
         document.querySelectorAll('.war-station.expanded').forEach(function (x) {
           if (x !== st) x.classList.remove('expanded');
@@ -332,24 +1284,51 @@
       });
     });
 
-    document.getElementById('war-audio-toggle').addEventListener('click', function () {
-      audioOn = !audioOn;
-      this.textContent = audioOn ? 'Audio on' : 'Audio off';
-      this.setAttribute('aria-pressed', String(audioOn));
-    });
-
+    // ─────────────────────────────────────────────────────────────────────────
+    // DEBRIEF MODAL (D key)
+    // ─────────────────────────────────────────────────────────────────────────
     addEventListener('keydown', function (e) {
+      const target = e.target;
+      const isField = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA');
+      if (isField) return;
       if (e.key === 'd' || e.key === 'D') {
         debriefOn = !debriefOn;
         debrief.classList.toggle('on', debriefOn);
         if (debriefOn) {
           debriefText.textContent =
             'Demo shift closed with two contained bursts. Ingest held steady; rule latency stayed under 50ms. ' +
-            'Handoff note: finance queue watch extended one hour.';
+            'Tactical grid neutralized ' + game.stats.totalNeutralized + ' threats across ' + (game.wave) +
+            ' wave(s). Handoff note: finance queue watch extended one hour.';
         }
+      } else if (e.key === '1') {
+        document.querySelector('.war-defense-btn[data-defense="firewall"]').click();
+      } else if (e.key === '2') {
+        document.querySelector('.war-defense-btn[data-defense="ids"]').click();
+      } else if (e.key === '3') {
+        document.querySelector('.war-defense-btn[data-defense="honeypot"]').click();
+      } else if (e.key === '4') {
+        document.querySelector('.war-defense-btn[data-defense="clear"]').click();
+      } else if (e.key === 'p' || e.key === 'P') {
+        if (game.running) game.paused = !game.paused;
       }
     });
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // TOAST
+    // ─────────────────────────────────────────────────────────────────────────
+    let toastTimer = null;
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('on');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () {
+        toastEl.classList.remove('on');
+      }, 2200);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // INCIDENT CLOCK + PERIPHERAL TICKERS
+    // ─────────────────────────────────────────────────────────────────────────
     setInterval(function () {
       clockSec++;
       const h = String((clockSec / 3600) | 0).padStart(2, '0');
@@ -358,19 +1337,28 @@
       clockEl.textContent = h + ':' + m + ':' + s;
     }, 1000);
 
-    setInterval(pushFeed, 3200);
+    setInterval(function () { pushFeed(); }, 3200);
     setInterval(pulseMatrix, 5000);
     setInterval(function () {
       const c = COMMS[(Math.random() * COMMS.length) | 0];
-      const p = document.createElement('p');
-      p.textContent = c;
-      commsEl.insertBefore(p, commsEl.firstChild);
-      while (commsEl.children.length > 8) commsEl.removeChild(commsEl.lastChild);
+      pushComms(c);
     }, 6000);
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // BOOT
+    // ─────────────────────────────────────────────────────────────────────────
     pushFeed();
     pulseMatrix();
     scheduleCritical();
+    updateHud();
+    showOverlay(
+      'Tactical Defense Grid',
+      'Threats spawn from North, South, East, and West and converge on the Core. Pick a countermeasure ' +
+      '(Firewall, IDS, or Honeypot) and click a sector to deploy. Survive ten waves without losing Core integrity. ' +
+      'Keys: 1/2/3/4 cycle defenses · P pauses · D opens debrief.',
+      'Engage'
+    );
+    requestAnimationFrame(loop);
   })();
   </script>
 </body>

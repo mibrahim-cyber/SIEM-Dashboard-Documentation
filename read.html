@@ -1,144 +1,693 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-deck-page="read">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="SIEM Dashboard documentation reader. Renders the in-repo guides and architecture markdown with sidebar navigation, breadcrumbs, and a per-page table of contents." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>SIEM Dashboard Documentation</title>
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/palette.css" onerror="this.remove()" />
   <style>
     :root {
       --bg: #0a0618;
-      --panel: #120a24;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
+      --bg-elev: #120a24;
+      --panel: #170c2e;
+      --panel-2: #1d1138;
+      --text: #e6e7f0;
+      --text-strong: #f7f7fb;
+      --muted: #8f93a8;
+      --muted-2: #6c708a;
       --accent: #c4b5fd;
+      --accent-2: #a78bfa;
       --link: #38bdf8;
-      --border: rgba(167, 139, 250, 0.25);
+      --link-hot: #fef9c3;
+      --border: rgba(167, 139, 250, 0.22);
+      --border-strong: rgba(167, 139, 250, 0.42);
+      --danger: #fca5a5;
+      --success: #86efac;
+      --code-bg: rgba(109, 40, 217, 0.18);
+      --code-border: rgba(167, 139, 250, 0.18);
+      --nav-w: 240px;
+      --toc-w: 200px;
+      --rail-gap: 28px;
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { min-height: 100vh; }
+
     body {
-      font-family: "IBM Plex Sans", system-ui, sans-serif;
-      background: var(--bg);
+      font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 80% -10%, rgba(91, 33, 182, 0.18), transparent 65%),
+                  radial-gradient(900px 600px at -10% 100%, rgba(56, 189, 248, 0.10), transparent 65%),
+                  var(--bg);
       color: var(--text);
       line-height: 1.65;
-      min-height: 100vh;
+      letter-spacing: 0.005em;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
-    header {
-      position: sticky; top: 0; z-index: 10;
-      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-      padding: 12px 20px;
-      background: rgba(8, 4, 18, 0.96);
+
+    a { color: var(--link); text-decoration: none; transition: color 120ms ease; }
+    a:hover, a:focus-visible { color: var(--link-hot); outline: none; }
+
+    /* ── Top app bar ──────────────────────────────────────── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 10px 20px;
+      background: rgba(8, 4, 18, 0.92);
       border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
-    header a {
+    .topbar .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       color: var(--accent);
-      text-decoration: none;
+      font: 600 12px "IBM Plex Mono", Consolas, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .topbar .brand .glyph {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fef9c3, #c4b5fd 55%, #6d28d9 100%);
+      box-shadow: 0 0 12px rgba(196, 181, 253, 0.55);
+    }
+    .topbar nav.primary {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .topbar nav.primary a {
+      color: var(--accent);
       font: 500 12px "IBM Plex Mono", Consolas, monospace;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 4px 0;
+      border-bottom: 1px solid transparent;
     }
-    header a:hover { color: #fef9c3; }
-    #doc-path { flex: 1; min-width: 120px; color: var(--muted); font: 11px "IBM Plex Mono", monospace; word-break: break-all; }
-    main { max-width: 820px; margin: 0 auto; padding: 32px 24px 80px; }
-    #doc-loading, #doc-error { font: 13px "IBM Plex Mono", monospace; color: var(--muted); padding: 24px 0; }
-    #doc-error { color: #fca5a5; }
-    #doc-content { font-size: 15px; }
-    #doc-content h1, #doc-content h2, #doc-content h3, #doc-content h4 {
-      font-family: "IBM Plex Sans", sans-serif;
+    .topbar nav.primary a:hover,
+    .topbar nav.primary a:focus-visible {
+      color: var(--link-hot);
+      border-bottom-color: var(--accent-2);
+    }
+    .topbar .spacer { flex: 1 1 auto; }
+    .topbar .path-chip {
+      max-width: 50ch;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--muted);
+      font: 400 11px "IBM Plex Mono", Consolas, monospace;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .topbar .menu-toggle {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: transparent;
       color: var(--accent);
-      margin: 1.4em 0 0.6em;
-      line-height: 1.25;
-    }
-    #doc-content h1 { font-size: 1.75rem; margin-top: 0; }
-    #doc-content h2 { font-size: 1.35rem; border-bottom: 1px solid var(--border); padding-bottom: 0.35em; }
-    #doc-content h3 { font-size: 1.1rem; }
-    #doc-content p { margin: 0.75em 0; }
-    #doc-content ul, #doc-content ol { margin: 0.75em 0 0.75em 1.4em; }
-    #doc-content li { margin: 0.35em 0; }
-    #doc-content a { color: var(--link); }
-    #doc-content a:hover { color: #fef9c3; }
-    #doc-content strong { color: #f1f5f9; font-weight: 600; }
-    #doc-content code {
-      font-family: "IBM Plex Mono", Consolas, monospace;
-      font-size: 0.88em;
-      background: rgba(109, 40, 217, 0.2);
-      padding: 0.12em 0.35em;
-      border-radius: 3px;
-    }
-    #doc-content pre {
-      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 14px 16px;
-      overflow-x: auto;
-      margin: 1em 0;
-      white-space: pre-wrap;
-      font-family: "IBM Plex Mono", Consolas, monospace;
+      font: 600 11px "IBM Plex Mono", Consolas, monospace;
+      cursor: pointer;
+    }
+
+    /* ── Page layout ──────────────────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: var(--nav-w) minmax(0, 1fr) var(--toc-w);
+      gap: var(--rail-gap);
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 28px 24px 80px;
+      align-items: start;
+    }
+
+    /* ── Left navigation rail ─────────────────────────────── */
+    aside.nav-rail {
+      position: sticky;
+      top: 64px;
+      max-height: calc(100vh - 80px);
+      overflow: auto;
+      padding-right: 6px;
       font-size: 13px;
     }
-    #doc-content pre code { background: none; padding: 0; }
-    #doc-content blockquote {
-      border-left: 3px solid var(--accent);
-      margin: 1em 0;
-      padding: 0.25em 0 0.25em 1em;
+    .nav-rail .nav-section-title {
+      font: 600 10.5px "IBM Plex Mono", Consolas, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted-2);
+      margin: 0 0 8px;
+      padding-left: 4px;
+    }
+    .nav-rail .nav-card {
+      background: linear-gradient(180deg, rgba(23, 12, 46, 0.6), rgba(13, 8, 26, 0.6));
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 8px 10px;
+      margin-bottom: 14px;
+    }
+    .nav-rail .nav-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 4px 8px 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 6px;
+    }
+    .nav-rail .nav-card-header h3 {
+      font: 600 12px "IBM Plex Sans", sans-serif;
+      color: var(--text-strong);
+      letter-spacing: 0.02em;
+    }
+    .nav-rail .nav-card-header .nav-cat {
+      font: 500 10px "IBM Plex Mono", Consolas, monospace;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .nav-rail .nav-card details {
+      border-top: 1px dashed var(--border);
+      padding: 6px 0;
+    }
+    .nav-rail .nav-card details:first-of-type { border-top: none; }
+    .nav-rail .nav-card details summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 4px 8px;
+      font: 500 11.5px "IBM Plex Mono", Consolas, monospace;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 4px;
+    }
+    .nav-rail .nav-card details summary::-webkit-details-marker { display: none; }
+    .nav-rail .nav-card details summary::before {
+      content: '▸';
+      display: inline-block;
+      width: 10px;
       color: var(--muted);
+      transition: transform 120ms ease;
     }
-    #doc-content hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
-    #doc-content img { max-width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--border); margin: 1em 0; }
-    #doc-content table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 14px; }
-    #doc-content th, #doc-content td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; }
-    #doc-content th { background: rgba(109, 40, 217, 0.15); color: var(--accent); }
+    .nav-rail .nav-card details[open] summary::before { transform: rotate(90deg); }
+    .nav-rail .nav-card details summary:hover { background: rgba(167, 139, 250, 0.08); color: var(--link-hot); }
+    .nav-rail .nav-card ul {
+      list-style: none;
+      padding: 4px 4px 4px 18px;
+      margin: 2px 0 4px;
+    }
+    .nav-rail .nav-card li { margin: 1px 0; }
+    .nav-rail .nav-card li a {
+      display: block;
+      padding: 5px 8px;
+      border-radius: 5px;
+      color: var(--text);
+      font-size: 12.5px;
+      line-height: 1.4;
+      border-left: 2px solid transparent;
+    }
+    .nav-rail .nav-card li a:hover,
+    .nav-rail .nav-card li a:focus-visible {
+      background: rgba(167, 139, 250, 0.08);
+      color: var(--link-hot);
+      border-left-color: var(--accent-2);
+    }
+    .nav-rail .nav-card li a.is-current {
+      background: rgba(109, 40, 217, 0.25);
+      color: var(--text-strong);
+      border-left-color: var(--accent);
+      font-weight: 500;
+    }
+    .nav-rail .nav-back {
+      display: inline-block;
+      padding: 6px 10px;
+      font: 500 11px "IBM Plex Mono", Consolas, monospace;
+      color: var(--accent);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+    .nav-rail .nav-back:hover { background: rgba(167, 139, 250, 0.08); }
+
+    /* ── Article column ───────────────────────────────────── */
+    main.article {
+      min-width: 0;
+    }
+
+    .breadcrumb {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      font: 500 11px "IBM Plex Mono", Consolas, monospace;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+    .breadcrumb a {
+      color: var(--accent);
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .breadcrumb a:hover { background: rgba(167, 139, 250, 0.08); color: var(--link-hot); }
+    .breadcrumb .sep { color: var(--muted-2); }
+    .breadcrumb .current { color: var(--text-strong); }
+
+    .doc-loading, .doc-error {
+      font: 400 13px "IBM Plex Mono", Consolas, monospace;
+      color: var(--muted);
+      padding: 20px 0;
+    }
+    .doc-error {
+      color: var(--danger);
+      border: 1px solid rgba(252, 165, 165, 0.4);
+      background: rgba(252, 165, 165, 0.05);
+      padding: 16px 18px;
+      border-radius: 8px;
+    }
+    .doc-error h2 {
+      color: var(--danger);
+      font-size: 16px;
+      font-family: "IBM Plex Sans", sans-serif;
+      margin-bottom: 8px;
+    }
+    .doc-error code {
+      background: rgba(252, 165, 165, 0.15);
+      padding: 0.1em 0.4em;
+      border-radius: 3px;
+      font-family: "IBM Plex Mono", monospace;
+      color: #fde68a;
+    }
+    .doc-error .popular {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px dashed rgba(252, 165, 165, 0.4);
+    }
+    .doc-error .popular h3 {
+      font: 600 11px "IBM Plex Mono", monospace;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    .doc-error .popular ul { list-style: none; padding: 0; }
+    .doc-error .popular li { margin: 4px 0; }
+    .doc-error .popular a { color: var(--link); font: 400 13px "IBM Plex Mono", monospace; }
+
+    .doc-content {
+      font-size: 15.5px;
+      max-width: 78ch;
+    }
+    .doc-content h1,
+    .doc-content h2,
+    .doc-content h3,
+    .doc-content h4,
+    .doc-content h5,
+    .doc-content h6 {
+      font-family: "IBM Plex Sans", sans-serif;
+      color: var(--accent);
+      line-height: 1.25;
+      letter-spacing: -0.005em;
+      scroll-margin-top: 80px;
+    }
+    .doc-content h1 { font-size: 2rem; margin: 0 0 0.6em; color: var(--text-strong); }
+    .doc-content h2 {
+      font-size: 1.45rem;
+      margin: 1.8em 0 0.7em;
+      padding-bottom: 0.32em;
+      border-bottom: 1px solid var(--border);
+    }
+    .doc-content h3 { font-size: 1.18rem; margin: 1.4em 0 0.55em; }
+    .doc-content h4 { font-size: 1.02rem; margin: 1.2em 0 0.45em; color: var(--accent-2); }
+    .doc-content p { margin: 0.85em 0; }
+    .doc-content ul, .doc-content ol { margin: 0.85em 0 0.85em 1.5em; }
+    .doc-content li { margin: 0.4em 0; }
+    .doc-content li > ul, .doc-content li > ol { margin: 0.3em 0 0.3em 1.25em; }
+    .doc-content a { color: var(--link); border-bottom: 1px solid rgba(56, 189, 248, 0.25); }
+    .doc-content a:hover { color: var(--link-hot); border-bottom-color: rgba(254, 249, 195, 0.5); }
+    .doc-content strong { color: var(--text-strong); font-weight: 600; }
+    .doc-content em { color: var(--text-strong); }
+    .doc-content blockquote {
+      border-left: 3px solid var(--accent);
+      margin: 1.1em 0;
+      padding: 0.35em 0 0.35em 1.1em;
+      color: var(--muted);
+      background: rgba(167, 139, 250, 0.05);
+      border-radius: 0 4px 4px 0;
+    }
+    .doc-content hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2.2em 0;
+    }
+    .doc-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      margin: 1.2em 0;
+      display: block;
+    }
+    .doc-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.2em 0;
+      font-size: 14px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .doc-content th, .doc-content td {
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .doc-content th {
+      background: rgba(109, 40, 217, 0.2);
+      color: var(--accent);
+      font-weight: 600;
+      font-family: "IBM Plex Mono", Consolas, monospace;
+      font-size: 12.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .doc-content tr:nth-child(even) td { background: rgba(255, 255, 255, 0.015); }
+
+    .doc-content code {
+      font-family: "IBM Plex Mono", Consolas, "Courier New", monospace;
+      font-size: 0.88em;
+      background: var(--code-bg);
+      border: 1px solid var(--code-border);
+      padding: 0.12em 0.4em;
+      border-radius: 4px;
+      color: #f5d0fe;
+    }
+    .doc-content pre {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      margin: 1.1em 0;
+      font-family: "IBM Plex Mono", Consolas, "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      color: #e0e7ff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+    .doc-content pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ── Pager (prev / next) ──────────────────────────────── */
+    .pager {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin: 30px 0 12px;
+    }
+    .pager .pager-link {
+      display: block;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(23, 12, 46, 0.45);
+      color: var(--text);
+      text-decoration: none;
+      transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+    }
+    .pager .pager-link:hover {
+      border-color: var(--border-strong);
+      background: rgba(109, 40, 217, 0.18);
+      transform: translateY(-1px);
+    }
+    .pager .pager-link.disabled {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .pager .pager-link .pager-label {
+      font: 500 10px "IBM Plex Mono", Consolas, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 4px;
+    }
+    .pager .pager-link .pager-title {
+      font: 500 13.5px "IBM Plex Sans", sans-serif;
+      color: var(--text-strong);
+      line-height: 1.35;
+    }
+    .pager .pager-link.next { text-align: right; }
+    .pager .pager-link.next .pager-label::after { content: ' →'; color: var(--accent); }
+    .pager .pager-link.prev .pager-label::before { content: '← '; color: var(--accent); }
+
+    .deck-return {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 18px;
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--accent);
+      font: 500 11.5px "IBM Plex Mono", Consolas, monospace;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: rgba(167, 139, 250, 0.06);
+    }
+    .deck-return:hover {
+      background: rgba(167, 139, 250, 0.14);
+      color: var(--link-hot);
+    }
+    .deck-return::before { content: '◄'; color: var(--accent-2); }
+
+    /* ── Right TOC rail ───────────────────────────────────── */
+    aside.toc-rail {
+      position: sticky;
+      top: 64px;
+      max-height: calc(100vh - 80px);
+      overflow: auto;
+      padding-left: 6px;
+      font-size: 12.5px;
+    }
+    .toc-rail h4 {
+      font: 600 10.5px "IBM Plex Mono", Consolas, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted-2);
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+    .toc-rail ul { list-style: none; padding: 0; margin: 0; border-left: 1px solid var(--border); }
+    .toc-rail li { margin: 0; }
+    .toc-rail a {
+      display: block;
+      padding: 4px 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      border-left: 2px solid transparent;
+      margin-left: -1px;
+    }
+    .toc-rail a:hover,
+    .toc-rail a:focus-visible {
+      color: var(--link-hot);
+      border-left-color: var(--accent-2);
+    }
+    .toc-rail li.lvl-3 a { padding-left: 22px; font-size: 11.5px; color: var(--muted-2); }
+    .toc-rail li.active > a { color: var(--text-strong); border-left-color: var(--accent); }
+    .toc-rail .toc-empty {
+      font: 400 11.5px "IBM Plex Mono", monospace;
+      color: var(--muted-2);
+      padding: 4px 10px;
+    }
+
+    /* ── Responsive ───────────────────────────────────────── */
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: var(--nav-w) minmax(0, 1fr); }
+      aside.toc-rail { display: none; }
+    }
+    @media (max-width: 820px) {
+      .layout {
+        grid-template-columns: 1fr;
+        padding: 18px 16px 80px;
+        gap: 18px;
+      }
+      aside.nav-rail {
+        position: static;
+        max-height: none;
+      }
+      aside.nav-rail.is-collapsed .nav-card { display: none; }
+      aside.nav-rail.is-collapsed .nav-back { display: none; }
+      .topbar .menu-toggle { display: inline-flex; }
+      .topbar .path-chip { max-width: 100%; }
+      .doc-content h1 { font-size: 1.6rem; }
+      .doc-content h2 { font-size: 1.25rem; }
+    }
+
+    /* ── Print ────────────────────────────────────────────── */
     @media print {
-      header { position: static; background: #fff; border-color: #ccc; }
-      header a, #doc-path { color: #333; }
-      body { background: #fff; color: #111; }
-      #doc-content h1, #doc-content h2, #doc-content h3 { color: #111; }
+      :root { --bg: #ffffff; }
+      body {
+        background: #fff;
+        color: #111;
+      }
+      .topbar, aside.nav-rail, aside.toc-rail, .pager, .deck-return, .menu-toggle { display: none !important; }
+      .layout {
+        display: block;
+        max-width: none;
+        padding: 0;
+      }
+      main.article { padding: 0; }
+      .breadcrumb { color: #555; }
+      .breadcrumb a, .breadcrumb .current { color: #111; }
+      .doc-content { max-width: none; font-size: 12pt; color: #111; }
+      .doc-content h1, .doc-content h2, .doc-content h3, .doc-content h4 { color: #1a1a1a; }
+      .doc-content h2 { border-bottom-color: #ccc; }
+      .doc-content a { color: #1d4ed8; border-bottom: none; }
+      .doc-content code {
+        background: #f3f0fb;
+        border-color: #ddd;
+        color: #4c1d95;
+      }
+      .doc-content pre {
+        background: #f8f7fc;
+        border-color: #ccc;
+        color: #111;
+        page-break-inside: avoid;
+      }
+      .doc-content blockquote { color: #444; background: #f8f7fc; }
+      .doc-content table { background: #fff; border-color: #ccc; }
+      .doc-content th { background: #ede9fe; color: #4c1d95; }
+      .doc-content img { border-color: #ccc; max-width: 100%; }
     }
+
+    /* ── Misc utilities ───────────────────────────────────── */
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    :focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; border-radius: 4px; }
   </style>
 </head>
 <body>
-  <header>
-    <a id="nav-landing" href="./">Landing</a>
-    <a id="nav-deck" href="./brain/">Observation deck</a>
-    <span id="doc-path"></span>
+  <header class="topbar" role="banner">
+    <span class="brand" aria-label="HABIBI-SIEM"><span class="glyph" aria-hidden="true"></span>HABIBI-SIEM · Docs</span>
+    <nav class="primary" aria-label="Primary">
+      <a href="./" data-nav="landing">Landing</a>
+      <a href="brain/" data-nav="deck">Observation Deck</a>
+      <a href="README.md" data-nav="readme">README</a>
+    </nav>
+    <span class="spacer" aria-hidden="true"></span>
+    <button type="button" class="menu-toggle" id="menu-toggle" aria-controls="nav-rail" aria-expanded="true">
+      <span aria-hidden="true">≡</span> Menu
+    </button>
+    <span class="path-chip" id="doc-path" aria-live="polite"></span>
   </header>
-  <main>
-    <div id="doc-loading">Loading…</div>
-    <div id="doc-error" hidden></div>
-    <article id="doc-content"></article>
-  </main>
-  <script src="./assets/marked.min.js"></script>
+
+  <div class="layout">
+    <aside class="nav-rail" id="nav-rail" aria-label="Section navigation">
+      <a class="nav-back" href="brain/" aria-label="Back to Observation Deck">◄ Observation Deck</a>
+      <p class="nav-section-title" id="nav-section-title">Loading section…</p>
+      <div id="nav-tree"></div>
+    </aside>
+
+    <main class="article" id="main">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <div class="doc-loading" id="doc-loading">Loading document…</div>
+      <div class="doc-error" id="doc-error" hidden></div>
+      <article class="doc-content" id="doc-content" aria-live="polite"></article>
+      <nav class="pager" id="pager" aria-label="Page navigation"></nav>
+      <a class="deck-return" href="brain/" id="deck-return">Back to Observation Deck</a>
+    </main>
+
+    <aside class="toc-rail" id="toc-rail" aria-label="On this page">
+      <h4>On this page</h4>
+      <ul id="toc-list"><li class="toc-empty">No headings.</li></ul>
+    </aside>
+  </div>
+
+  <script src="assets/marked.min.js"></script>
+  <script src="assets/siem-core.js" onerror="this.remove()"></script>
+  <script src="assets/palette.js" onerror="this.remove()"></script>
   <script>
-(() => {
+(function () {
   'use strict';
 
-  const params = new URLSearchParams(location.search);
-  const docPath = (params.get('p') || 'docs/02-architecture/00-system-overview.md').replace(/^\/+/, '');
+  // ── URL & path helpers ───────────────────────────────────
+  var params = new URLSearchParams(location.search);
+  var rawPath = params.get('path') || params.get('p') || params.get('doc') || 'docs/02-architecture/00-system-overview.md';
+  var docPath = String(rawPath).replace(/^\/+/, '').replace(/\\/g, '/');
 
-  const loading = document.getElementById('doc-loading');
-  const errEl = document.getElementById('doc-error');
-  const content = document.getElementById('doc-content');
-  const pathEl = document.getElementById('doc-path');
+  var docPathEl = document.getElementById('doc-path');
+  var loadingEl = document.getElementById('doc-loading');
+  var errorEl = document.getElementById('doc-error');
+  var contentEl = document.getElementById('doc-content');
+  var breadcrumbEl = document.getElementById('breadcrumb');
+  var navTreeEl = document.getElementById('nav-tree');
+  var navSectionTitleEl = document.getElementById('nav-section-title');
+  var navRailEl = document.getElementById('nav-rail');
+  var menuToggle = document.getElementById('menu-toggle');
+  var pagerEl = document.getElementById('pager');
+  var tocListEl = document.getElementById('toc-list');
 
-  pathEl.textContent = docPath;
+  docPathEl.textContent = docPath;
 
   function siteBase() {
-    const p = location.pathname;
-    const idx = p.lastIndexOf('/');
+    var p = location.pathname;
+    var idx = p.lastIndexOf('/');
     return location.origin + (idx >= 0 ? p.slice(0, idx + 1) : '/');
   }
 
   function baseDir(p) {
-    const i = p.lastIndexOf('/');
+    var i = p.lastIndexOf('/');
     return i >= 0 ? p.slice(0, i + 1) : '';
   }
 
   function resolvePath(rel, fromDir) {
-    if (!rel || /^https?:\/\//i.test(rel) || rel.startsWith('mailto:') || rel.startsWith('#')) return rel;
-    const joined = (fromDir + rel).split('/');
-    const out = [];
-    for (const part of joined) {
+    if (!rel || /^https?:\/\//i.test(rel) || /^mailto:/i.test(rel) || rel.charAt(0) === '#') return rel;
+    var joined = (fromDir + rel).split('/');
+    var out = [];
+    for (var i = 0; i < joined.length; i++) {
+      var part = joined[i];
       if (part === '..') { if (out.length) out.pop(); }
       else if (part && part !== '.') out.push(part);
     }
@@ -146,63 +695,496 @@
   }
 
   function viewerUrl(mdPath) {
-    return siteBase() + 'read.html?p=' + encodeURIComponent(mdPath);
+    return siteBase() + 'read.html?path=' + encodeURIComponent(mdPath);
   }
 
-  function assetUrl(relPath) {
-    return siteBase() + relPath.replace(/^\/+/, '');
+  function assetUrl(rel) {
+    return siteBase() + String(rel || '').replace(/^\/+/, '');
+  }
+
+  function titleCaseFromSlug(slug) {
+    var clean = slug.replace(/\.md$/i, '').replace(/^\d+-/, '').replace(/-/g, ' ').replace(/_/g, ' ').trim();
+    if (!clean) return slug;
+    return clean.charAt(0).toUpperCase() + clean.slice(1);
   }
 
   function stripFrontMatter(text) {
-    if (text.startsWith('---')) {
-      const end = text.indexOf('\n---', 3);
+    if (text.slice(0, 4) === '---\n' || text.slice(0, 4) === '---\r') {
+      var end = text.indexOf('\n---', 3);
       if (end > 0) return text.slice(end + 4).replace(/^\s+/, '');
     }
     return text;
   }
 
-  const dir = baseDir(docPath);
+  function escapeHTML(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function slugify(text) {
+    return String(text || '').toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+  }
+
+  // ── Section inference from doc path ──────────────────────
+  function inferSectionKey(p) {
+    var parts = p.split('/');
+    if (parts[0] === 'guides' && parts.length >= 3) {
+      return parts[1] + '/' + parts[2];
+    }
+    return '';
+  }
+
+  function inferCategoryKey(p) {
+    var parts = p.split('/');
+    if (parts[0] === 'guides' && parts.length >= 2) return parts[1];
+    return parts[0] || '';
+  }
+
+  // ── Manifest loading ─────────────────────────────────────
+  var manifestPromise = null;
+  function loadManifest() {
+    if (manifestPromise) return manifestPromise;
+    manifestPromise = fetch(assetUrl('assets/guides-manifest.json'), { cache: 'no-cache' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+    return manifestPromise;
+  }
+
+  // ── Fallback: derive section from INDEX.md ───────────────
+  function fetchSectionFromIndex(sectionKey) {
+    if (!sectionKey) return Promise.resolve(null);
+    var indexPath = 'guides/' + sectionKey + '/INDEX.md';
+    return fetch(assetUrl(indexPath), { cache: 'no-cache' })
+      .then(function (r) { return r.ok ? r.text() : null; })
+      .then(function (text) {
+        if (!text) return null;
+        var pages = [];
+        var linkRe = /\[([^\]]+)\]\(([^)\s]+\.md)\)/g;
+        var m;
+        while ((m = linkRe.exec(text)) !== null) {
+          var fname = m[2].split('/').pop();
+          if (!/^INDEX\.md$/i.test(fname)) {
+            pages.push({ file: fname, title: m[1] });
+          }
+        }
+        pages.sort(function (a, b) {
+          return a.file.localeCompare(b.file, 'en', { numeric: true });
+        });
+        var sidebarMatch = text.match(/sidebar path:\*\*\s*([^\n]+)/i);
+        var title = sidebarMatch ? sidebarMatch[1].trim() : titleCaseFromSlug(sectionKey.split('/').pop());
+        return {
+          title: title.replace(/.*→\s*/, ''),
+          category: sectionKey.split('/')[0],
+          base: 'guides/' + sectionKey + '/',
+          index: 'INDEX.md',
+          pages: pages,
+          synthetic: true
+        };
+      })
+      .catch(function () { return null; });
+  }
+
+  // ── Breadcrumb ───────────────────────────────────────────
+  function buildBreadcrumb(p, manifest, section) {
+    breadcrumbEl.innerHTML = '';
+    var parts = p.split('/');
+    var crumbs = [];
+
+    if (parts[0] === 'guides') {
+      crumbs.push({ label: 'Guides', href: viewerUrl('guides/README.md') });
+      if (parts.length >= 2) {
+        var catKey = parts[1];
+        var catLabel = (manifest && manifest.categories && manifest.categories[catKey] && manifest.categories[catKey].title)
+          || titleCaseFromSlug(catKey);
+        crumbs.push({ label: catLabel });
+      }
+      if (parts.length >= 3) {
+        var sectionLabel = (section && section.title) || titleCaseFromSlug(parts[2]);
+        var indexHref = viewerUrl('guides/' + parts[1] + '/' + parts[2] + '/INDEX.md');
+        crumbs.push({ label: sectionLabel, href: indexHref });
+      }
+    } else if (parts[0] === 'docs') {
+      crumbs.push({ label: 'Docs', href: viewerUrl('docs/02-architecture/00-system-overview.md') });
+      if (parts.length >= 2) crumbs.push({ label: titleCaseFromSlug(parts[1]) });
+    } else if (parts[0]) {
+      crumbs.push({ label: titleCaseFromSlug(parts[0]) });
+    }
+
+    var last = parts[parts.length - 1] || '';
+    if (last && !/^INDEX\.md$/i.test(last)) {
+      crumbs.push({ label: titleCaseFromSlug(last), current: true });
+    } else if (/^INDEX\.md$/i.test(last)) {
+      crumbs.push({ label: 'Index', current: true });
+    }
+
+    crumbs.forEach(function (c, i) {
+      if (i > 0) {
+        var sep = document.createElement('span');
+        sep.className = 'sep';
+        sep.textContent = '›';
+        breadcrumbEl.appendChild(sep);
+      }
+      if (c.current) {
+        var span = document.createElement('span');
+        span.className = 'current';
+        span.textContent = c.label;
+        breadcrumbEl.appendChild(span);
+      } else if (c.href) {
+        var a = document.createElement('a');
+        a.href = c.href;
+        a.textContent = c.label;
+        breadcrumbEl.appendChild(a);
+      } else {
+        var s = document.createElement('span');
+        s.textContent = c.label;
+        breadcrumbEl.appendChild(s);
+      }
+    });
+  }
+
+  // ── Sidebar tree ─────────────────────────────────────────
+  function buildSidebar(manifest, sectionKey, section) {
+    navTreeEl.innerHTML = '';
+    var currentFile = docPath.split('/').pop();
+    var catKey = (section && section.category) || inferCategoryKey(docPath);
+
+    if (!section) {
+      navSectionTitleEl.textContent = 'Documentation';
+      var hint = document.createElement('div');
+      hint.className = 'nav-card';
+      hint.innerHTML = '<div class="nav-card-header"><h3>Browse</h3></div>' +
+        '<ul style="padding:6px 10px;list-style:none">' +
+        '<li><a href="' + viewerUrl('README.md') + '">README</a></li>' +
+        '<li><a href="' + viewerUrl('guides/README.md') + '">Guides overview</a></li>' +
+        '<li><a href="' + viewerUrl('docs/02-architecture/00-system-overview.md') + '">System overview</a></li>' +
+        '</ul>';
+      navTreeEl.appendChild(hint);
+      return;
+    }
+
+    var catTitle = (manifest && manifest.categories && manifest.categories[catKey] && manifest.categories[catKey].title)
+      || titleCaseFromSlug(catKey);
+
+    navSectionTitleEl.textContent = catTitle;
+
+    // Build a card for the current section.
+    var card = document.createElement('section');
+    card.className = 'nav-card';
+
+    var header = document.createElement('div');
+    header.className = 'nav-card-header';
+    var h3 = document.createElement('h3');
+    h3.textContent = section.title;
+    var cat = document.createElement('span');
+    cat.className = 'nav-cat';
+    cat.textContent = catTitle;
+    header.appendChild(h3);
+    header.appendChild(cat);
+    card.appendChild(header);
+
+    var details = document.createElement('details');
+    details.open = true;
+    var summary = document.createElement('summary');
+    summary.textContent = 'Pages (' + section.pages.length + ')';
+    details.appendChild(summary);
+
+    var ul = document.createElement('ul');
+    var indexHref = viewerUrl(section.base + (section.index || 'INDEX.md'));
+    var indexLi = document.createElement('li');
+    var indexA = document.createElement('a');
+    indexA.href = indexHref;
+    indexA.textContent = 'Section index';
+    if (/INDEX\.md$/i.test(currentFile)) indexA.classList.add('is-current');
+    indexLi.appendChild(indexA);
+    ul.appendChild(indexLi);
+
+    section.pages.forEach(function (page) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = viewerUrl(section.base + page.file);
+      a.textContent = page.title || titleCaseFromSlug(page.file);
+      if (page.file === currentFile) a.classList.add('is-current');
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+    details.appendChild(ul);
+    card.appendChild(details);
+    navTreeEl.appendChild(card);
+
+    // Add a sibling-sections card for the same category from the manifest.
+    if (manifest && manifest.sections) {
+      var sibKeys = Object.keys(manifest.sections).filter(function (k) {
+        return manifest.sections[k].category === catKey && k !== sectionKey;
+      });
+      if (sibKeys.length) {
+        var sibCard = document.createElement('section');
+        sibCard.className = 'nav-card';
+        sibCard.innerHTML = '<div class="nav-card-header"><h3>More in ' + escapeHTML(catTitle) + '</h3></div>';
+        var sibDetails = document.createElement('details');
+        sibDetails.open = false;
+        var sibSummary = document.createElement('summary');
+        sibSummary.textContent = 'Sibling sections (' + sibKeys.length + ')';
+        sibDetails.appendChild(sibSummary);
+        var sibUl = document.createElement('ul');
+        sibKeys.forEach(function (k) {
+          var s = manifest.sections[k];
+          var li = document.createElement('li');
+          var a = document.createElement('a');
+          a.href = viewerUrl(s.base + (s.index || 'INDEX.md'));
+          a.textContent = s.title;
+          li.appendChild(a);
+          sibUl.appendChild(li);
+        });
+        sibDetails.appendChild(sibUl);
+        sibCard.appendChild(sibDetails);
+        navTreeEl.appendChild(sibCard);
+      }
+    }
+  }
+
+  // ── Pager (prev / next) ──────────────────────────────────
+  function buildPager(section) {
+    pagerEl.innerHTML = '';
+    if (!section || !section.pages || !section.pages.length) return;
+    var currentFile = docPath.split('/').pop();
+    var idx = -1;
+    for (var i = 0; i < section.pages.length; i++) {
+      if (section.pages[i].file === currentFile) { idx = i; break; }
+    }
+    var prev = idx > 0 ? section.pages[idx - 1] : null;
+    var next = idx >= 0 && idx < section.pages.length - 1 ? section.pages[idx + 1] : null;
+
+    var prevLink = document.createElement('a');
+    prevLink.className = 'pager-link prev' + (prev ? '' : ' disabled');
+    prevLink.href = prev ? viewerUrl(section.base + prev.file) : '#';
+    prevLink.setAttribute('rel', 'prev');
+    prevLink.innerHTML = '<span class="pager-label">Previous</span>' +
+      '<span class="pager-title">' + escapeHTML(prev ? (prev.title || titleCaseFromSlug(prev.file)) : 'Start of section') + '</span>';
+    if (!prev) prevLink.setAttribute('aria-disabled', 'true');
+
+    var nextLink = document.createElement('a');
+    nextLink.className = 'pager-link next' + (next ? '' : ' disabled');
+    nextLink.href = next ? viewerUrl(section.base + next.file) : '#';
+    nextLink.setAttribute('rel', 'next');
+    nextLink.innerHTML = '<span class="pager-label">Next</span>' +
+      '<span class="pager-title">' + escapeHTML(next ? (next.title || titleCaseFromSlug(next.file)) : 'End of section') + '</span>';
+    if (!next) nextLink.setAttribute('aria-disabled', 'true');
+
+    pagerEl.appendChild(prevLink);
+    pagerEl.appendChild(nextLink);
+  }
+
+  // ── Markdown rendering ───────────────────────────────────
+  var dir = baseDir(docPath);
 
   function renderMarkdown(md) {
     if (typeof marked === 'undefined') {
-      throw new Error('Markdown renderer failed to load');
+      throw new Error('Markdown renderer (marked.min.js) failed to load.');
     }
-    const renderer = new marked.Renderer();
+    var renderer = new marked.Renderer();
     renderer.link = function (href, title, text) {
-      let h = href || '';
-      if (h && !h.startsWith('#') && !/^https?:\/\//i.test(h)) {
-        if (h.endsWith('.md') || !h.includes('://')) h = viewerUrl(resolvePath(h, dir));
+      var h = href || '';
+      if (h && h.charAt(0) !== '#' && !/^https?:\/\//i.test(h) && !/^mailto:/i.test(h)) {
+        if (/\.md(#.*)?$/i.test(h)) {
+          var hashIdx = h.indexOf('#');
+          var hash = hashIdx >= 0 ? h.slice(hashIdx) : '';
+          var raw = hashIdx >= 0 ? h.slice(0, hashIdx) : h;
+          h = viewerUrl(resolvePath(raw, dir)) + hash;
+        } else {
+          h = assetUrl(resolvePath(h, dir));
+        }
       }
-      const t = title ? ' title="' + title + '"' : '';
-      return '<a href="' + h + '"' + t + '>' + text + '</a>';
+      var t = title ? ' title="' + escapeHTML(title) + '"' : '';
+      return '<a href="' + escapeHTML(h) + '"' + t + '>' + text + '</a>';
     };
     renderer.image = function (href, title, text) {
-      const src = assetUrl(resolvePath(href || '', dir));
-      const t = title ? ' title="' + title + '"' : '';
-      return '<img src="' + src + '" alt="' + (text || '') + '"' + t + ' loading="lazy" />';
+      var src = assetUrl(resolvePath(href || '', dir));
+      var t = title ? ' title="' + escapeHTML(title) + '"' : '';
+      return '<img src="' + escapeHTML(src) + '" alt="' + escapeHTML(text || '') + '"' + t + ' loading="lazy" />';
     };
-    return marked.parse(md, { renderer: renderer, gfm: true, breaks: false });
+    renderer.heading = function (text, level, raw) {
+      var id = slugify(raw || text);
+      return '<h' + level + ' id="' + escapeHTML(id) + '">' + text + '</h' + level + '>';
+    };
+    return marked.parse(md, {
+      renderer: renderer,
+      gfm: true,
+      breaks: false,
+      headerIds: false,
+      mangle: false
+    });
   }
 
-  async function load() {
-    document.title = docPath.split('/').pop() + ' · SIEM Docs';
-    try {
-      const res = await fetch(assetUrl(docPath));
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      let md = await res.text();
-      md = stripFrontMatter(md);
-      loading.hidden = true;
-      content.innerHTML = renderMarkdown(md);
-      const h1 = content.querySelector('h1');
-      if (h1) document.title = h1.textContent.trim() + ' · SIEM Docs';
-    } catch (e) {
-      loading.hidden = true;
-      errEl.hidden = false;
-      errEl.textContent = 'Could not load ' + docPath + ' — ' + (e.message || e);
+  // ── Table of contents ────────────────────────────────────
+  function buildToc() {
+    var headings = contentEl.querySelectorAll('h2, h3');
+    tocListEl.innerHTML = '';
+    if (!headings.length) {
+      var empty = document.createElement('li');
+      empty.className = 'toc-empty';
+      empty.textContent = 'No headings.';
+      tocListEl.appendChild(empty);
+      return;
+    }
+    headings.forEach(function (h) {
+      var li = document.createElement('li');
+      li.className = h.tagName === 'H3' ? 'lvl-3' : 'lvl-2';
+      var a = document.createElement('a');
+      if (!h.id) h.id = slugify(h.textContent);
+      a.href = '#' + h.id;
+      a.textContent = h.textContent;
+      li.appendChild(a);
+      tocListEl.appendChild(li);
+    });
+
+    // Highlight the in-view heading.
+    if ('IntersectionObserver' in window) {
+      var links = Array.prototype.slice.call(tocListEl.querySelectorAll('a'));
+      var byId = {};
+      links.forEach(function (link) {
+        byId[link.getAttribute('href').slice(1)] = link.parentNode;
+      });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          var li = byId[entry.target.id];
+          if (!li) return;
+          if (entry.isIntersecting) {
+            Object.keys(byId).forEach(function (k) { byId[k].classList.remove('active'); });
+            li.classList.add('active');
+          }
+        });
+      }, { rootMargin: '-30% 0px -55% 0px', threshold: 0 });
+      headings.forEach(function (h) { io.observe(h); });
     }
   }
 
-  load();
+  // ── Error rendering ──────────────────────────────────────
+  function renderError(message, manifest) {
+    loadingEl.hidden = true;
+    contentEl.innerHTML = '';
+    errorEl.hidden = false;
+    var popular = (manifest && Array.isArray(manifest.popular) && manifest.popular.length)
+      ? manifest.popular
+      : [
+          { path: 'README.md', label: 'README' },
+          { path: 'guides/README.md', label: 'Guides overview' },
+          { path: 'docs/02-architecture/00-system-overview.md', label: 'System overview' },
+          { path: 'guides/monitor/alert-manager/02-alert-lifecycle.md', label: 'Alert lifecycle' },
+          { path: 'guides/investigate/event-graph/02-graph-theory-basics.md', label: 'Graph theory basics' }
+        ];
+    var html =
+      '<h2>Document not available</h2>' +
+      '<p>' + escapeHTML(message || 'The requested page could not be loaded.') + '</p>' +
+      '<p>Requested path: <code>' + escapeHTML(docPath) + '</code></p>' +
+      '<div class="popular"><h3>Popular pages</h3><ul>';
+    popular.forEach(function (p) {
+      html += '<li><a href="' + escapeHTML(viewerUrl(p.path)) + '">' + escapeHTML(p.label) + '</a></li>';
+    });
+    html += '</ul></div>';
+    errorEl.innerHTML = html;
+  }
+
+  // ── Page load orchestration ──────────────────────────────
+  function setDocumentTitle(text) {
+    var name = text || (docPath.split('/').pop() || 'Document');
+    document.title = name + ' · SIEM Docs';
+  }
+
+  function scrollToHash() {
+    if (!location.hash) return;
+    var id = location.hash.slice(1);
+    var target = document.getElementById(id);
+    if (target && target.scrollIntoView) {
+      target.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }
+  }
+
+  function load() {
+    setDocumentTitle(titleCaseFromSlug(docPath.split('/').pop()));
+    var sectionKey = inferSectionKey(docPath);
+
+    // Kick off section resolution and doc fetch in parallel.
+    var manifestP = loadManifest();
+    var sectionP = manifestP.then(function (manifest) {
+      if (manifest && manifest.sections && manifest.sections[sectionKey]) {
+        return { manifest: manifest, section: manifest.sections[sectionKey] };
+      }
+      return fetchSectionFromIndex(sectionKey).then(function (section) {
+        return { manifest: manifest, section: section };
+      });
+    });
+
+    var docP = fetch(assetUrl(docPath), { cache: 'no-cache' }).then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status + ' fetching ' + docPath);
+      return res.text();
+    });
+
+    sectionP.then(function (resolved) {
+      buildBreadcrumb(docPath, resolved.manifest, resolved.section);
+      buildSidebar(resolved.manifest, sectionKey, resolved.section);
+      buildPager(resolved.section);
+    });
+
+    Promise.all([docP, sectionP]).then(function (results) {
+      var md = stripFrontMatter(results[0]);
+      loadingEl.hidden = true;
+      errorEl.hidden = true;
+      contentEl.innerHTML = renderMarkdown(md);
+      var h1 = contentEl.querySelector('h1');
+      if (h1) setDocumentTitle(h1.textContent.trim());
+      buildToc();
+      scrollToHash();
+    }).catch(function (e) {
+      manifestP.then(function (manifest) {
+        renderError(e && e.message ? e.message : String(e), manifest);
+      });
+    });
+  }
+
+  // ── Menu toggle for narrow viewports ─────────────────────
+  function syncMenuButton() {
+    var collapsed = navRailEl.classList.contains('is-collapsed');
+    menuToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+  }
+  menuToggle.addEventListener('click', function () {
+    navRailEl.classList.toggle('is-collapsed');
+    syncMenuButton();
+  });
+
+  // ── SiemCore bootstrap (optional) ────────────────────────
+  function bootCoreWhenReady() {
+    if (window.SiemCore && typeof window.SiemCore.bootPage === 'function') {
+      try { window.SiemCore.bootPage('read'); } catch (e) { /* no-op */ }
+      return true;
+    }
+    return false;
+  }
+
+  function init() {
+    load();
+    if (!bootCoreWhenReady()) {
+      var tries = 0;
+      var iv = setInterval(function () {
+        tries++;
+        if (bootCoreWhenReady() || tries > 20) clearInterval(iv);
+      }, 100);
+    }
+    syncMenuButton();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
   </script>
 </body>
