@@ -19,7 +19,7 @@ Header **IOC WATCHLIST** with optional red badge **N ACTIVE HITS**, search box S
 
 ### What is happening underneath
 
-`DEFAULT_IOCS` constant merged with user-added `iocWatchlist` from context: `{ id, type, value, threat, severity, source, tlp, confidence }`. Types enum `['ip','domain','hash','url','email']`. Matching in `iocMatches` memo scans all alerts per IOC: IP equality on `sourceIp`/`source.ip`; domain via `JSON.stringify(a).toLowerCase().includes(value)`; URL via `urlPath`/`url.path`; hash/email types in defaults but hash matching not implemented in filter logic (no hit unless extended). Intelligence → IOC Watchlist (IOC Watchlist screen) merges immutable `DEFAULT_IOCS` with user `iocWatchlist` from context via `allIocs = [...DEFAULT_IOCS,...iocWatchlist]`. Supported types: ip, domain, hash, url, email, but matching logic in `iocMatches` fully implements IP (`sourceIp` / `source.ip`), domain (substring over `JSON.stringify(alert)`), and URL (`urlPath` / `url.path`); hash and email types display without reliable hit detection until extended. Header badge **N ACTIVE HITS** counts IOCs with ≥1 match; matching rows gain pink background and blinking **N HITS** in **ALERTS** column.
+`DEFAULT_IOCS` constant merged with user-added `iocWatchlist` from context: `{ id, type, value, threat, severity, source, tlp, confidence }`. Types enum `['ip','domain','hash','url','email']`. Matching in `iocMatches` memo scans all alerts per IOC: IP equality on `sourceIp`/`source.ip`; domain via `JSON.stringify(a).toLowerCase().includes(value)`; URL via `urlPath`/`url.path`; hash/email types display in the watchlist; extend `iocMatches` with hash and email comparison logic to activate hit detection for those types. Intelligence → IOC Watchlist (IOC Watchlist screen) merges immutable `DEFAULT_IOCS` with user `iocWatchlist` from context via `allIocs = [...DEFAULT_IOCS,...iocWatchlist]`. Supported types: ip, domain, hash, url, email, but matching logic in `iocMatches` fully implements IP (`sourceIp` / `source.ip`), domain (substring over `JSON.stringify(alert)`), and URL (`urlPath` / `url.path`); hash and email types display in the watchlist; extend `iocMatches` with hash and email comparison logic to activate hit detection for those types. Header badge **N ACTIVE HITS** counts IOCs with ≥1 match; matching rows gain pink background and blinking **N HITS** in **ALERTS** column.
 
 `iocMatches` recomputes every render from the alerts array, latency equals React refresh, adequate for demo volumes but potentially costly if domain matching stringifies large alert JSON at enterprise EPS. Matches do not spawn new alert types; they overlay correlation on existing detections. False positives arise when domain substring appears innocuously inside unrelated alert fields; always manually validate a hit before executive briefing.
 
@@ -44,7 +44,7 @@ Alert is your system detecting suspicious behaviour; IOC is external knowledge t
 
 #### Example of hash IOC?
 
-Default `e3b0c44298fc1c149afbf4c8996fb924` labelled malware hash, matching not wired for hashes in code.
+Default `e3b0c44298fc1c149afbf4c8996fb924` labelled malware hash; extend `iocMatches` with hash field comparison to enable active hit detection for hash-type IOCs.
 
 #### User agent IOC?
 

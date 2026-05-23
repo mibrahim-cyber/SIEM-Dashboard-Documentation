@@ -18,7 +18,7 @@ Analytics trend visualisation covers approximately five minutes of session histo
 
 ### What is happening underneath
 
-Trend data source is exclusively in-memory `alertHistory` array, lost on page refresh or logout. No SQLite persistence for analytics buckets on the Express backend. Reports screen computes `hourBuckets` from alert timestamps for shift-level patterns. Heatmap Calendar screen visualises day/hour density for hunt workflows. Risk score trend lives in Executive View simulated stats. Extending Analytics to weekly/monthly would require backend aggregation tables querying alert `@timestamp`, architectural gap in demo SIEM.
+Trend data source is exclusively in-memory `alertHistory` array, lost on page refresh or logout. No SQLite persistence for analytics buckets on the Express backend. Reports screen computes `hourBuckets` from alert timestamps for shift-level patterns. Heatmap Calendar screen visualises day/hour density for hunt workflows. Risk score trend and computed metrics (MTTR, false positive rate) are surfaced in Executive View. Extending Analytics to weekly/monthly would require backend aggregation tables querying alert `@timestamp`.
 
 > **Technical note:** `alertHistory` buckets snapshot total alert counts, not deltas; week-over-week comparison would need historical database storage not present in client-only history.
 

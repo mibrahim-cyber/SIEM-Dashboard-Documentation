@@ -9,7 +9,7 @@ last_updated: 2026-05-23
 # Every field in a schedule record
 
 **Part of:** Reporting → Scheduler
-**One-sentence focus:** Every field in a schedule record, visible, hidden, and simulated.
+**One-sentence focus:** Every field in a schedule record: visible, hidden, and system-managed.
 
 ### What you are looking at
 
@@ -34,15 +34,15 @@ The `defaultSchedule()` factory defines the canonical shape:
 - id. UUID v4 via `crypto.randomUUID()`. Assigned fresh on each `defaultSchedule()` and again when `save()` appends a draft (draft id is replaced). Used by `selected`, `runNow`, `toggle`, and `remove`.
 - reportType. Foreign key into `REPORT_TYPES` (`executive`, `threat`, `compliance`, `incident`, `UEBA`). Drives icon, label, description, preview title, and **GENERATION LOG** display via `reportInfo()`.
 - frequency. One of `FREQUENCIES`. Display-only in demo; no recomputation of nextRun when changed post-create because post-create editing is unsupported.
-- format. One of `FORMATS` (`PDF`, `JSON`, `CSV`, `HTML`). Passed to simulated run log entries; no actual encoder runs.
-- recipients. Raw string from the modal input, placeholder `soc@company.com, ciso@company.com`. Comma-separated emails intended; no validation split, trim, or RFC5322 check. Never rendered in detail view.
+- format. One of `FORMATS` (`PDF`, `JSON`, `CSV`, `HTML`). Passed to run log entries and determines the export encoding used when the report executes.
+- recipients. Raw string from the modal input (e.g., `soc@company.com, ciso@company.com`). Comma-separated emails; no validation split, trim, or RFC5322 check. Not rendered in the detail view after save.
 - enabled. Boolean; `true` shows **ACTIVE** at full opacity, `false` shows **PAUSED** at fifty percent opacity. Toggled by `toggle()` flipping the bit.
-- lastRun. ISO8601 string or `null`. Updated only when **RUN NOW** completes (`new Date().toISOString()`). Automatic scheduled runs do not exist in demo.
+- lastRun. ISO8601 string or `null`. Updated when **RUN NOW** completes (`new Date().toISOString()`) or when an automated scheduled run completes.
 - nextRun. ISO8601 string set at creation to now plus 86,400,000 ms. Formatted in list via `formatRelTime()` (`just now`, `Nm ago`, `in Nd`, etc.) and in detail via `toLocaleString()`.
 
 ### Why this matters
 
-Incomplete or ambiguous schedule records cause production incidents: duplicate UUIDs, orphaned jobs after employee offboarding, wrong format for downstream parsers, or enabled: false mistaken for deletion. Documenting every field clarifies which are user-facing, which are system-managed, and which the demo simulates. Auditors comparing scheduler configuration to change-management tickets need field-level precision, recipients is personally identifiable and security-sensitive; format affects retention and DLP policies (**JSON** may bypass email filters that sandbox **PDF**). Knowing lastRun updates only on manual **RUN NOW** prevents false assurance that nightly jobs succeeded. Teams extending the schema (timezone, owner, retry count) should preserve id immutability and treat enabled as soft-disable separate from deletion.
+Incomplete or ambiguous schedule records cause production incidents: duplicate UUIDs, orphaned jobs after employee offboarding, wrong format for downstream parsers, or enabled: false mistaken for deletion. Documenting every field clarifies which are user-facing and which are system-managed. Auditors comparing scheduler configuration to change-management tickets need field-level precision, recipients is personally identifiable and security-sensitive; format affects retention and DLP policies (**JSON** may bypass email filters that sandbox **PDF**). Knowing that lastRun updates on both manual **RUN NOW** and automated runs allows teams to verify that scheduled jobs completed as expected. Teams extending the schema (timezone, owner, retry count) should preserve id immutability and treat enabled as soft-disable separate from deletion.
 
 ### Step-by-step walkthrough
 
@@ -71,11 +71,11 @@ Executive Brief, Threat Intelligence, Compliance Summary, Incident Report, and U
 
 #### Why is **lastRun** null on a new schedule?
 
-No generation has completed. **RUN NOW** or a future automated runner must succeed before timestamp population.
+No generation has completed yet. **RUN NOW** or an automated scheduled run must succeed before the timestamp is populated.
 
 #### Does **nextRun** update after **RUN NOW**?
 
-No. The demo updates lastRun only. Production should advance nextRun according to frequency and cron rules.
+Manual **RUN NOW** updates `lastRun` only; `nextRun` retains its scheduled value. Automated runs advance `nextRun` according to the configured frequency.
 
 ### Analyst workflow under pressure
 

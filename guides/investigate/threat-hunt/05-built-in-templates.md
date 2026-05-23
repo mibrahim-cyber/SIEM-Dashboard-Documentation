@@ -54,7 +54,7 @@ Presets are hardcoded; you cannot edit them. Save your modified version as a use
 
 #### What if a preset returns zero results?
 
-Either no matching data exists (good?) or simulated data lacks that event type. Try Simulate Campaign or check Monitor → Overview severity distribution first.
+Either no matching data exists (a genuine confirmation of absence) or ingested logs lack that event type. Run Simulate Campaign or ingest representative logs, then check Monitor → Overview severity distribution to confirm coverage.
 
 #### Do presets run on a schedule?
 

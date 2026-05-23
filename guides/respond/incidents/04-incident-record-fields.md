@@ -52,7 +52,7 @@ Not in the UI. `alertIds` exists in data but is not rendered. Use Alert Manager 
 
 #### Who is assigned to this incident?
 
-Assignment is not implemented here. Case Manager provides assignee dropdowns (alice.chen, bob.martin, etc.).
+Assignee management lives in Case Manager, which provides assignee dropdowns (alice.chen, bob.martin, etc.). The Incidents view focuses on triage and playbook execution.
 
 #### Do notes save to the database?
 

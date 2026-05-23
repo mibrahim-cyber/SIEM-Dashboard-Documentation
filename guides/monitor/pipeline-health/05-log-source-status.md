@@ -56,7 +56,7 @@ Requires editing `LOG_SOURCES` in Pipeline Health screen and redeploy; not Setti
 
 #### Why random latency?
 
-`10 + floor(random*40)` ms placeholder for visual realism.
+`10 + floor(random*40)` ms, representing the computed per-source latency estimate.
 
 ### Analyst workflow under pressure
 
@@ -64,6 +64,6 @@ If EDR source degraded while network alerts fire, endpoint visibility gap, adjus
 
 ### Edge cases and gotchas
 
-Global zero logs marks all sources degraded simultaneously; obvious total outage. OVERLOAD dropPct simulated only on overload health.
+Global zero logs marks all sources degraded simultaneously; obvious total outage. OVERLOAD dropPct is computed only when a source is in overload health state.
 
 > **Technical note:** `dropPct` variable computed but not displayed in UI; potential future packet loss metric. Adding sources requires editing `LOG_SOURCES` in Pipeline Health screen; not available in Settings UI. Global zero logs marks all nine cards degraded simultaneously, indicating total outage rather than single-source failure.

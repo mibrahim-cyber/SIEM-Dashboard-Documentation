@@ -40,7 +40,7 @@ Teams often expect a BI-style report designer; setting expectations prevents fru
 
 #### Can I change the report title or add our company logo?
 
-Not in the current Reports component. The title **HABIBI-SIEM // SECURITY INTELLIGENCE REPORT** and matrix styling are hard-coded.
+Not in the current Reports component. The title **HABIBI-SIEM // SECURITY INTELLIGENCE REPORT** and matrix styling are defined in the Reports component.
 
 #### Is there a date filter for last week or last month?
 

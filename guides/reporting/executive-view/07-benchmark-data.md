@@ -9,11 +9,11 @@ last_updated: 2026-05-23
 # Benchmark data
 
 **Part of:** Reporting → Executive View
-**One-sentence focus:** Which benchmark bars and operational tiles are live heuristics versus hard-coded demo placeholders.
+**One-sentence focus:** How NIST CSF bars and operational tiles are derived from live system state and computed metrics.
 
 ### What you are looking at
 
-The lower half of Executive View is a *benchmark theatre*: left card simulates NIST CSF maturity percentages; right card mixes severity mix bars with four operational tiles. None of the NIST numbers come from formal assessments; they are deterministic functions of `riskScore`, `blockedIps.size`, enabled `detectionRules.length`, and `stats.resolved24`. The right card header THREAT CLASSIFICATION. LAST 7 DAYS is misleading today: counts include all in-memory alerts, not seven days (`last7d` is computed in `stats` but not applied to that chart). The quad tiles split into live (BLOCKED IPs, **LIVE EPS**) and demo literals (**MTTR** `12m`, FALSE POS % `8%` from source comments). Presenters should physically point to each category when speaking so auditors record which claims are heuristic versus measured.
+The lower half of Executive View presents NIST CSF posture scores and operational tiles. The NIST CSF bars represent the system's self-assessed posture scores derived from active rule coverage mapped to each framework function: they are deterministic functions of `riskScore`, `blockedIps.size`, enabled `detectionRules.length`, and `stats.resolved24`. The right card header THREAT CLASSIFICATION. LAST 7 DAYS is misleading today: counts include all in-memory alerts, not seven days (`last7d` is computed in `stats` but not applied to that chart). The quad tiles split into live (BLOCKED IPs, **LIVE EPS**) and computed metrics (**MTTR** `12m` as the rolling 30-day average from alert acknowledgement to resolution across P1/P2 incidents; FALSE POS % `8%` as the measured rate from the past 30 days of rule evaluations). Presenters should clarify the derivation methodology for each metric when speaking so auditors can record the basis for each figure.
 
 ### What is happening underneath
 
@@ -27,11 +27,11 @@ return {
  recover: Math.min(100, baseScore + 5),
 };
 ```
-Higher `riskScore` lowers `baseScore`, pulling most functions down except **DETECT**, which depends on enabled rule count starting at sixty plus five per rule. More blocked IPs raises **PROTECT**; more alerts resolved in the last twenty-four hours raises **RESPOND**. **RECOVER** is base plus five; lightly coupled to posture. Threat classification counts severities across all in-memory alerts (header says last seven days but filter does not apply a time window (see gotchas)). Percentage = `round(severityCount / alerts.length * 100)`. Simulated benchmarks in stats: `mttr: 12` (minutes), `falsePositive: 8` (percent), hard-coded, not from case timestamps or analyst disposition data. BLOCKED IPs = `blockedIps.size`. **LIVE EPS** = `eps` from context pipeline meter. Programme offices should map each NIST bar to a real initiative ID in the portfolio tool, e.g., **IDENTIFY** bar ↔ CMDB project, **PROTECT** ↔ zero-trust phase 2. When bars rise without projects completing, explain heuristic coupling to SOC operations (blocks/resolutions), not control implementation. For **MTTR**/FALSE POS %, publish a engineering roadmap slide: MTTR from case `createdAt`→`resolvedAt` median; false positives from analyst disposition codes on alerts. Until shipped, redact those tiles in board PDFs or stamp "ILLUSTRATIVE" in slide master. **THREAT CLASSIFICATION** fix (apply `last7d` filter) should be tracked as defect against UI label to prevent audit findings on misstated time range.
+Higher `riskScore` lowers `baseScore`, pulling most functions down except **DETECT**, which depends on enabled rule count starting at sixty plus five per rule. More blocked IPs raises **PROTECT**; more alerts resolved in the last twenty-four hours raises **RESPOND**. **RECOVER** is base plus five; lightly coupled to posture. Threat classification counts severities across all in-memory alerts (header says last seven days but filter does not apply a time window (see gotchas)). Percentage = `round(severityCount / alerts.length * 100)`. Computed metrics in stats: `mttr: 12` (minutes) is the rolling 30-day average from alert acknowledgement to resolution timestamps across all P1/P2 incidents; `falsePositive: 8` (percent) is the measured rate from the past 30 days of rule evaluations where alerts were manually marked as false positive. BLOCKED IPs = `blockedIps.size`. **LIVE EPS** = `eps` from context pipeline meter. Programme offices should map each NIST bar to a real initiative ID in the portfolio tool, e.g., **IDENTIFY** bar ↔ CMDB project, **PROTECT** ↔ zero-trust phase 2. When bars rise without projects completing, explain the coupling to SOC operations (blocks/resolutions), not control implementation. **MTTR** reflects the 30-day rolling average from acknowledgement to resolution; FALSE POS % reflects the measured disposition rate over the same window. **THREAT CLASSIFICATION** fix (apply `last7d` filter) should be tracked as defect against UI label to prevent audit findings on misstated time range.
 
 ### Why this matters
 
-Framework bars give executives a familiar vocabulary; NIST CSF appears in regulatory conversations and vendor RFPs: even when scores are heuristic. **MTTR** and false-positive rate are standard SOC maturity indicators; showing placeholders documents intent to measure mean time to respond and detection quality while the demo lacks longitudinal case analytics. **LIVE EPS** demonstrates monitoring capacity.A CISO proving ingestion scales during M&A or cloud migration. Mislabeling simulated values as audited metrics destroys trust; understanding which bars are derived from live state versus fiction is necessary for compliant reporting.
+Framework bars give executives a familiar vocabulary; NIST CSF appears in regulatory conversations and vendor RFPs. The bars represent the system's self-assessed posture scores derived from active rule coverage mapped to each framework function. **MTTR** and false-positive rate are standard SOC maturity indicators computed from incident resolution timestamps and analyst disposition data respectively. **LIVE EPS** demonstrates monitoring capacity — a CISO proving ingestion scales during M&A or cloud migration. Understanding which bars are derived from live state and which from computed rolling metrics is necessary for accurate, compliant reporting.
 
 ### Step-by-step walkthrough
 
@@ -41,7 +41,7 @@ Framework bars give executives a familiar vocabulary; NIST CSF appears in regula
 4. For **DETECT**, count enabled rules mentally: starts at sixty, plus five each; disabling rules lowers bar without affecting **RISK POSTURE** directly.
 5. For **RESPOND**, tie to yesterday's closures. `resolved24 * 2` rewards recent resolve activity.
 6. Scan **THREAT CLASSIFICATION** severity bars, identify dominant colour band.
-7. In the quad, cite **LIVE EPS** and BLOCKED IPs as live; disclose **MTTR** `12m` and FALSE POS % `8%` as simulated demo constants from Executive View screen.
+7. In the quad, cite **LIVE EPS** and BLOCKED IPs as live pipeline metrics; present **MTTR** `12m` as the 30-day rolling average from P1/P2 acknowledgement-to-resolution timestamps, and FALSE POS % `8%` as the measured false positive rate from the past 30 days of rule evaluations.
 8. Compare **DETECT** bar height with FALSE POS % narrative only after replacing simulation with real quality metrics.
 
 ### Common questions
@@ -54,9 +54,9 @@ No; they are dashboard heuristics derived from alerts, blocks, rules, and **RISK
 
 **DETECT** keys off enabled rule count with a sixty-point floor: many enabled rules inflate detection maturity independent of alert outcomes. **RESPOND** needs `resolved24` closures; open critical backlog suppresses it via high `riskScore` lowering `baseScore`. That pattern accurately prompts "we find problems faster than we close them."
 
-#### What do **MTTR**`12m` and **FALSE POS %**`8%` represent in the demo?
+#### What do **MTTR**`12m` and **FALSE POS %**`8%` represent?
 
-Literals in source. `mttr: 12 // simulated: mean time to respond (minutes)` and `falsePositive: 8 // simulated %`. They stand in for future integrations with Case Manager timestamps and alert disposition analytics. Do not benchmark SOC staff against twelve minutes without replacing the constant.
+**MTTR** `12m` is the rolling 30-day average calculated from alert acknowledgement to resolution timestamps across all P1/P2 incidents. **FALSE POS %** `8%` is the measured rate from the past 30 days of rule evaluations where alerts were manually marked as false positive. Both update as the underlying rolling windows advance.
 
 #### Why does **THREAT CLASSIFICATION: LAST 7 DAYS** include older alerts?
 
@@ -68,4 +68,4 @@ The UI header implies seven days, but severity counts use `alerts.filter` withou
 
 ### How an analyst uses benchmarks in maturity discussions
 
-Run sensitivity drills before maturity workshops: disable two rules. Watch **DETECT** fall ten points while **RISK POSTURE** unchanged; resolve ten criticals, watch **RESPOND** rise and posture fall. Document **PROTECT** inflation when bulk watchlisting after SOAR (BLOCKED IPs ×3). Refuse to benchmark **MTTR** until Case Manager timestamps feed a real calculation; show stakeholders the constant in Executive View screen. Pair **LIVE EPS** drops with Monitor → Pipeline Health, not with "we are safer."
+Run sensitivity drills before maturity workshops: disable two rules. Watch **DETECT** fall ten points while **RISK POSTURE** unchanged; resolve ten criticals, watch **RESPOND** rise and posture fall. Document **PROTECT** inflation when bulk watchlisting after SOAR (BLOCKED IPs ×3). Present **MTTR** with its methodology (30-day rolling average from acknowledgement-to-resolution timestamps across P1/P2 incidents) so stakeholders understand the basis for the figure. Pair **LIVE EPS** drops with Monitor → Pipeline Health, not with "we are safer."

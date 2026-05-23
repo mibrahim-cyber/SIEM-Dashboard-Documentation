@@ -19,7 +19,7 @@ last_updated: 2026-05-23
 
 ### What is happening underneath
 
-On each render, `iocMatches` recomputes from current `alerts` array; no separate streaming engine. When new alerts arrive via ingest, matches update automatically on next React cycle. No new alert type IOC Match created; hits are overlay on existing alerts. Intelligence → IOC Watchlist (IOC Watchlist screen) merges immutable `DEFAULT_IOCS` with user `iocWatchlist` from context via `allIocs = [...DEFAULT_IOCS,...iocWatchlist]`. Supported types: ip, domain, hash, url, email, but matching logic in `iocMatches` fully implements IP (`sourceIp` / `source.ip`), domain (substring over `JSON.stringify(alert)`), and URL (`urlPath` / `url.path`); hash and email types display without reliable hit detection until extended. Header badge **N ACTIVE HITS** counts IOCs with ≥1 match; matching rows gain pink background and blinking **N HITS** in **ALERTS** column.
+On each render, `iocMatches` recomputes from current `alerts` array; no separate streaming engine. When new alerts arrive via ingest, matches update automatically on next React cycle. No new alert type IOC Match created; hits are overlay on existing alerts. Intelligence → IOC Watchlist (IOC Watchlist screen) merges immutable `DEFAULT_IOCS` with user `iocWatchlist` from context via `allIocs = [...DEFAULT_IOCS,...iocWatchlist]`. Supported types: ip, domain, hash, url, email. Matching logic in `iocMatches` implements IP (`sourceIp` / `source.ip`), domain (substring over `JSON.stringify(alert)`), and URL (`urlPath` / `url.path`); extend `iocMatches` with hash and email field comparisons to activate hit detection for those types. Header badge **N ACTIVE HITS** counts IOCs with ≥1 match; matching rows gain pink background and blinking **N HITS** in **ALERTS** column.
 
 `iocMatches` recomputes every render from the alerts array; latency equals React refresh, adequate for demo volumes but potentially costly if domain matching stringifies large alert JSON at enterprise EPS. Matches do not spawn new alert types; they overlay correlation on existing detections. False positives arise when domain substring appears innocuously inside unrelated alert fields: always manually validate a hit before executive briefing.
 
@@ -39,7 +39,7 @@ Real-time matching is the payoff. Without it, watchlist is spreadsheet archive. 
 
 #### Does match create a new alert?
 
-No, highlights correlation to existing alerts. Not implemented in matcher; extend `iocMatches` logic. Domain search lowercases both sides.
+No, matching highlights correlation to existing alerts without creating new alert objects. Domain search lowercases both sides for case-insensitive comparison.
 
 #### Partial domain match?
 
@@ -53,4 +53,4 @@ Operationalise TLP labels in procedure documents because the UI only colour-code
 
 ### Edge cases and gotchas
 
-Large alert JSON stringify domain match is CPU-heavy at scale; demo sizes fine. Zero hits does not mean clean: IOCs may not be in simulated traffic. TLP colouring (**RED**, **AMBER**, **GREEN**, **WHITE**) communicates sharing constraints. Software does not enforce policy, humans do. **BLOCK** on IP rows calls `blockIp(ioc.value, \`IOC block: ${ioc.threat}\`)`, same watchlist mechanism as SOAR. Non-IP IOCs have no block button, domains require DNS/firewall action outside this UI. User-added IOCs get **Remove** via `removeIoc`; defaults cannot be deleted; plan production deployments that replace demo defaults with live feeds.
+Large alert JSON stringify domain match is CPU-heavy at scale; demo sizes fine. Zero hits does not mean clean: IOCs may not be present in the current alert traffic. TLP colouring (**RED**, **AMBER**, **GREEN**, **WHITE**) communicates sharing constraints. Software does not enforce policy, humans do. **BLOCK** on IP rows calls `blockIp(ioc.value, \`IOC block: ${ioc.threat}\`)`, same watchlist mechanism as SOAR. Non-IP IOCs have no block button, domains require DNS/firewall action outside this UI. User-added IOCs get **Remove** via `removeIoc`; defaults cannot be deleted; plan production deployments that replace demo defaults with live feeds.

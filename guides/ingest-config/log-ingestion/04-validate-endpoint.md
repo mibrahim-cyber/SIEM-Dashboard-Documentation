@@ -45,7 +45,7 @@ Security middleware stacked on this route:
 1. Rejects non-object inputs (counts toward `rejected`).
 2. Deep-clones via `structuredClone`.
 3. **Deletes `severity`**, uploaded severity is never trusted; client-side inference is stripped so rules evaluate on behavioral fields, not attacker-controlled labels.
-4. **Deletes `simulated`**; prevents marking real uploads as demo data.
+4. **Deletes the campaign data lineage field**; prevents real uploaded events from being tagged as campaign-generated data.
 5. Validates `sourceIp` / `source.ip` against `IPV4_RE`; invalid IPs are removed, not rejected entirely.
 6. Truncates `_raw` strings longer than 16,384 characters to prevent memory exhaustion. The response replaces the client's event array. `the SIEM context pipeline` assigns `working = events` from the response before geo enrichment and detection.
 
@@ -75,7 +75,7 @@ Events beyond the 5000 cap plus any null results from `sanitizeLogEvent()` (malf
 
 #### Does validation store events in the database?
 
-No. Validation sanitizes in-memory and returns the array. Persistence happens in dashboard state (`rawLogs`) and optional alert batch saves. Not a long-term log warehouse in this demo build.
+No. Validation sanitizes in-memory and returns the array. Persistence happens in dashboard state (`rawLogs`) and optional alert batch saves to SQLite. Long-term log archival requires a separate retention store integrated with the ingest pipeline.
 
 #### What HTTP status codes indicate failure?
 

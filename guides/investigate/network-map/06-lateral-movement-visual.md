@@ -38,7 +38,7 @@ Lateral movement is how ransomware spreads, patient zero is rarely the only comp
 
 #### Why can't I see A→B connections?
 
-Data model aggregates alert sources to server hub only. NetFlow east-west requires separate ingest and visualisation not implemented in this lab.
+The data model aggregates alert sources to server hub only. NetFlow east-west visualisation requires a dedicated NetFlow ingest pipeline; integrate a NetFlow collector and add east-west edge rendering to the Network Map component to surface host-to-host paths.
 
 #### What lateral movement signs CAN I see?
 

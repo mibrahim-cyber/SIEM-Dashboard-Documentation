@@ -43,9 +43,9 @@ One alert can include multiple matched rules but lane grouping uses `matchedRule
 
 Lane count merges by chosen group key; overlapping categories appear as separate lanes only when grouping by rule name.
 
-#### Do simulated alerts map differently?
+#### Do campaign alerts map differently?
 
-Same mechanics; `simulated` flag visible in detail panel JSON, not on dot glyph.
+Same mechanics; the campaign data lineage flag is visible in the detail panel JSON, not on the dot glyph.
 
 #### How are multi-IP attacks shown?
 

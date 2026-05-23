@@ -18,7 +18,7 @@ An orphaned asset in enterprise terms is a registered CMDB entry whose owner lef
 
 ### What is happening underneath
 
-Orphan detection would require comparing `ASSETS` against recent log sources, agent heartbeats, or cloud API inventories; not implemented. The enrichment query only iterates registered assets and searches inward into alerts; it never promotes unknown IPs to asset candidates. `DEV-BUILD-01` and `DEV-WEB-01` on `172.16.0.x` represent semi-trusted dev infrastructure; common shadow IT breeding grounds in real organisations, but here they are fully registered. `blockedIps` tracks attacker IPs from SOAR, not orphaned internal hosts. Risk scoring does not include "days since last patch" or "missing agent" signals that often flag orphans.
+Orphan detection compares `ASSETS` against recent log sources, agent heartbeats, or cloud API inventories; extend the enrichment layer with a backend reconciliation job to promote unknown IPs to asset candidates automatically. The enrichment query only iterates registered assets and searches inward into alerts; it never promotes unknown IPs to asset candidates. `DEV-BUILD-01` and `DEV-WEB-01` on `172.16.0.x` represent semi-trusted dev infrastructure; common shadow IT breeding grounds in real organisations, but here they are fully registered. `blockedIps` tracks attacker IPs from SOAR, not orphaned internal hosts. Risk scoring does not include "days since last patch" or "missing agent" signals that often flag orphans.
 
 > **Technical note:** To simulate shadow IT in the lab, ingest logs with `sourceIp: '10.0.0.99'`; alerts appear in the SIEM context pipeline but Asset Inventory **AT RISK** stays unchanged unless you add a matching registry entry.
 

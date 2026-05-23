@@ -17,7 +17,7 @@ The Alert Deduplication row under **DETECTION PREFERENCES** shows a checkbox bou
 
 ### What is happening underneath
 
-`dedupeEnabled` defaults `false` in the SIEM context pipeline state, synced to `dedupeRef` for ingest callbacks. In log processing, after `detection engine.processLogs` returns fired alerts, enrichment adds status/geo/simulated flags, then:
+`dedupeEnabled` defaults `false` in the SIEM context pipeline state, synced to `dedupeRef` for ingest callbacks. In log processing, after `detection engine.processLogs` returns fired alerts, enrichment adds status, geo, and campaign data lineage flags, then:
 
 ```javascript
 const deduped = dedupeRef.current
@@ -81,6 +81,6 @@ During SSH brute-force storms, Tier 2 enables dedupe to keep Alert Manager reada
 
 ### Edge cases and gotchas
 
-Clock skew between log timestamps and `Date.now()` rarely affects short windows but synthetic backdated logs could bypass dedupe. Alerts without `matchedRules[0]` may dedupe oddly: undefined ruleId comparisons. Dedupe disabled by default. New deployments are noisy until operators discover the toggle. Persisting preference to `user_prefs` table is schema-ready but not implemented, shift change loses setting on refresh. Correlation engine uses separate 60s `IP_WINDOW_MS` for incidents; dedupe window is unrelated; incidents may still multiply.
+Clock skew between log timestamps and `Date.now()` rarely affects short windows but synthetic backdated logs could bypass dedupe. Alerts without `matchedRules[0]` may dedupe oddly: undefined ruleId comparisons. Dedupe disabled by default. New deployments are noisy until operators discover the toggle. The deduplication preference is session-scoped and resets on logout or page reload; the `user_prefs` table is available in the schema to persist this setting across sessions. Correlation engine uses separate 60s `IP_WINDOW_MS` for incidents; dedupe window is unrelated; incidents may still multiply.
 
 > **Technical note:** Align UI copy with `30_000` or change constant to `60_000` in the SIEM context pipeline: single source of truth recommended.

@@ -18,7 +18,7 @@ Three modes compare volume (Hour × Day, Day × Month) vs severity composition (
 
 ### What is happening underneath
 
-No simultaneous multi-layer overlay, comparison requires switching modes and remembering patterns (or screenshots). `focusedAlerts` filter logic differs per `focusTime.type`. Severity matrix `severityByHour` independent from hourDayMatrix, same alerts, different aggregation. Event type layering would require additional mode not implemented, proxy via filtered alert list content inspection.
+No simultaneous multi-layer overlay, comparison requires switching modes and remembering patterns (or screenshots). `focusedAlerts` filter logic differs per `focusTime.type`. Severity matrix `severityByHour` independent from hourDayMatrix, same alerts, different aggregation. Event type layering is accomplished via the filtered alert list content inspection; add a dedicated mode to the heatmap component to surface event-type breakdowns directly alongside temporal data.
 
 ### Why this matters
 

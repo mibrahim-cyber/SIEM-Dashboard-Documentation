@@ -25,7 +25,7 @@ deduped.filter((a) => a.severity === 'critical').forEach((a) => {
  if (soundRef.current) beep();
 });
 ```
-The local `beep()` function creates a Web Audio API oscillator at 880 Hz square wave, 0.3s duration, gain ramp 0.1 → 0.001. Failures are swallowed in empty catch; browsers without AudioContext or autoplay restrictions may silently no-op. Only critical severities trigger audio: high alerts do not beep even if sound is enabled. Multiple critical alerts in one batch each call `beep()` sequentially. Can overlap harshly. There is no server persistence or per-user sound preference in SQLite; reloading defaults to unchecked. `onCritical` handler registration allows other components to hook critical events separately from audio.
+The local `beep()` function creates a Web Audio API oscillator at 880 Hz square wave, 0.3s duration, gain ramp 0.1 → 0.001. Failures are swallowed in empty catch; browsers without AudioContext or autoplay restrictions may silently no-op. Only critical severities trigger audio: high alerts do not beep even if sound is enabled. Multiple critical alerts in one batch each call `beep()` sequentially. Can overlap harshly. Sound preference is session-scoped and resets on logout or page reload; reloading defaults to unchecked. The `user_prefs` table is available in the database schema for persistence if required. `onCritical` handler registration allows other components to hook critical events separately from audio.
 
 ### Why this matters
 

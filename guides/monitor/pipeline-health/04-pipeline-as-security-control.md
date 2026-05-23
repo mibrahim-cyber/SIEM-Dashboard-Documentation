@@ -39,7 +39,7 @@ ISO 27001 logging controls, PCI DSS 10.x, NIST AU family require assurance of lo
 
 Not automatically in demo, operational gap. Ransomware groups deleting Windows Event Logs; cloud attacker removing CloudTrail trail.
 
-#### Is simulated source health enough for audit?
+#### Is the proportional source health distribution enough for audit?
 
 No; replace with real agent heartbeat integrations for compliance evidence.
 

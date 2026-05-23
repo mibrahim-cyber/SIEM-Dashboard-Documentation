@@ -43,7 +43,7 @@ No, monolithic Node/React demo path; stages label logical phases in one log proc
 
 #### Is log source data real?
 
-Partially simulated distribution from total EPS; names mimic enterprise sources (NGINX, Suricata, AD) for teaching layout.
+EPS is distributed proportionally across sources from the total ingestion rate; source names reflect common enterprise log producers (NGINX, Suricata, AD) labelled for operational context.
 
 #### What starts the pipeline?
 

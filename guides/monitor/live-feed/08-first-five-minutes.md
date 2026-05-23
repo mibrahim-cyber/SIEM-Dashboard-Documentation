@@ -55,6 +55,6 @@ This section is the playbook itself, filter, pause, sequence, document, escalate
 
 ### Edge cases and gotchas
 
-Concurrent analysts filtering different IPs see different subsets from same buffer; coordinate verbally. Simulated traffic mixed with real; watch `_simulated` in detail. Clock skew between log timestamp and alert timestamp if validation adjusted time.
+Concurrent analysts filtering different IPs see different subsets from same buffer; coordinate verbally. Simulate Campaign traffic mixed with real ingested traffic; watch the campaign data lineage flag in the event detail panel. Clock skew between log timestamp and alert timestamp if validation adjusted time.
 
 > **Technical note:** Link alert→log via shared `alert.log` reference in modal when buffer row gone; do not assume Live Feed always retains birth record. Experienced analysts pre-position Live Feed on a secondary monitor before shifts start, with auto-scroll enabled and pause muscle memory ready. When Overview fires a critical toast, the workflow is: copy `sourceIp` from toast text, switch to Live Feed, paste into filter, confirm event-type sequence (scan before auth before exfil), pause, screenshot, copy unique fields from **LOG DETAIL**, then escalate with alert UUID and ISO timestamp from the detail panel. If the buffer has rotated past the birth event, `AlertDetailModal` on Overview still embeds the original `log` object, do not assume Live Feed always retains the first line of an attack. Cross-reference modal log JSON with filtered feed rows when both exist.

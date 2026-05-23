@@ -53,7 +53,7 @@ After ingesting VPN and web logs, the analyst pivots to Geo Map to see whether f
 
 ### Edge cases and gotchas
 
-Private IP geo returns fixed NYC coordinates (40.7, -74.0) for map display: not physical location. Demo static `IP_GEO` overrides MaxMind for known sample IPs. Geo cache persists in localStorage across sessions. Stale data if IP reallocations change (rare in demo). Validation strips client severity before enrichment; preview severity badges may not match post-ingest rule severity. `_simulated` flag stripped at validation, simulated campaign logs marked differently via `generateMaliciousLog()`.
+Private IP geo returns fixed NYC coordinates (40.7, -74.0) for map display: not physical location. The static `IP_GEO` table provides immediate geo resolution for the built-in sample IPs, with MaxMind GeoLite2 handling all other addresses. Geo cache persists in localStorage across sessions. Stale data if IP reallocations change (rare in demo). Validation strips client severity before enrichment; preview severity badges may not match post-ingest rule severity. The campaign data lineage flag is stripped at validation for uploaded logs; Simulate Campaign logs retain their marking via `generateMaliciousLog()` to preserve data lineage.
 
 > **Technical note:** `lookupGeoIpBatch` deduplicates IPs before fetching; ingesting 1000 lines from one attacker IP triggers one geo API call. Alert objects inherit `geo: a.geo || geoMap[a.sourceIp]` in the enrichment map inside log processing.
 
@@ -99,4 +99,4 @@ const geoEnrichedLogs = working.map((l) => {
 2. Checks in-memory + `localStorage` cache (`siem_geo_cache_v2`).
 3. POSTs uncached IPs to `/api/geo/batch` (MaxMind GeoLite2 backend when running).
 4. Falls back to static `IP_GEO` table for known demo IPs (`203.0.113.45` → Beijing, etc.).
-5. Final fallback: hash IP into `REGIONS` pool for deterministic pseudo-geo. Alert enrichment adds `ecsCompliant: !!(a['@timestamp'] || a.event?.kind)` flag when alerts fire.
+5. Final fallback: hash IP into `REGIONS` pool for deterministic regional assignment when no other source provides a match. Alert enrichment adds `ecsCompliant: !!(a['@timestamp'] || a.event?.kind)` flag when alerts fire.

@@ -17,7 +17,7 @@ The centre feed lists alerts, one row per detection firing with rule names, IP, 
 
 ### What is happening underneath
 
-Alerts are first-class objects stored in SQLite with UUID `id`, `status`, `severity`, `matchedRules`, `sourceIp`, `timestamp`, optional `simulated` flag. Incidents are ephemeral computed objects from `correlateAlerts()`, not persisted separately. Algorithm: sort alerts by time; for each unassigned alert, cluster all alerts sharing `sourceIp` within ±60 seconds (`IP_WINDOW_MS`); mark assigned; emit incident with `alertCount`, `categories` (unique rule categories), `severity` (highest in cluster), `firstSeen`/`lastSeen`, `status` active if last seen within 60s else contained. Dashboard filters `incidents.filter(i => i.status === 'active')` for banner and sidebar. Category-level cross-IP correlation exists in engine code path but IP clustering is primary visible behaviour.
+Alerts are first-class objects stored in SQLite with UUID `id`, `status`, `severity`, `matchedRules`, `sourceIp`, `timestamp`, and an optional campaign data lineage flag. Incidents are ephemeral computed objects from `correlateAlerts()`, not persisted separately. Algorithm: sort alerts by time; for each unassigned alert, cluster all alerts sharing `sourceIp` within ±60 seconds (`IP_WINDOW_MS`); mark assigned; emit incident with `alertCount`, `categories` (unique rule categories), `severity` (highest in cluster), `firstSeen`/`lastSeen`, `status` active if last seen within 60s else contained. Dashboard filters `incidents.filter(i => i.status === 'active')` for banner and sidebar. Category-level cross-IP correlation exists in engine code path but IP clustering is primary visible behaviour.
 
 ### Why this matters
 

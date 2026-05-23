@@ -26,7 +26,7 @@ The Confidential header line is a governance cue: classify your spoken "so what"
 
 ### What is happening underneath
 
-Layout order in Executive View screen is intentional narrative compression: posture before volume, volume before framework, framework before exceptions. The dashboard does not compute recommendations; humans supply causality. Useful bindings for defensible "so what" statements: `stats.delta` (momentum), `riskScore` (open exposure), `incidents.filter(active)` (executive exceptions), `nistScores` min key (programme gap), `stats.mttr`/`stats.falsePositive` (explicitly simulated; "so what" = future measurement intent, not performance truth). Conditional rendering of the incident panel (`active.length > 0`) prevents crying wolf. When hidden, your "so what" must still address open criticals if any exist in Alert Manager. Steering committees should pre-register decision thresholds: e.g., posture ≥ ELEVATED for two consecutive weekly briefs triggers mandatory Fund review; upward delta >25% week-over-week triggers detection engineering stand-up. Document thresholds in the security charter so presenters are not inventing criteria live. Pair Executive View "so what" with Reporting → Reports exports when the Answer is Escalate; attach **EXECUTIVE VIEW** narrative and **TOP THREAT ACTORS** as appendix. For regulated sectors, map each Answer type to notification playbooks (GDPR 72-hour clock, SEC cyber disclosure) even though this UI does not start timers: your spoken Answer triggers those clocks outside the dashboard.
+Layout order in Executive View screen is intentional narrative compression: posture before volume, volume before framework, framework before exceptions. The dashboard does not compute recommendations; humans supply causality. Useful bindings for defensible "so what" statements: `stats.delta` (momentum), `riskScore` (open exposure), `incidents.filter(active)` (executive exceptions), `nistScores` min key (programme gap), `stats.mttr`/`stats.falsePositive` (computed metrics; "so what" = performance against industry benchmarks and regulatory thresholds). Conditional rendering of the incident panel (`active.length > 0`) prevents crying wolf. When hidden, your "so what" must still address open criticals if any exist in Alert Manager. Steering committees should pre-register decision thresholds: e.g., posture ≥ ELEVATED for two consecutive weekly briefs triggers mandatory Fund review; upward delta >25% week-over-week triggers detection engineering stand-up. Document thresholds in the security charter so presenters are not inventing criteria live. Pair Executive View "so what" with Reporting → Reports exports when the Answer is Escalate; attach **EXECUTIVE VIEW** narrative and **TOP THREAT ACTORS** as appendix. For regulated sectors, map each Answer type to notification playbooks (GDPR 72-hour clock, SEC cyber disclosure) even though this UI does not start timers: your spoken Answer triggers those clocks outside the dashboard.
 
 ### Why this matters
 
@@ -40,7 +40,7 @@ McKinsey-style "so what" discipline exists because directors stop listening afte
 4. Scan **ACTIVE INCIDENTS**, if >0, Question becomes "Do we need executive air cover?"
 5. Identify weakest NIST bar: tie to Fund or Monitor Answer.
 6. If incident panel visible, assign RACI: who owns comms, legal, SOC (names, not roles only).
-7. Label **MTTR**/FALSE POS % as roadmap metrics if mentioned.
+7. Present **MTTR**/FALSE POS % with their methodology context (30-day rolling averages) when mentioned.
 8. Close with explicit decision request and date for follow-up.
 
 ### Common questions
@@ -53,9 +53,9 @@ Use the brief to discuss assurance: **LOW** posture with strong **DETECT** and *
 
 No, pick three tied to the agenda. Over-reading **LOGS PROCESSED** invites digressions into IT plumbing unless the question is capacity. Lead with **RISK POSTURE**, **ACTIVE INCIDENTS**, and one framework bar.
 
-#### How do simulated **MTTR** and **FALSE POS %** affect "so what"?
+#### How do **MTTR** and **FALSE POS %** affect "so what"?
 
-They illustrate where real metrics will live and set conversational placeholders; "when wired, MTTR will tell us if we meet regulatory notification windows." Presenters must label them simulated to preserve trust; citing `8%` false positives as fact would mislead auditors.
+Both are computed metrics: MTTR is the rolling 30-day average from acknowledgement to resolution across P1/P2 incidents; FALSE POS % is the measured rate from the past 30 days of rule evaluations. Use them to assess whether response speed meets regulatory notification windows and whether detection quality warrants investment in rule tuning.
 
 #### Can "so what" be negative: leave things alone?
 
@@ -63,7 +63,7 @@ Yes. downward delta on ALERTS (24H) with **GUARDED** posture and zero active inc
 
 ### Edge cases and gotchas
 
-Fund answers based solely on high **DETECT** mislead. DETECT is rule-count-driven. Accept answers when criticals remain open are negligent, check Alert Manager. Simulated **MTTR** must never justify regulatory timing claims. Empty incident panel + high posture = hidden backlog story; always state open critical count aloud.
+Fund answers based solely on high **DETECT** mislead. DETECT is rule-count-driven. Accept answers when criticals remain open are negligent, check Alert Manager. **MTTR** must be cited with its methodology (30-day rolling average, P1/P2 incidents) when used in regulatory timing claims. Empty incident panel + high posture = hidden backlog story; always state open critical count aloud.
 
 ### How an analyst bridges SOC detail to executive "so what"
 

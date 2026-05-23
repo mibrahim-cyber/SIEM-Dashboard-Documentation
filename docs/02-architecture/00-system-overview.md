@@ -2,7 +2,7 @@
 
 Browser-based SOC console for learning and demos; smaller than Splunk or Sentinel, but end-to-end: ingest, detection, alerts, SOAR actions, RBAC.
 
-## Two-process architecture
+## two-process architecture
 
 ```
 ┌─────────────────────┐ ┌─────────────────────┐
@@ -20,24 +20,24 @@ Browser-based SOC console for learning and demos; smaller than Splunk or Sentine
  │ GeoLite2.mmdb │
  └─────────────────┘
 ```
-## Why split frontend/backend?
+## why split frontend/backend?
 
 1. **API keys stay server-side.** AbuseIPDB key never hits the browser.
 2. **Shared state.** Multiple browser tabs could share SQLite (theoretically).
 3. **Coursework.** Demonstrates client/server separation.
 
-## Main data flows
+## main data flows
 
-### Alert creation
+### alert creation
 `Logs → validate → geo enrich → DetectionEngine → saveAlerts → SQLite → UI refresh`
 
-### Threat lookup
+### threat lookup
 `High/Critical alert → soarCheckIp → /api/threat/ip → AbuseIPDB → maybe watchlist`
 
-### Auth
+### auth
 `Login → session cookie + CSRF → every write request checks both`
 
-## What's client-only (not in DB)
+## what's client-only (not in DB)
 
 - IOC watchlist component state
 - Scheduler configs
@@ -46,7 +46,7 @@ Browser-based SOC console for learning and demos; smaller than Splunk or Sentine
 
 Documented for coursework persistence-boundary questions.
 
-## Tech stack
+## tech stack
 
 | Layer | Tech |
 |-------|------|

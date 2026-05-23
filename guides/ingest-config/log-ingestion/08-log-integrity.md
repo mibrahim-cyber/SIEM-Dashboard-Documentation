@@ -72,7 +72,7 @@ Every parser sets `_raw` to the verbatim input:
 
 - Non-object rejection (prevents prototype pollution arrays).
 - **`severity` deletion**, prevents attackers lowering perceived urgency.
-- **`simulated` deletion**; prevents disguising malicious uploads as demo data.
+- **Campaign data lineage field deletion**; prevents real uploaded events from being tagged as campaign-generated data.
 - IPv4 validation; strips spoofed malformed IPs rather than accepting garbage.
 - `_raw` length cap at 16,384 chars; prevents log bombing.
 

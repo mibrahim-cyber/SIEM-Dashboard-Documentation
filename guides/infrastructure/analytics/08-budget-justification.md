@@ -14,13 +14,13 @@ last_updated: 2026-05-23
 
 ### What you are looking at
 
-Analytics supplies quantitative visuals for security investment conversations: rising **TOTAL ALERTS** and **CRITICAL THREAT TREND**, concentrated TOP ATTACKING IPs, category mix in **ATTACK CATEGORY BREAKDOWN**, and **ACTIVE INCIDENTS** vs **CONTAINED** demonstrating operational load. The matrix terminal aesthetic (`terminal-panel`, VT323 KPI numbers, green glow) presents credibly in slide screenshots. Pair with Reporting → Executive View risk score and simulated MTTR for a leadership package. Analytics alone lacks cost metrics, FTE hours, or tool licensing data. Budget justification is building a court case: exhibits (charts), witness testimony (analyst narrative), and damages claimed (incident impact). Analytics provides exhibits B and C, volume and attacker concentration, not the full damages calculation.
+Analytics supplies quantitative visuals for security investment conversations: rising **TOTAL ALERTS** and **CRITICAL THREAT TREND**, concentrated TOP ATTACKING IPs, category mix in **ATTACK CATEGORY BREAKDOWN**, and **ACTIVE INCIDENTS** vs **CONTAINED** demonstrating operational load. The matrix terminal aesthetic (`terminal-panel`, VT323 KPI numbers, green glow) presents credibly in slide screenshots. Pair with Reporting → Executive View risk score and computed MTTR (rolling 30-day average from P1/P2 acknowledgement-to-resolution timestamps) for a leadership package. Analytics alone lacks cost metrics, FTE hours, or tool licensing data. Budget justification is building a court case: exhibits (charts), witness testimony (analyst narrative), and damages claimed (incident impact). Analytics provides exhibits B and C, volume and attacker concentration, not the full damages calculation.
 
 ### What is happening underneath
 
-All Analytics numbers derive from live or simulated detections; budget narratives must contextualise whether spikes are Simulate Campaign artefacts. `getAlertStats()` feeds KPIs; `incidents` from `correlateAlerts` demonstrates automation value (correlation reduces analyst manual clustering). Category breakdown supports "we need WAF investment" (injection leading) or "IAM programme" (authentication leading). No dollar ROI calculator exists; analysts translate counts to hours saved × hourly rate externally. Export path: screenshot Analytics panels, export Overview JSON for raw evidence, generate Reports PDF/text summaries.
+Analytics numbers derive from live detections and Simulate Campaign runs; budget narratives must contextualise whether spikes are Simulate Campaign artefacts. `getAlertStats()` feeds KPIs; `incidents` from `correlateAlerts` demonstrates automation value (correlation reduces analyst manual clustering). Category breakdown supports "we need WAF investment" (injection leading) or "IAM programme" (authentication leading). No dollar ROI calculator exists; analysts translate counts to hours saved × hourly rate externally. Export path: screenshot Analytics panels, export Overview JSON for raw evidence, generate Reports PDF/text summaries.
 
-> **Technical note:** Tag simulated data in presentations. Overview **SIM** badges do not propagate to Analytics visuals; disclose when demos use **Simulate Campaign**.
+> **Technical note:** Tag Simulate Campaign data in presentations. Overview **SIM** badges do not propagate to Analytics visuals; disclose when presentations use **Simulate Campaign** data.
 
 ### Why this matters
 
@@ -47,9 +47,9 @@ No native PDF export on Analytics. Use browser print-to-PDF on panels or Reporti
 
 Frame as visibility success: "We now detect what was invisible." Pair volume with **CONTAINED** and resolution metrics from Reports. Propose tuning investments to reduce false positives separately from detection investments.
 
-#### How do simulated demos affect budget presentations?
+#### How do Simulate Campaign runs affect budget presentations?
 
-Disclose lab data. Stakeholders fund real programmes; use production exports when available. Simulation proves platform capability, not organisational risk level.
+Disclose lab data. Stakeholders fund real programmes; use production exports when available. Simulate Campaign proves platform capability, not organisational risk level.
 
 #### Which KPI convinces CFOs fastest?
 
@@ -61,6 +61,6 @@ During major incidents, the analyst captures Analytics snapshots early and late 
 
 ### Edge cases and gotchas
 
-Five-minute charts weak for annual budget cycles, supplement with exported historical data. No FTE utilisation metric in Analytics. Category dominance may reflect rule tuning bias, not true attack mix. **CONTAINED** auto-status ≠ financial containment savings. Executive View simulated MTTR must be replaced before CFO-facing decks.
+Five-minute charts weak for annual budget cycles, supplement with exported historical data. No FTE utilisation metric in Analytics. Category dominance may reflect rule tuning bias, not true attack mix. **CONTAINED** auto-status ≠ financial containment savings. Executive View MTTR (rolling 30-day average from P1/P2 acknowledgement-to-resolution timestamps) should be cited with its methodology in CFO-facing decks.
 Quantify analyst labour from Analytics KPIs: if **UNRESOLVED** equals forty and each alert averages six minutes triage, approximate four analyst-hours backlog; multiply by loaded hourly rate for FTE ask. **ACTIVE INCIDENTS** count supports SOAR automation ROI: if three incidents contain twelve alerts each, correlation saved redundant ticket updates; argue incident module reduces manual clustering time. Category breakdown drives control investments with specificity: dominant **INJECTION** bar supports WAF/RASP line item; **AUTHENTICATION** supports MFA pilot; **NETWORK** supports DDoS scrubbing service. Pair screenshots with Asset Inventory CRITICAL CVEs count to argue vulnerability management staffing. Disclose Simulate Campaign origin when charts derive from demo data; credibility requires labelling; production budgets need the same chart templates populated from quarterly exports, not session screenshots alone.
 Finance reviewers respond to replacement cost framing: if **ACTIVE INCIDENTS** averages five nightly and each requires thirty minutes senior analyst time, annualise hours and compare to cost of one additional tier-2 FTE plus benefits. Tooling investments use counterfactual: without SOAR blocking shown in TOP ATTACKING IPs concentration, repeat offenders inflate the same bar weekly, argue automation breaks the loop. Always pair cost narrative with risk narrative: **CRITICAL THREAT TREND** red area elevation justifies spend even when total dollars are constrained; defer non-critical projects, not detection.

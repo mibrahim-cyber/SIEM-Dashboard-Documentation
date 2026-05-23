@@ -38,7 +38,7 @@ Single indicators may be benign, one failed login happens daily. Compounding rev
 
 #### What triggers an alert vs just a high score?
 
-This module displays scores only; auto-alerting would require Rules Engine integration on score threshold (not implemented). Analyst must act on visual flag.
+This module displays scores only; auto-alerting requires Rules Engine integration on a score threshold configured in the detection rules catalog. Analyst must act on visual flag.
 
 #### Do critical alerts always mean compromised account?
 

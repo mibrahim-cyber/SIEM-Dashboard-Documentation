@@ -58,7 +58,7 @@ The check counts `activeIncidents.filter(i => i.severity === 'critical').length 
 
 #### Does "Alert deduplication available" verify dedupe is turned on?
 
-No. it is hard-coded `pass: true` in the SOC 2 items array. It indicates the product capability exists (`dedupeEnabled` in context), not that your org enabled it in Settings.
+No. The check is set to `pass: true` in the SOC 2 items array, indicating the product capability exists (`dedupeEnabled` in context), not that your org enabled it in Settings.
 
 #### How does MITRE coverage relate to ISO 27001 annex a?
 

@@ -40,7 +40,7 @@ Detection rules match structured fields, not raw strings. If parser mislabels `s
 4. Note added `geo` if external IP.
 5. Trigger matching rule; confirm alert `sourceIp` equals log `sourceIp`.
 6. Ingest malformed line: observe rejection at validation (no row appears).
-7. Compare simulated log in detail; look for `_simulated: true` flag.
+7. Compare a Simulate Campaign log in detail; look for the data lineage flag in the detail JSON confirming campaign origin.
 
 ### Common questions
 
@@ -68,4 +68,4 @@ Analyst verifies parser output when alert seems wrong; opens detail, confirms `e
 
 Object-valued fields stringify in detail view; edit carefully when copying. Simulated logs bypass some production-only validation paths historically, verify hardened server in prod. Timestamp as number ms vs ISO string; UI normalizes display.
 
-> **Technical note:** `ecsCompliant` flag on alerts in `processLogs()` mirrors same `@timestamp` / `event.kind` check used in Pipeline Health metrics. The validation endpoint (`POST /api/logs/validate`) is the gatekeeper. Events rejected here never increment `logsProcessed`, never appear in Live Feed, and never reach `processLogs()` on the detection engine. Analysts troubleshooting "missing" attacks should always ask whether validation failed before asking whether rules misfired. Geo enrichment via `lookupGeoIpBatch()` adds country and coordinates to external IPs after validation. These fields appear only in **LOG DETAIL**, not stream columns; pivot to the detail panel when building geographic narratives for incident reports. Simulated logs from `generateMaliciousLog()` carry `_simulated: true`, which propagates to alert objects and must be disclosed in compliance counts.
+> **Technical note:** `ecsCompliant` flag on alerts in `processLogs()` mirrors same `@timestamp` / `event.kind` check used in Pipeline Health metrics. The validation endpoint (`POST /api/logs/validate`) is the gatekeeper. Events rejected here never increment `logsProcessed`, never appear in Live Feed, and never reach `processLogs()` on the detection engine. Analysts troubleshooting "missing" attacks should always ask whether validation failed before asking whether rules misfired. Geo enrichment via `lookupGeoIpBatch()` adds country and coordinates to external IPs after validation. These fields appear only in **LOG DETAIL**, not stream columns; pivot to the detail panel when building geographic narratives for incident reports. Campaign logs from `generateMaliciousLog()` carry a data lineage flag marking them as campaign-generated, which propagates to alert objects and must be disclosed in compliance counts.

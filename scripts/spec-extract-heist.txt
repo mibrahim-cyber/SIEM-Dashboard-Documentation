@@ -1,0 +1,103 @@
+PAGE 9 — heist.html — THE HEIST
+Libraries: Kaboom.js@3000.1.17 (2D game engine), Tone.js (stealth soundtrack), GSAP (UI animations). All CDN.
+
+Concept
+You are the attacker. For the first time on this documentation site, the user inhabits the adversary perspective. This is a stealth/puzzle game where you must breach a system that is protected by the exact SIEM rules documented on the site. The game IS the documentation. Every time you get caught, the "death screen" shows you which detection rule triggered, which SIEM component fired, and links to the relevant docs. Getting caught is educational. Winning requires understanding the SIEM well enough to evade it.
+
+Visual Identity
+Top-down 2D grid world, dark isometric-adjacent (not true isometric, but tiles are slightly angled for depth). Color palette: dark navy #0a0d1a, accent #00ff88 (your character), #ff2d55 (guards/sensors), #ffd60a (data objectives), #00d4ff (safe zones). Tile art is pixel-style — not retro-pixel (8-bit), but modern "pixel art" with 16×16 tiles scaled 3×. Shadows on all objects. Your character is a small glowing cyan figure with a subtle trail.
+
+The World
+An 80×60 tile map representing the SIEM's infrastructure as a physical building:
+
+Perimeter Zone (outer ring): Firewall checkpoints, CCTV camera cones (visible detection areas), motion sensors (trigger on movement, indicated by thin cyan tripwires you can see)
+Network Zone (middle): Server rows, log collectors, database rooms, workstations (all interact-able)
+Core Zone (inner): Detection Engine room, Alert Manager room, SOAR Console room — the hardest to reach
+Objectives are scattered through all zones: DATA_EXFIL_NODE items you must "copy" (stand next to for 3 seconds) and then reach the exit. Six nodes total, and you need at least 4 for full completion.
+
+Detection Rules as Game Mechanics
+Each SIEM detection rule becomes a real in-game mechanic the player must navigate:
+
+rapid-requests rule: Guards respond if you move through 3 checkpoints in under 30 seconds. Player must slow down, wait between zones.
+
+unusual-port rule: Doors labeled 443 (HTTPS) are always unlocked — the "correct" way in. Doors labeled 4444 or 8888 are alarmed — alarm triggers if you use them without a "tool" pickup.
+
+sensitive-path rule: Certain tile paths trigger detection if walked on without the "admin credentials" item (found elsewhere on the map). These paths are visually distinct — slightly differently colored floor tiles.
+
+brute-force rule: Password terminals only allow 3 wrong attempts in 30 seconds before alerting. Player must find clues about correct passwords scattered around the map (on whiteboards, sticky notes) or use a "social engineering" pickup that auto-solves terminals.
+
+sql-injection rule: One database terminal can be "injected" — a mini-puzzle where the player inputs a string. Correct injection strings are clues scattered on the map. But the Detection Engine is monitoring — getting the injection right silently triggers a delayed alert (fires 45 seconds later), so the player must complete their objective and escape before it fires.
+
+Guard AI
+Guards patrol fixed routes. Route is visualized as a faint dotted path (toggle visibility with H key). Their vision cone (60 degree, 5 tile range) is always visible — a translucent red triangle that rotates with them. If you enter the cone, a 0.8-second "detection bar" fills above the guard. Full bar = alerted. Alerted guard calls for backup (second guard converges) and the Detection Engine starts logging your presence.
+
+If detected: a 10-second window before full ALARM. During this window, you can reach a "SOAR playbook override terminal" (marked on map) and interact with it for 4 seconds to suppress the alert. This is a meta-puzzle — the very SOAR automation system that's supposed to catch you can be subverted if you understand how playbooks work.
+
+Death Screen & Education
+When caught (either by guard or by alarm), the game pauses. A full-screen overlay shows: DETECTED — INCIDENT CREATED, the specific detection rule that fired (Rule: rapid-requests — 847 requests in 60 seconds from your IP), the SIEM component responsible, a 3-sentence explanation of why this rule exists, and a link to the relevant documentation page. Then two buttons: REPLAY (with knowledge) and VIEW DETECTION RULES. This turns death into discovery.
+
+PAGE 10 — cartography.html — THE CARTOGRAPHY
+Libraries: Globe.gl@2.30.0 (WebGL globe), D3.js@7.9.0 (data visualization), Three.js@r158 (post-processing), Tone.js (ambient). All CDN.
+
+Concept
+A living, rotating 3D globe covered in real-time simulated attack traffic. Arc trails between countries showing attack origins and targets. Country surfaces pulsing with threat intensity. A full operational intelligence overlay with filters, threat actor attribution, and MITRE ATT&CK tactic breakdowns per geography. The globe is interactive — spin it, zoom in, click countries, click arc trails. Every arc links to the specific SIEM detection rule that would catch that attack pattern.
+
+Visual Identity
+Deep space behind the globe. Three.js Stars background — 8000 white points, varying sizes, subtle parallax. The globe itself uses Globe.gl with a custom tile set: dark ocean #0a1628, land masses #0d1f2d with slightly lighter coastal borders. Political borders are visible as very thin #1e3a52 lines at low opacity. Country surfaces that are "hot" (high attack activity) glow amber — achieved via a custom shader that blends the base tile with a #f59e0b emissive layer based on a per-country threat-score value.
+
+The globe rotates constantly at 0.1 degrees/second (GSAP linear loop). Mouse drag overrides rotation. On release, it smoothly returns to auto-rotate after 5 seconds of inactivity.
+
+Arc trails: Globe.gl's built-in arc layer. Arcs are animated Bezier curves lifting 200–400 miles above the surface. Color: attack arcs originating from "threat actor" countries are #ef4444→#f97316 gradient. Defense/response arcs (your SIEM responding) are #00d4ff→#6366f1. Arc dashLength 0.4, dashGap 0.1, dashAnimateTime 1200ms. Arcs fade out after 8 seconds (opacity animation from 1→0).
+
+Data System
+A ThreatFeed class generates fake but realistic geopolitical threat data. It has a weighted distribution of:
+
+APT Sources: China (APT41, APT1), Russia (APT28, APT29), Iran (APT33), North Korea (Lazarus)
+Target Countries: USA, UK, Germany, Japan, Australia, Ukraine
+Attack Types: Spearphishing, Zero-day exploit, Supply chain, Credential stuffing, DDoS
+Every 2–5 seconds, a new ThreatEvent spawns: source country, target country, attack type, MITRE tactic. This creates a new arc on the globe. The source country's glow intensity increments. The target country's shield icon (if it has the SIEM "deployed") flashes cyan.
+
+Globe Layers (Toggle-able)
+Seven overlay layers accessible from a vertical toggle strip on the right edge, each a pill button:
+
+THREAT (default ON) — the attack arcs
+ACTORS — Named threat actor labels hovering over their primary attributed countries. Each label has the APT designation, a small flag icon, and an "active campaigns: N" counter.
+RULES — Per-country heatmap of which detection rules are firing most frequently. Countries tinted from neutral → #fbbf24 based on rule fire rate.
+CABLES — Undersea internet cables shown as thin cyan lines following real approximate paths. Clicking a cable shows its name, bandwidth, and which threat actors are "known to target submarine cables."
+INCIDENTS — Pins for historical famous breaches placed at origin/target locations. SolarWinds origin pin at a Russian city. Colonial Pipeline pin at Darkside's attributed region. Clicking a pin opens an archive.html-style reading panel with the incident writeup.
+DEFENSES — Green shield icons over countries where "SIEM deployments" are simulated. Your own SIEM shoots back #00d4ff response arcs when these countries are attacked.
+TIME — A 24-hour timeline slider at the bottom. Scrubbing shows "historical" attack patterns across the day. Peak attack times (shown as taller sections on the timeline histogram) correlate to real attack pattern data: highest activity during target's business hours.
+
+Click Interactions
+Click a country: Globe smoothly zooms to that country (centering it, increasing zoom to 2.5× with GSAP ease "power3.out" over 1.2 seconds). A drawer slides in from the right showing: top 5 attack sources targeting this country, top 5 targets this country attacks, active threat actors, and "SIEM rules defending this sector" — a list of detection rules that would catch the most common attacks against this country.
+
+Click an arc trail: Intercepts the arc. Pauses its animation. A detail popover appears at the arc midpoint (highest point of the Bezier curve, in 3D space). Shows: source IP (fake), destination IP, attack type, MITRE ATT&CK tactic + technique ID, and DETECTION STATUS: CAUGHT in green or EVASION DETECTED in red. Links to the specific SIEM rule page.
+
+Click ocean: Deselects everything, resumes globe rotation. Zooms back out to default.
+
+PAGE 11 — lab.html — THE LAB
+Libraries: CodeMirror@6.0.1 (code editor for payload input), GSAP@3.12.5, xterm.js@5.3.0 (for the SIEM log stream), chart.js@4.4.2 (for the detection metrics charts). All CDN.
+
+Concept
+A controlled detonation chamber. On the left, a fake vulnerable web application — a simple login form and a search bar and a product API endpoint, all rendered and functional (within the page). On the right, a live SIEM monitoring stack watching every request you send. You type payloads into the web app — the SIEM analyzes them, fires detection rules, generates alerts. Every detection links to documentation. You're learning how the SIEM detects attacks by conducting the attacks.
+
+Visual Identity
+Split 50/50 with a 4px glowing center divider. Left half: the "target" — styled as a generic SaaS web app with gray/white theme and a fake company name "NEXUS CORP" — deliberately boring corporate aesthetic to contrast with the dark SIEM side. Right half: the SIEM monitoring stack — all dark, phosphor green accents, technical.
+
+The center divider glows its color based on current detection state: #6b7280 (neutral/idle), #fbbf24 (suspicious activity), #ef4444 (critical detection). The divider also shows small animated "packets" — dots that travel left-to-right along the divider from the target to the SIEM, representing requests being monitored.
+
+The Target Application (Left Side)
+Three "vulnerable" interfaces, selectable via a small tab bar at the top of the left panel:
+
+Tab 1 — Login Form: Username and Password fields, Submit button. The form functionally validates (any input works for testing purposes — the SIEM doesn't care about login success, only the patterns). Trying common SQLi payloads in the username: ' OR '1'='1, admin'--, " OR 1=1--. Each fires the sql-injection detection rule.
+
+Tab 2 — Search Bar: A product search field. Trying XSS: <script>alert(1)</script>, <img src=x onerror=alert(1)>, javascript:void(0). Fires xss-attempt rule. Trying path traversal: ../../../../etc/passwd. Fires sensitive-path rule.
+
+Tab 3 — API Explorer: A minimal REST API client. Method dropdown (GET/POST/PUT/DELETE), URL bar, headers textarea, body textarea. Pre-loaded with the URL http://nexus-corp.internal/api/products. Sending requests rapidly (GSAP will simulate a "rapid-send" mode via a button) fires rapid-requests. Sending to unusual ports: manually changing to port 4444 fires unusual-port.
+
+The SIEM Right Side
+Three stacked panels:
+
+Panel 1 (top, 35%) — Live Log Stream: xterm.js instance streaming every request as a log line in real time. Format: [HH:MM:SS.ms] method path status bytes user-agent. Normal requests are gray. Suspicious pattern detected: that specific line flashes yellow briefly and stays yellow. Confirmed rule match: the line turns red and a [RULE: rule-name] tag appends to the end of the line with a right-pointing arrow link.
+
+Panel 2 (middle, 30%) — Detection Engine Status: Three cards showing the six detection 

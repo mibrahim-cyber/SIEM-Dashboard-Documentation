@@ -13,11 +13,11 @@ last_updated: 2026-05-23
 
 ### What you are looking at
 
-Table shows subset: time (HH:MM:SS UTC slice from ISO), severity bracketed, source IP monospace, truncated rule names, status, actions. Full record available by cross-navigation to Overview row click opening `AlertDetailModal`, fields include `id`, `timestamp`, `sourceIp`, `severity`, `status`, `eventType`, `matchedRules[]`, embedded `log`, optional `geo`, `simulated`, `ecsCompliant`, `soarWatchlisted`. An alert record is a police incident report form, summary line on the dispatch screen, full detail in the filing cabinet drawer when you click through.
+Table shows subset: time (HH:MM:SS UTC slice from ISO), severity bracketed, source IP monospace, truncated rule names, status, actions. Full record available by cross-navigation to Overview row click opening `AlertDetailModal`, fields include `id`, `timestamp`, `sourceIp`, `severity`, `status`, `eventType`, `matchedRules[]`, embedded `log`, optional `geo`, a campaign data lineage flag, `ecsCompliant`, `soarWatchlisted`. An alert record is a police incident report form, summary line on the dispatch screen, full detail in the filing cabinet drawer when you click through.
 
 ### What is happening underneath
 
-Alert object created in `processLogs()` merge of detection engine output plus enrichments. SQLite stores serialised JSON via `saveAlerts`. Modal pulls MITRE from `detectionRules.find(d => d.id === r.ruleId)`. Assigned analyst and notes fields are not implemented in Alert Manager table, case management adds notes in Respond → Case Manager. Audit trail partial: server audit logs API mutations; UI lacks per-alert history timeline.
+Alert object created in `processLogs()` merge of detection engine output plus enrichments. SQLite stores serialised JSON via `saveAlerts`. Modal pulls MITRE from `detectionRules.find(d => d.id === r.ruleId)`. Assigned analyst and notes fields are managed in Respond → Case Manager rather than the Alert Manager table. Audit trail partial: server audit logs API mutations; UI lacks per-alert history timeline.
 
 ### Why this matters
 
@@ -30,7 +30,7 @@ Investigations fail when key context (which rule, which log line, which MITRE te
 3. Read **MATCHED RULES**; record ruleName, category, MITRE line.
 4. Scroll modal **LOG DATA**, original event fields.
 5. Check `id` UUID for ticket reference.
-6. Compare `simulated` flag if demo data.
+6. Check the campaign data lineage flag if the alert originated from Simulate Campaign.
 7. Export JSON; inspect full schema offline.
 
 ### Common questions
@@ -59,4 +59,4 @@ Copies alert `id` and rule names into case ticket, attaches modal log JSON expor
 
 Truncated rules hide secondary matches; open modal. Time column shows time-only; date rollover ambiguous on overnight shifts.
 
-> **Technical note:** CSV export columns: id, timestamp ISO, sourceIp, severity, status, eventType, rules joined `|`, stride. CSV export columns from `exportAlerts()`: id, timestamp ISO, sourceIp, severity, status, eventType, rules joined by pipe, stride from first matched rule. JSON export includes the full alert object with embedded `log`, `geo`, `simulated`, and `ecsCompliant` flags. The table truncates rule names for width; always open `AlertDetailModal` via Overview row click for MITRE lines and complete `matchedRules[]` arrays. Time column shows HH:MM:SS UTC slice from ISO timestamp, overnight shifts crossing midnight should reference full ISO in modal or export for unambiguous chronology.
+> **Technical note:** CSV export columns: id, timestamp ISO, sourceIp, severity, status, eventType, rules joined `|`, stride. CSV export columns from `exportAlerts()`: id, timestamp ISO, sourceIp, severity, status, eventType, rules joined by pipe, stride from first matched rule. JSON export includes the full alert object with embedded `log`, `geo`, campaign data lineage flag, and `ecsCompliant` fields. The table truncates rule names for width; always open `AlertDetailModal` via Overview row click for MITRE lines and complete `matchedRules[]` arrays. Time column shows HH:MM:SS UTC slice from ISO timestamp, overnight shifts crossing midnight should reference full ISO in modal or export for unambiguous chronology.

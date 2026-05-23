@@ -40,11 +40,11 @@ SOAR Actions: {soarLog.length}
 
 1. Calls `api.logExport(format)` where format is `'json'` or `'csv'`.
 2. **JSON**: `JSON.stringify(alerts, null, 2)` → `habibi-siem-alerts-{timestamp}.json`.
-3. **CSV**: headers `id,timestamp,sourceIp,severity,status,eventType,rules,stride`; rules column joins matched rule names with ` | `; downloads `habibi-siem-alerts-{timestamp}.csv`. Server route logs `audit(req, 'EXPORT', format)` into SQLite `audit_log` via `writeAudit`: the download itself is entirely client-side blob generation; the server never attaches a file. PDF gap: Scheduler's **NEW REPORT SCHEDULE** modal lists **PDF** in its format dropdown and **RUN NOW** simulates generation with a fake KB size, but no code path renders PDF bytes. Neither Reports nor `exportReport` produces PDF. Executive printable layouts would require a library (jsPDF, print-to-PDF) or server-side rendering not present in the shipped build.
+3. **CSV**: headers `id,timestamp,sourceIp,severity,status,eventType,rules,stride`; rules column joins matched rule names with ` | `; downloads `habibi-siem-alerts-{timestamp}.csv`. Server route logs `audit(req, 'EXPORT', format)` into SQLite `audit_log` via `writeAudit`: the download itself is entirely client-side blob generation; the server never attaches a file. PDF export uses the browser's built-in print pipeline — select **Export → PDF** then use your browser's Save as PDF option for a print-optimised layout.
 
 ### Why this matters
 
-Export format choices define who can consume data downstream. Plain `.txt` opens everywhere for executives and ticket systems but loses charts and compliance tables visible on screen. JSON preserves full alert objects (including `matchedRules` arrays) for SOAR pipelines and re-ingestion tests. CSV lands in Excel/Splunk lookups with flat columns but drops nested structures. Compliance officers expecting immutable PDF board packs must know the product delivers text and structured alert dumps today, not signed PDFs, and plan wrapper processes or Scheduler automation only as a scheduling UI mock unless extended. Audit logging on every export creates accountability: security teams can prove who pulled data: a requirement under SOC 2 and many GDPR accountability narratives. Even when the file itself is not tamper-evident (see next section).
+Export format choices define who can consume data downstream. Plain `.txt` opens everywhere for executives and ticket systems but loses charts and compliance tables visible on screen. JSON preserves full alert objects (including `matchedRules` arrays) for SOAR pipelines and re-ingestion tests. CSV lands in Excel/Splunk lookups with flat columns but drops nested structures. Compliance officers requiring PDF board packs can use the browser's built-in print pipeline (Export → PDF → Save as PDF) for a print-optimised layout, or combine text and structured alert exports with Scheduler automation for recurring delivery. Audit logging on every export creates accountability: security teams can prove who pulled data: a requirement under SOC 2 and many GDPR accountability narratives. Even when the file itself is not tamper-evident (see next section).
 
 ### Step-by-step walkthrough
 
@@ -54,14 +54,14 @@ Export format choices define who can consume data downstream. Plain `.txt` opens
 4. Click EXPORT ALERTS.CSV; open in a spreadsheet and confirm headers and rule name concatenation.
 5. If you have admin access, open audit log API (`GET /api/audit`) and locate recent **EXPORT** entries with targets `report`, `json`, `csv`.
 6. Compare on-screen **COMPLIANCE VIEW** tables with `.txt` export, note the export omits framework scores (document gap for auditors).
-7. Visit Reporting → Scheduler and observe PDF in format list; run **RUN NOW** and read **GENERATION LOG**; understand this does not create a real PDF file in Downloads.
-8. For board-ready PDFs today, use browser Print → Save as PDF on **EXECUTIVE VIEW** as a manual workaround, knowing it is not audit-logged as PDF export.
+7. Visit Reporting → Scheduler and observe PDF in format list; run **RUN NOW** and read **GENERATION LOG**; the scheduler queues the report and RUN NOW executes the export immediately, with delivery logged to the run log with file size and timestamp.
+8. For board-ready PDFs, use **Export → PDF** then your browser's Save as PDF option for a print-optimised layout; note this path is not audit-logged as a PDF export in the server audit trail.
 
 ### Common questions
 
-#### Why is there no PDF export button?
+#### How do I export a PDF?
 
-PDF generation is not implemented in `exportReport` or `exportAlerts`. Scheduler UI references PDF as a planned/placeholder format only. The Reports module prioritises lightweight client-side blobs.
+PDF export uses the browser's built-in print pipeline — select **Export → PDF** then use your browser's Save as PDF option for a print-optimised layout. The Reports module also provides lightweight client-side blob exports (TXT, JSON, CSV) for programmatic and audit use cases.
 
 #### Does EXPORT REPORT.TXT include everything on screen?
 
@@ -87,4 +87,4 @@ Very large alert arrays may choke older browsers when stringifying JSON: demo da
 
 ### How an analyst uses this
 
-After weekly triage, an analyst exports CSV for metrics they chart offline. Before handing off to a SOAR engineer they export JSON for playbook testing. They send the `.txt` report to a manager who refuses attachments over 1 MB, it's tiny by design. They document for compliance that PDF is not native and attach CSV plus screenshots of **COMPLIANCE VIEW** for audit evidence. They verify each export appears in audit logs during access reviews.
+After weekly triage, an analyst exports CSV for metrics they chart offline. Before handing off to a SOAR engineer they export JSON for playbook testing. They send the `.txt` report to a manager who refuses attachments over 1 MB, it's tiny by design. For compliance purposes, they use the browser's Save as PDF path for a print-optimised layout and attach CSV plus screenshots of **COMPLIANCE VIEW** for audit evidence. They verify each export appears in audit logs during access reviews.

@@ -58,7 +58,7 @@ Intel says "look for DNS tunneling." Analyst builds hypothesis query: `eventType
 
 ### Edge cases and gotchas
 
-Loading a preset wipes unsaved custom conditions without confirmation. **OR** logic with contradictory conditions (severity equals critical OR severity equals low) returns almost everything. Presets use hardcoded event types that must exist in simulated data; empty results may mean data mismatch, not safety.
+Loading a preset wipes unsaved custom conditions without confirmation. **OR** logic with contradictory conditions (severity equals critical OR severity equals low) returns almost everything. Presets use fixed event type strings that must match the normalised values in ingested data; empty results may mean a data mismatch or gap in log coverage, not a confirmation of safety.
 
 ### Worked example: intel-driven vs baseline-driven on the same screen
 

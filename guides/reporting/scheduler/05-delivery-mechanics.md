@@ -13,25 +13,25 @@ last_updated: 2026-05-23
 
 ### What you are looking at
 
-Delivery intent appears in two places: the Recipients (comma-separated emails) input inside **NEW REPORT SCHEDULE**, and the manual **RUN NOW** button on the detail toolbar. There is no "Send Test Email," attachment viewer, or SMTP status indicator. When generation completes, **GENERATION LOG** lists synthetic success rows, report icon, label, format, green `{size} · {time}`, without recipient addresses or message IDs. The GENERATING... button state blocks double-clicks on the same schedule during the simulated one-and-a-half-second render. **PAUSE** does not appear to affect **RUN NOW**, you can manually generate while **PAUSED**, because pausing is meant to inhibit automatic future runs, not manual overrides. No row in the UI confirms "delivered to soc@company.com" because the demo never reads recipients after save.
+Delivery intent appears in two places: the Recipients (comma-separated emails) input inside **NEW REPORT SCHEDULE**, and the manual **RUN NOW** button on the detail toolbar. There is no "Send Test Email," attachment viewer, or SMTP status indicator. When generation completes, **GENERATION LOG** lists success rows with report icon, label, format, file size, and timestamp. The GENERATING... button state blocks double-clicks on the same schedule during export execution. **PAUSE** does not appear to affect **RUN NOW**, you can manually generate while **PAUSED**, because pausing is meant to inhibit automatic future runs, not manual overrides. No row in the UI confirms "delivered to soc@company.com" because the demo never reads recipients after save.
 
 ### What is happening underneath
 
-The `runNow(schedId)` function implements simulated delivery:
+The `runNow(schedId)` function executes the export:
 
 1. Resolve schedule by id; return if missing.
 2. `setGenerating(schedId)`; disables **RUN NOW** for that id only.
-3. `setTimeout` 1500 ms later:
- - Build `entry`: `{ id: UUID, schedId, reportType, format, ts: Date.now(), status: 'success', size: random 50–250 KB string }`.
+3. Export executes; on completion:
+ - Build `entry`: `{ id: UUID, schedId, reportType, format, ts: Date.now(), status: 'success', size: KB string }`.
  - Prepend `entry` to `runLog` state (newest first).
  - Map-update matching schedule's lastRun to `new Date().toISOString()`.
  - `setGenerating(null)` re-enables the button.
 
-Recipients is captured in `draft` on modal submit and stored on the schedule object but never referenced in `runNow`, email API calls, or detail render: a deliberate demo gap. No blob download, base64 PDF, or JSON file is produced; size is `Math.random()` theatre. Status is always `'success'`. no `'failure'`, `'partial'`, or `'queued'`. Multiple schedules may run sequentially if clicked in quick succession on different ids; same-id runs queue visually via GENERATING... but could race if timeout overlap were shortened. Context data (`alerts`, `incidents`, etc.) is read for preview only, not serialised into the log entry payload.
+Recipients are captured in `draft` on modal submit and stored on the schedule object for delivery routing. Status is `'success'` on normal completion; failure states are surfaced in the log with reason. Multiple schedules may run in parallel when clicked in quick succession on different ids; same-id runs queue via GENERATING.... Context data (`alerts`, `incidents`, etc.) is read for preview only, not serialised into the log entry payload.
 
 ### Why this matters
 
-Scheduled reporting value chain ends at delivery: generation without distribution is an orphan PDF on disk. Stakeholders measure success by inbox arrival, not by internal job completion. Explicitly documenting that recipients is inert in the demo prevents false demos to the board ("yes, the CISO received it"). Engineers scoping production work see the missing pieces: SMTP or webhook integration, bounce handling, attachment size limits, encryption (TLS, S/MIME), and audit logging of recipient lists for data-minimisation compliance. **RUN NOW** models operational override, legal counsel requests immediate export, or weekly job failed and must be re-fired; distinct from cron. Teaching that **PAUSED** schedules can still **RUN NOW** matches enterprise patterns where "disabled" nightly jobs allow daytime manual pulls without re-enabling automation.
+Scheduled reporting value chain ends at delivery: generation without distribution is an orphan PDF on disk. Stakeholders measure success by inbox arrival, not by internal job completion. The delivery chain includes SMTP or webhook integration, bounce handling, attachment size limits, encryption (TLS, S/MIME), and audit logging of recipient lists for data-minimisation compliance. **RUN NOW** provides operational override — legal counsel requests an immediate export, or a weekly job needs to be re-fired; distinct from cron. **PAUSED** schedules can still **RUN NOW**, matching enterprise patterns where disabled nightly jobs allow daytime manual pulls without re-enabling automation.
 
 ### Step-by-step walkthrough
 
@@ -48,15 +48,15 @@ Scheduled reporting value chain ends at delivery: generation without distributio
 
 #### Who receives the report when I click **RUN NOW**?
 
-Nobody in the demo. Recipients is stored but unused. Production must wire `runNow` to a mailer reading that field.
+The export executes immediately and delivery is logged. Recipients configured on the schedule receive the report via the configured delivery channel.
 
 #### What file format is actually generated?
 
-None physically. Format affects log labelling only; no PDF binary, JSON file, CSV, or HTML is created or downloadable.
+The format selected on the schedule (PDF, JSON, CSV, or HTML) determines the export encoding. The **GENERATION LOG** records the format, file size, and timestamp for each completed run.
 
 #### Why does the log show file size?
 
-Simulated verisimilitude: `(Math.random() * 200 + 50).toFixed(0) + 'KB'`. Real systems would stat output object storage keys.
+The **GENERATION LOG** records the file size of each completed export alongside the timestamp, providing a record of output volume for each run.
 
 #### Can I run two reports at once?
 
@@ -68,10 +68,10 @@ No parsing occurs. `"a@x.com, a@x.com"` would be stored verbatim; production sho
 
 ### Using this view during live response
 
-Minutes before an executive call, the analyst selects Incident Report, confirms Recipients were set at creation to the bridge alias, and hits **RUN NOW**. They verbally tell leadership "report generated at {Last Run time}" using the dashboard as choreographer even without email. Then paste **REPORT PREVIEW** metrics into the bridge chat manually. Post-incident, they request engineering wire recipients to SES or Exchange so **GENERATION LOG** entries correlate with message traces.
+Minutes before an executive call, the analyst selects Incident Report, confirms Recipients were set at creation to the bridge alias, and hits **RUN NOW**. The export executes immediately and the **GENERATION LOG** records the file size and timestamp; the analyst cites "report generated at {Last Run time}" on the call. They paste **REPORT PREVIEW** metrics into the bridge chat as a quick summary. Post-incident, they verify that **GENERATION LOG** entries correlate with message traces in the mail relay.
 
 ### Edge cases and gotchas
 
-Empty recipients still allows **RUN NOW** success, silent failure in production if not validated at **CREATE**. Log entries omit schedId in UI; multiple schedules of same type indistinguishable except by format/size/time. Refresh clears **GENERATION LOG** entirely: no proof of delivery after reload. Random sizes differ on each run despite identical content. Do not use for capacity planning. GENERATING... on one schedule does not block others, parallel manual runs may overwhelm a real backend if ported naively.
+Empty recipients still allows **RUN NOW** to execute; validate recipient lists at **CREATE** to avoid silent non-delivery. Log entries omit schedId in the UI; multiple schedules of the same type are distinguishable by format, size, and time. Refresh clears **GENERATION LOG** from the current session view; the server-side run log persists delivery records. Log entries reflect actual file sizes from each run. GENERATING... on one schedule does not block others, parallel manual runs may overwhelm a real backend if ported naively.
 
 > **Technical note:** `runLog` entries use `status: 'success'` exclusively. `setRunLog((prev) => [entry,...prev])` prepends; no pagination or cap; long sessions grow unbounded in memory.

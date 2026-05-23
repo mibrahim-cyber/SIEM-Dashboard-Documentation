@@ -43,9 +43,9 @@ Not implemented, use OS screenshot or browser devtools capture.
 
 Provide legend: colour = severity, horizontal = time, lane = attacker IP or technique.
 
-#### Should I show simulated timeline to board?
+#### Should I show a Simulate Campaign timeline to the board?
 
-Only labelled as exercise; **SIM** badges on alerts if they open detail.
+Only when clearly labelled as an exercise; **SIM** badges on alerts confirm campaign origin if they open detail.
 
 #### What if incident is ongoing?
 

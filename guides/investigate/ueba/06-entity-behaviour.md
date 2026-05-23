@@ -46,7 +46,7 @@ Not in UI, analyst filters mentally or future enhancement. Document excluded acc
 
 #### What about device entities?
 
-Devices without username fields won't appear; need device ID grouping (not implemented). Appears only if logs include device as username.
+Devices without username fields won't appear; device ID grouping requires extending the entity model. Appears only if logs include device as username.
 
 #### Should service account scores trigger lockout?
 

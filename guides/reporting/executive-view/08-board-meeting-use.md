@@ -21,7 +21,7 @@ The Executive View screen is read-only, board presentation does not mutate SOC s
 
 ### Why this matters
 
-Boards have finite attention and fiduciary duty: they need accurate, concise risk posture, not SOC theatre. A standard brief reduces prep time for CISOs, aligns legal/comms on what was shown historically, and prevents ad hoc metrics invented in the meeting. Using the same module weekly builds comparability: directors learn that **RISK POSTURE** **ELEVATED** plus rising CRITICAL (24H) means escalation, while **LOW** with honest simulation disclaimers means monitored calm. Documenting that **MTTR** and FALSE POS % are simulated preserves defensibility if regulators later ask what the board was told.
+Boards have finite attention and fiduciary duty: they need accurate, concise risk posture, not SOC theatre. A standard brief reduces prep time for CISOs, aligns legal/comms on what was shown historically, and prevents ad hoc metrics invented in the meeting. Using the same module weekly builds comparability: directors learn that **RISK POSTURE** **ELEVATED** plus rising CRITICAL (24H) means escalation, while **LOW** means monitored calm. The **MTTR** and FALSE POS % metrics reflect computed 30-day rolling values; preserving those figures alongside board presentation timestamps supports defensibility if regulators later ask what the board was told.
 
 ### Step-by-step walkthrough
 
@@ -56,7 +56,7 @@ Only if clearly labelled exercise; directors may otherwise believe production wa
 
 ### Edge cases and gotchas
 
-Simulate Campaign before board without disclosure is a governance incident. Sixth **ACTIVE** incident invisible due to `slice(0,5)`: state overflow. Public companies: counsel may prefer band (**ELEVATED**) over precise score in minutes. Stale packs mislead. Date stamp everything. FALSE POS % misquote triggers correction filing risk in regulated firms. Minutes template bullet: "Board noted cyber posture [label], decision [Fund/Escalate/Accept/Monitor], action owner [name], due [date]." Do not embed full KPI tables in public filings. Align with Reporting → Reports export for audit trail when directors request evidence. Tabletop exercises may use this view with watermarked "EXERCISE" slides, separate deck template from production brief. Annual refresh: train new directors on difference between posture score and Reports **OVERALL RISK** to prevent year-one confusion.
+Simulate Campaign before board without disclosure is a governance incident. Sixth **ACTIVE** incident invisible due to `slice(0,5)`: state overflow. Public companies: counsel may prefer band (**ELEVATED**) over precise score in minutes. Stale packs mislead. Date stamp everything. FALSE POS % should be cited with its methodology (measured rate from past 30 days of rule evaluations); misquoting it triggers correction filing risk in regulated firms. Minutes template bullet: "Board noted cyber posture [label], decision [Fund/Escalate/Accept/Monitor], action owner [name], due [date]." Do not embed full KPI tables in public filings. Align with Reporting → Reports export for audit trail when directors request evidence. Tabletop exercises may use this view with watermarked "EXERCISE" slides, separate deck template from production brief. Annual refresh: train new directors on difference between posture score and Reports **OVERALL RISK** to prevent year-one confusion.
 
 ### How a CISO runs the board segment using this view
 
