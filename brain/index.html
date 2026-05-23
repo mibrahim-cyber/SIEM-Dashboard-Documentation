@@ -1544,11 +1544,38 @@
       camFocus = null;
       return;
     }
+    nodeFocusReleasedAt = performance.now();
+    ensureWormholeCentered();
+  }
+
+  /** Keep the wormhole anchored at screen center after dismiss / empty clicks. */
+  function ensureWormholeCentered(opts) {
+    opts = opts || {};
+    const pv = camPivot();
+    throatView = false;
+    throatT = 0;
     camFocus = null;
     camTween = stopTween(camTween);
-    focusWorldPoint(pv.x, pv.y, W / 2, H / 2, 1, { ease: 0.048, easeS: 0.034 });
-    nodeFocusReleasedAt = performance.now();
+    shakeOff.x = shakeOff.y = shakeOff.mag = 0;
+    focusWorldPoint(pv.x, pv.y, W / 2, H / 2, 1, {
+      ease: opts.ease != null ? opts.ease : 0.052,
+      easeS: opts.easeS != null ? opts.easeS : 0.036,
+    });
+    if (opts.resetWormholeFx !== false) tweenWormhole({ heat: 0, spinMul: 1 }, 420);
     lastInput = performance.now();
+  }
+
+  /** Benign empty-canvas click — no corruption FX, restore center if drifted. */
+  function dismissEmptyCanvasClick() {
+    showCard(false);
+    lastHover = null;
+    comparePick = null;
+    nodeFocusReleasedAt = performance.now();
+    const pv = camPivot();
+    const drift = Math.hypot(camAnim.x - pv.x, camAnim.y - pv.y);
+    if (drift > 2 || camAnim.scale > 1.008 || camFocus || throatView || shakeOff.mag > 0.01) {
+      ensureWormholeCentered();
+    }
   }
 
   function applyCameraToCtx(c, parallax, shake) {
@@ -1766,11 +1793,7 @@
   function isAlertMode() { return filter && ALERT_RE.test(filter); }
 
   function recenterWormhole() {
-    throatView = false;
-    camFocus = null;
-    const pv = camPivot();
-    focusWorldPoint(pv.x, pv.y, W / 2, H / 2, 1, { ease: 0.045, easeS: 0.032 });
-    tweenWormhole({ heat: 0, spinMul: 1 }, 600);
+    ensureWormholeCentered({ ease: 0.045, easeS: 0.032 });
     resetClickFx();
     pulseRecenterBtn();
     recenterFlash = 30;
@@ -2037,7 +2060,7 @@
       sx: p.sx,
       sy: p.sy,
       r: r * camScale,
-      hitR: r * 2 * camScale,
+      hitR: r * 1.12 * camScale,
     };
   }
 
@@ -2166,7 +2189,7 @@
       releaseNodeFocus();
       return;
     }
-    recenterWormhole();
+    dismissEmptyCanvasClick();
   });
   canvas.addEventListener('click', (e) => {
     const now = performance.now();
@@ -2189,18 +2212,7 @@
       releaseNodeFocus();
       return;
     }
-    const wh = wormholeScreen();
-    if (Math.hypot(mx - wh.sx, my - wh.sy) < wh.hitR) {
-      webCorruptClick(mx, my, '#a78bfa', 'portal');
-      throatView = true;
-      focusWorldPoint(whX(), whY(), W / 2, H / 2, 1.16, { ease: 0.04, easeS: 0.03 });
-      throatT = 100;
-      lastInput = performance.now();
-      return;
-    }
-    showCard(false);
-    lastHover = null;
-    webCorruptClick(mx, my, '#c4b5fd', '');
+    dismissEmptyCanvasClick();
   });
   canvas.addEventListener('dblclick', (e) => {
     e.preventDefault();

@@ -1,7 +1,7 @@
 /**
  * Meridian-7 service worker — offline cache for core assets
  */
-const CACHE = 'meridian7-v15.7';
+const CACHE = 'meridian7-v15.8';
 const PRECACHE = [
   '/',
   '/index.html',
