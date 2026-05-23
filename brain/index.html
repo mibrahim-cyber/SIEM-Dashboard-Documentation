@@ -2137,15 +2137,35 @@
     if (e.key === 'Home' || (e.key === 'Escape' && !e.ctrlKey && !e.metaKey)) recenterWormhole();
   });
 
-  bgC.addEventListener('click', () => recenterWormhole());
+  bgC.addEventListener('click', () => {
+    if (briefOpen) {
+      closeDeckBrief();
+      showCard(false);
+      lastHover = null;
+      if (camFocus && camFocus.node) camFocus = null;
+      return;
+    }
+    recenterWormhole();
+  });
   canvas.addEventListener('click', (e) => {
     const now = performance.now();
-    if (now < suppressCanvasClickUntil || now - lastCanvasClickAt < 320) return;
-    lastCanvasClickAt = now;
+    if (now < suppressCanvasClickUntil) return;
     mx = e.clientX;
     my = e.clientY;
+    pickHover();
     if (hover) {
+      if (now - lastCanvasClickAt < 220) return;
+      lastCanvasClickAt = now;
       handleNodeClick(hover, e.shiftKey);
+      return;
+    }
+    lastCanvasClickAt = now;
+    if (briefOpen) {
+      closeDeckBrief();
+      showCard(false);
+      lastHover = null;
+      if (camFocus && camFocus.node) camFocus = null;
+      lastInput = performance.now();
       return;
     }
     const wh = wormholeScreen();
@@ -2157,6 +2177,9 @@
       lastInput = performance.now();
       return;
     }
+    if (camFocus && camFocus.node) camFocus = null;
+    showCard(false);
+    lastHover = null;
     webCorruptClick(mx, my, '#c4b5fd', '');
   });
   canvas.addEventListener('dblclick', (e) => {
@@ -2841,7 +2864,7 @@
         lastHover = hover;
         showCard(true);
       }
-    } else if (mx < 0 && lastHover) {
+    } else if (lastHover) {
       lastHover = null;
       showCard(false);
     }
