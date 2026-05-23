@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIEM Dashboard Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0618;
+      --panel: #120a24;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #c4b5fd;
+      --link: #38bdf8;
+      --border: rgba(167, 139, 250, 0.25);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+    header {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      padding: 12px 20px;
+      background: rgba(8, 4, 18, 0.96);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(8px);
+    }
+    header a {
+      color: var(--accent);
+      text-decoration: none;
+      font: 500 12px "IBM Plex Mono", Consolas, monospace;
+    }
+    header a:hover { color: #fef9c3; }
+    #doc-path { flex: 1; min-width: 120px; color: var(--muted); font: 11px "IBM Plex Mono", monospace; word-break: break-all; }
+    main { max-width: 820px; margin: 0 auto; padding: 32px 24px 80px; }
+    #doc-loading, #doc-error { font: 13px "IBM Plex Mono", monospace; color: var(--muted); padding: 24px 0; }
+    #doc-error { color: #fca5a5; }
+    #doc-content { font-size: 15px; }
+    #doc-content h1, #doc-content h2, #doc-content h3, #doc-content h4 {
+      font-family: "IBM Plex Sans", sans-serif;
+      color: var(--accent);
+      margin: 1.4em 0 0.6em;
+      line-height: 1.25;
+    }
+    #doc-content h1 { font-size: 1.75rem; margin-top: 0; }
+    #doc-content h2 { font-size: 1.35rem; border-bottom: 1px solid var(--border); padding-bottom: 0.35em; }
+    #doc-content h3 { font-size: 1.1rem; }
+    #doc-content p { margin: 0.75em 0; }
+    #doc-content ul, #doc-content ol { margin: 0.75em 0 0.75em 1.4em; }
+    #doc-content li { margin: 0.35em 0; }
+    #doc-content a { color: var(--link); }
+    #doc-content a:hover { color: #fef9c3; }
+    #doc-content strong { color: #f1f5f9; font-weight: 600; }
+    #doc-content code {
+      font-family: "IBM Plex Mono", Consolas, monospace;
+      font-size: 0.88em;
+      background: rgba(109, 40, 217, 0.2);
+      padding: 0.12em 0.35em;
+      border-radius: 3px;
+    }
+    #doc-content pre {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      margin: 1em 0;
+      white-space: pre-wrap;
+      font-family: "IBM Plex Mono", Consolas, monospace;
+      font-size: 13px;
+    }
+    #doc-content pre code { background: none; padding: 0; }
+    #doc-content blockquote {
+      border-left: 3px solid var(--accent);
+      margin: 1em 0;
+      padding: 0.25em 0 0.25em 1em;
+      color: var(--muted);
+    }
+    #doc-content hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
+    #doc-content img { max-width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--border); margin: 1em 0; }
+    #doc-content table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 14px; }
+    #doc-content th, #doc-content td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; }
+    #doc-content th { background: rgba(109, 40, 217, 0.15); color: var(--accent); }
+    @media print {
+      header { position: static; background: #fff; border-color: #ccc; }
+      header a, #doc-path { color: #333; }
+      body { background: #fff; color: #111; }
+      #doc-content h1, #doc-content h2, #doc-content h3 { color: #111; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a id="nav-landing" href="./">Landing</a>
+    <a id="nav-deck" href="./brain/">Observation deck</a>
+    <span id="doc-path"></span>
+  </header>
+  <main>
+    <div id="doc-loading">Loading…</div>
+    <div id="doc-error" hidden></div>
+    <article id="doc-content"></article>
+  </main>
+  <script src="./assets/marked.min.js"></script>
+  <script>
+(() => {
+  'use strict';
+
+  const params = new URLSearchParams(location.search);
+  const docPath = (params.get('p') || 'docs/02-architecture/00-system-overview.md').replace(/^\/+/, '');
+
+  const loading = document.getElementById('doc-loading');
+  const errEl = document.getElementById('doc-error');
+  const content = document.getElementById('doc-content');
+  const pathEl = document.getElementById('doc-path');
+
+  pathEl.textContent = docPath;
+
+  function siteBase() {
+    const p = location.pathname;
+    const idx = p.lastIndexOf('/');
+    return location.origin + (idx >= 0 ? p.slice(0, idx + 1) : '/');
+  }
+
+  function baseDir(p) {
+    const i = p.lastIndexOf('/');
+    return i >= 0 ? p.slice(0, i + 1) : '';
+  }
+
+  function resolvePath(rel, fromDir) {
+    if (!rel || /^https?:\/\//i.test(rel) || rel.startsWith('mailto:') || rel.startsWith('#')) return rel;
+    const joined = (fromDir + rel).split('/');
+    const out = [];
+    for (const part of joined) {
+      if (part === '..') { if (out.length) out.pop(); }
+      else if (part && part !== '.') out.push(part);
+    }
+    return out.join('/');
+  }
+
+  function viewerUrl(mdPath) {
+    return siteBase() + 'read.html?p=' + encodeURIComponent(mdPath);
+  }
+
+  function assetUrl(relPath) {
+    return siteBase() + relPath.replace(/^\/+/, '');
+  }
+
+  function stripFrontMatter(text) {
+    if (text.startsWith('---')) {
+      const end = text.indexOf('\n---', 3);
+      if (end > 0) return text.slice(end + 4).replace(/^\s+/, '');
+    }
+    return text;
+  }
+
+  const dir = baseDir(docPath);
+
+  function renderMarkdown(md) {
+    if (typeof marked === 'undefined') {
+      throw new Error('Markdown renderer failed to load');
+    }
+    const renderer = new marked.Renderer();
+    renderer.link = function (href, title, text) {
+      let h = href || '';
+      if (h && !h.startsWith('#') && !/^https?:\/\//i.test(h)) {
+        if (h.endsWith('.md') || !h.includes('://')) h = viewerUrl(resolvePath(h, dir));
+      }
+      const t = title ? ' title="' + title + '"' : '';
+      return '<a href="' + h + '"' + t + '>' + text + '</a>';
+    };
+    renderer.image = function (href, title, text) {
+      const src = assetUrl(resolvePath(href || '', dir));
+      const t = title ? ' title="' + title + '"' : '';
+      return '<img src="' + src + '" alt="' + (text || '') + '"' + t + ' loading="lazy" />';
+    };
+    return marked.parse(md, { renderer: renderer, gfm: true, breaks: false });
+  }
+
+  async function load() {
+    document.title = docPath.split('/').pop() + ' · SIEM Docs';
+    try {
+      const res = await fetch(assetUrl(docPath));
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      let md = await res.text();
+      md = stripFrontMatter(md);
+      loading.hidden = true;
+      content.innerHTML = renderMarkdown(md);
+      const h1 = content.querySelector('h1');
+      if (h1) document.title = h1.textContent.trim() + ' · SIEM Docs';
+    } catch (e) {
+      loading.hidden = true;
+      errEl.hidden = false;
+      errEl.textContent = 'Could not load ' + docPath + ' — ' + (e.message || e);
+    }
+  }
+
+  load();
+})();
+  </script>
+</body>
+</html>

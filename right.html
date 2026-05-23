@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="en" data-deck-page="right">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="Spectrum, waterfall, and intercept modes — radio-frequency style alert monitoring." />
+  <meta property="og:title" content="The Signal Room — HABIBI-SIEM" />
+  <meta property="og:description" content="Spectrum, waterfall, and intercept modes — radio-frequency style alert monitoring." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/signal-room-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Signal Room — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Spectrum, waterfall, and intercept modes — radio-frequency style alert monitoring." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/signal-room-og.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Signal Room — SR-7</title>
+  <link rel="stylesheet" href="assets/deck-nav.css" />
+  <style>
+    :root {
+      --mode-color: #00ff41;
+      --mode-dim: #39ff14;
+      --mode-bg: #030b06;
+      --mode-panel: rgba(4, 8, 4, 0.92);
+      --mode-accent-soft: rgba(0, 255, 65, 0.4);
+      --static-field: rgba(255, 255, 255, 0.02);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #020403;
+      color: var(--mode-color);
+      font-family: Consolas, 'Courier New', monospace;
+      transition: color 0.28s ease, background 0.28s ease;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+      opacity: 0.022;
+    }
+    #sr-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 30;
+      height: 44px; display: flex; align-items: center; gap: 14px;
+      padding: 0 16px;
+      background: rgba(4, 8, 4, 0.96);
+      border-bottom: 1px solid var(--mode-accent-soft);
+    }
+    #sr-header .sr-designation {
+      font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--mode-dim); white-space: nowrap;
+    }
+    #sr-freq-readout {
+      font-size: 8px; letter-spacing: 1px; color: var(--mode-color);
+      opacity: 0.85; white-space: nowrap;
+    }
+    #sr-strength {
+      display: flex; gap: 3px; align-items: center;
+    }
+    .sr-strength-seg {
+      width: 14px; height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: background 0.1s, box-shadow 0.1s;
+    }
+    .sr-strength-seg.lit {
+      background: var(--mode-color);
+      box-shadow: 0 0 6px var(--mode-color);
+    }
+    #sr-utc {
+      font-size: 9px; letter-spacing: 2px; color: #94a3b8;
+      margin-left: auto;
+    }
+    #sr-mode-name {
+      font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--mode-dim); min-width: 100px; text-align: right;
+    }
+    #sr-retune-btn, #sr-snd-toggle {
+      font: inherit; font-size: 8px; letter-spacing: 2px; text-transform: uppercase;
+      padding: 5px 10px; cursor: pointer;
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid var(--mode-accent-soft);
+      color: var(--mode-color);
+    }
+    #sr-retune-btn:hover, #sr-snd-toggle:hover {
+      box-shadow: 0 0 10px var(--mode-accent-soft);
+    }
+    #sr-retune-btn {
+      font-weight: 700; letter-spacing: 3px;
+      border-color: var(--mode-color);
+    }
+    #sr-main-wrap {
+      position: fixed; top: 44px; left: 0; right: 0;
+      height: 58vh; z-index: 5;
+    }
+    #sr-canvas {
+      width: 100%; height: 100%; display: block; cursor: crosshair;
+      background: var(--mode-bg);
+      transition: filter 0.08s;
+    }
+    #sr-main-wrap::before {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none; z-index: 2;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.18) 2px,
+        rgba(0, 0, 0, 0.18) 4px
+      );
+    }
+    #sr-main-wrap::after {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none; z-index: 3;
+      background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.7) 100%);
+    }
+    .sr-bracket {
+      position: absolute; width: 18px; height: 18px;
+      border: 1px solid var(--mode-color); opacity: 0.5;
+      pointer-events: none; z-index: 4;
+      transition: border-color 0.28s;
+    }
+    .sr-bracket.tl { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+    .sr-bracket.tr { top: 8px; right: 8px; border-left: none; border-bottom: none; }
+    .sr-bracket.bl { bottom: 8px; left: 8px; border-right: none; border-top: none; }
+    .sr-bracket.br { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+    #sr-transition {
+      position: absolute; inset: 0; z-index: 8; pointer-events: none;
+      opacity: 0; overflow: hidden;
+    }
+    #sr-transition.active { opacity: 1; }
+    #sr-transition canvas { width: 100%; height: 100%; display: block; }
+    #sr-transition .sr-wipe-line {
+      position: absolute; left: 0; right: 0; height: 3px;
+      background: var(--mode-color);
+      box-shadow: 0 0 12px var(--mode-color);
+      opacity: 0;
+    }
+    #sr-drift-banner {
+      position: fixed; top: 44px; left: 0; right: 0; z-index: 25;
+      text-align: center; font-size: 9px; letter-spacing: 4px;
+      padding: 6px; background: rgba(0, 0, 0, 0.85);
+      color: #f97316; display: none;
+      text-transform: uppercase;
+    }
+    #sr-drift-banner.on { display: block; }
+    #sr-panels {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: calc(36vh - 44px); min-height: 180px;
+      z-index: 12;
+      display: grid; grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 10px; padding: 10px 16px 16px;
+    }
+    .sr-panel {
+      background: var(--mode-panel);
+      border: 1px solid var(--mode-accent-soft);
+      border-radius: 4px;
+      padding: 10px;
+      overflow: auto;
+      font-size: 9px;
+      line-height: 1.55;
+      transition: opacity 0.14s ease, border-color 0.28s;
+    }
+    .sr-panel h2 {
+      font-size: 8px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--mode-dim); margin-bottom: 8px;
+      border-bottom: 1px solid var(--mode-accent-soft);
+      padding-bottom: 4px;
+    }
+    .sr-panel.fade-out { opacity: 0; }
+    #sr-lockon {
+      position: fixed; bottom: 20px; right: 20px; z-index: 20;
+      width: 280px; max-height: 42vh;
+      background: rgba(4, 8, 4, 0.96);
+      border: 1px solid var(--mode-color);
+      border-radius: 4px;
+      padding: 12px;
+      transform: translateY(calc(100% + 40px));
+      transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+      font-size: 9px; line-height: 1.5;
+    }
+    #sr-lockon.on { transform: translateY(0); }
+    #sr-lockon .sr-lock-name {
+      font-size: 12px; letter-spacing: 2px; color: var(--mode-color);
+      margin-bottom: 6px;
+    }
+    #sr-lockon .sr-lock-badge {
+      display: inline-block; font-size: 7px; letter-spacing: 2px;
+      padding: 2px 6px; border: 1px solid var(--mode-color);
+      margin-bottom: 8px;
+    }
+    #sr-lockon .sr-lock-spark {
+      width: 100%; height: 60px; margin: 8px 0;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--mode-accent-soft);
+    }
+    #sr-lockon-close {
+      position: absolute; top: 8px; right: 10px;
+      background: none; border: none; color: var(--mode-color);
+      font-size: 14px; cursor: pointer;
+    }
+    #sr-boot {
+      position: fixed; inset: 0; z-index: 200;
+      background: #000; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    #sr-boot.hide { opacity: 0; pointer-events: none; transition: opacity 0.35s; visibility: hidden; }
+    #sr-boot h1 {
+      font-size: 11px; letter-spacing: 8px; color: var(--mode-color);
+      text-transform: uppercase; margin-bottom: 16px;
+    }
+    #sr-boot .sr-boot-sub {
+      font-size: 9px; letter-spacing: 3px; color: var(--mode-dim);
+      margin-bottom: 20px;
+    }
+    #sr-boot-bar-wrap {
+      width: 280px; height: 6px;
+      background: rgba(0, 255, 65, 0.15);
+      border: 1px solid rgba(0, 255, 65, 0.35);
+      margin-bottom: 16px; overflow: hidden;
+    }
+    #sr-boot-bar {
+      height: 100%; width: 0%; background: #00ff41;
+      box-shadow: 0 0 8px #00ff41;
+      transition: width 0.05s linear;
+    }
+    #sr-boot .sr-boot-bars {
+      display: flex; align-items: flex-end; gap: 2px;
+      height: 40px; margin-bottom: 20px;
+    }
+    #sr-boot .sr-boot-bars span {
+      width: 4px; background: #00ff41;
+      height: 0; opacity: 0.7;
+    }
+    #sr-boot small {
+      font-size: 9px; letter-spacing: 2px; color: #64748b;
+    }
+    .sr-log-line { color: var(--mode-dim); margin-bottom: 2px; }
+    .sr-log-line.threat { color: #f97316; }
+    .sr-mini-canvas { width: 100%; height: 60px; display: block; }
+    .sr-stat-row {
+      display: flex; justify-content: space-between;
+      padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .sr-badge {
+      display: inline-block; font-size: 7px; padding: 1px 5px;
+      border: 1px solid currentColor; letter-spacing: 1px;
+    }
+    .sr-badge.high { color: #ef4444; }
+    .sr-badge.med { color: #f59e0b; }
+    .sr-badge.low { color: #22c55e; }
+    .sr-slider-wrap { margin: 8px 0; }
+    .sr-slider-wrap label { display: block; margin-bottom: 4px; opacity: 0.7; }
+    .sr-slider {
+      width: 100%; height: 4px; -webkit-appearance: none;
+      background: rgba(255,255,255,0.1);
+    }
+    .sr-contact-row {
+      display: grid; grid-template-columns: 1fr auto auto;
+      gap: 6px; padding: 3px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .sr-integrity-bar {
+      height: 6px; background: rgba(255,255,255,0.08);
+      margin-top: 4px; border-radius: 2px; overflow: hidden;
+    }
+    .sr-integrity-fill {
+      height: 100%; background: var(--mode-color);
+      transition: width 0.4s;
+    }
+    #sr-tooltip {
+      position: fixed; z-index: 15; pointer-events: none;
+      font-size: 8px; padding: 4px 8px;
+      background: rgba(0,0,0,0.9);
+      border: 1px solid var(--mode-color);
+      display: none;
+    }
+    #sr-tooltip.on { display: block; }
+    .sr-blocked-label {
+      position: absolute; font-size: 10px; letter-spacing: 2px;
+      color: #22c55e; pointer-events: none;
+    }
+    @media (max-width: 900px) {
+      #sr-panels { grid-template-columns: 1fr; height: auto; position: relative; top: 58vh; }
+      #sr-main-wrap { height: 50vh; }
+    }
+  </style>
+</head>
+<body>
+  <div id="sr-boot" aria-label="Signal Room boot sequence">
+    <h1>SIGNAL ROOM — SR-7</h1>
+    <div class="sr-boot-sub">INITIALIZING INTERCEPT ARRAYS…</div>
+    <div class="sr-boot-bars" id="sr-boot-bars" aria-hidden="true"></div>
+    <div id="sr-boot-bar-wrap"><div id="sr-boot-bar"></div></div>
+  </div>
+
+  <header id="sr-header">
+    <span class="sr-designation">SR-7 // SIGNAL ROOM</span>
+    <span id="sr-freq-readout">FREQ: 847.3 MHz · BAND: X-RAY · CH: BRAVO-4</span>
+    <div id="sr-strength" aria-label="Signal strength">
+      <span class="sr-strength-seg"></span>
+      <span class="sr-strength-seg"></span>
+      <span class="sr-strength-seg"></span>
+      <span class="sr-strength-seg"></span>
+      <span class="sr-strength-seg"></span>
+    </div>
+    <span id="sr-utc">00:00:00 UTC</span>
+    <span id="sr-mode-name">SPECTRUM</span>
+    <button id="sr-retune-btn" type="button">RETUNE</button>
+    <button id="sr-snd-toggle" type="button" aria-pressed="false">SND: OFF</button>
+  </header>
+
+  <div id="sr-drift-banner">SIGNAL LOST — REACQUIRING</div>
+
+  <div id="sr-main-wrap">
+    <canvas id="sr-canvas" aria-label="Main signal canvas"></canvas>
+    <span class="sr-bracket tl"></span>
+    <span class="sr-bracket tr"></span>
+    <span class="sr-bracket bl"></span>
+    <span class="sr-bracket br"></span>
+    <div id="sr-transition"><canvas id="sr-trans-canvas"></canvas><div class="sr-wipe-line" id="sr-wipe-line"></div></div>
+  </div>
+
+  <div id="sr-panels">
+    <section class="sr-panel" id="sr-panel-a"><h2 id="sr-panel-a-title">Intercept Log</h2><div id="sr-panel-a-body"></div></section>
+    <section class="sr-panel" id="sr-panel-b"><h2 id="sr-panel-b-title">Band Activity</h2><div id="sr-panel-b-body"></div></section>
+    <section class="sr-panel" id="sr-panel-c"><h2 id="sr-panel-c-title">Noise Floor</h2><div id="sr-panel-c-body"></div></section>
+  </div>
+
+  <div id="sr-lockon" aria-live="polite">
+    <button id="sr-lockon-close" type="button" aria-label="Close lock-on panel">&times;</button>
+    <div class="sr-lock-name" id="sr-lock-name">—</div>
+    <div class="sr-lock-badge" id="sr-lock-badge">MODULE</div>
+    <div id="sr-lock-ts">—</div>
+    <canvas class="sr-lock-spark" id="sr-lock-spark" width="256" height="60"></canvas>
+    <div id="sr-lock-detail"></div>
+  </div>
+
+  <div id="sr-tooltip"></div>
+  <div id="deck-nav-root"></div>
+
+  <link rel="stylesheet" href="assets/palette.css" />
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/palette.js"></script>
+  <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
+  <script>SiemCore.bootPage('right'); SiemCore.AchievementSystem.check('visit_signal');</script>
+  <script>
+  (function () {
+    'use strict';
+
+    var MODES = [
+      {
+        id: 0, name: 'SPECTRUM',
+        color: '#00ff41', dim: '#39ff14', bg: '#030b06',
+        freq: '847.3 MHz', band: 'X-RAY', channel: 'BRAVO-4',
+        panels: ['Intercept Log', 'Band Activity', 'Noise Floor']
+      },
+      {
+        id: 1, name: 'OSCILLOSCOPE',
+        color: '#f59e0b', dim: '#fbbf24', bg: '#1a0f00',
+        freq: '142.8 MHz', band: 'HF', channel: 'DELTA-2',
+        panels: ['Waveform Stats', 'Trigger Settings', 'Phase Analysis']
+      },
+      {
+        id: 2, name: 'WATERFALL',
+        color: '#06b6d4', dim: '#0891b2', bg: '#000d12',
+        freq: '2.412 GHz', band: 'S-BAND', channel: 'ECHO-7',
+        panels: ['Carrier Signal', 'Spectrogram Slice', 'Intercept History']
+      },
+      {
+        id: 3, name: 'RADAR',
+        color: '#7c3aed', dim: '#a78bfa', bg: '#050008',
+        freq: '9.375 GHz', band: 'X-BAND', channel: 'FOXTROT-1',
+        panels: ['Contact List', 'Track History', 'IFF Response']
+      },
+      {
+        id: 4, name: 'NEURAL',
+        color: '#e0f2fe', dim: '#bae6fd', bg: '#030712',
+        freq: ' Neural Bus ', band: 'SYNAPSE', channel: 'GAMMA-0',
+        panels: ['Synapse Map', 'Firing Rate', 'Path Analysis']
+      },
+      {
+        id: 5, name: 'INTERCEPT',
+        color: '#ef4444', dim: '#f97316', bg: '#0c0202',
+        freq: ' EMERGENCY ', band: 'RED-ALERT', channel: 'OMEGA-9',
+        panels: ['Active Threat Feed', 'Countermeasures Deployed', 'System Integrity']
+      }
+    ];
+
+    var THREATS = ['SQL Injection', 'Brute Force', 'XSS Attempt', 'Port Scan', 'Data Exfil', 'C2 Beacon'];
+    var SIEM_MODULES = [
+      'Backend API', 'AuthContext', 'DetectionEngine', 'Alert Manager',
+      'SOAR Console', 'Correlation', 'GeoIP', 'SQLite DB', 'Validation', 'Cryptography',
+      'SQL Injection', 'XSS Attempt', 'Brute Force', 'Pentest RBAC', 'Pentest CSRF'
+    ];
+    var CARRIERS = ['DETECTION-ENGINE', 'ALERT-MGMT', 'SOAR-RELAY', 'LOG-INGEST', 'CORRELATION', 'GEO-ENRICH'];
+    var BAR_COUNT = 128;
+
+    var canvas = document.getElementById('sr-canvas');
+    var ctx = canvas.getContext('2d');
+    var transCanvas = document.getElementById('sr-trans-canvas');
+    var transCtx = transCanvas.getContext('2d');
+    var bootEl = document.getElementById('sr-boot');
+    var bootBar = document.getElementById('sr-boot-bar');
+    var bootBars = document.getElementById('sr-boot-bars');
+    var freqEl = document.getElementById('sr-freq-readout');
+    var modeNameEl = document.getElementById('sr-mode-name');
+    var utcEl = document.getElementById('sr-utc');
+    var strengthSegs = document.querySelectorAll('.sr-strength-seg');
+    var panelA = document.getElementById('sr-panel-a-body');
+    var panelB = document.getElementById('sr-panel-b-body');
+    var panelC = document.getElementById('sr-panel-c-body');
+    var panelATitle = document.getElementById('sr-panel-a-title');
+    var panelBTitle = document.getElementById('sr-panel-b-title');
+    var panelCTitle = document.getElementById('sr-panel-c-title');
+    var lockEl = document.getElementById('sr-lockon');
+    var lockName = document.getElementById('sr-lock-name');
+    var lockBadge = document.getElementById('sr-lock-badge');
+    var lockTs = document.getElementById('sr-lock-ts');
+    var lockDetail = document.getElementById('sr-lock-detail');
+    var lockSpark = document.getElementById('sr-lock-spark');
+    var lockSparkCtx = lockSpark.getContext('2d');
+    var tooltip = document.getElementById('sr-tooltip');
+    var driftBanner = document.getElementById('sr-drift-banner');
+    var transWrap = document.getElementById('sr-transition');
+    var wipeLine = document.getElementById('sr-wipe-line');
+    var sndBtn = document.getElementById('sr-snd-toggle');
+    var retuneBtn = document.getElementById('sr-retune-btn');
+
+    var mode = 0;
+    var started = false;
+    var sndOn = false;
+    var audioCtx = null;
+    var t0 = performance.now();
+    var transitioning = false;
+    var driftActive = false;
+    var lastClickTime = 0;
+    var mouseX = 0;
+    var mouseY = 0;
+
+    var spectrumBars = [];
+    var spectrumSpikes = [];
+    var nextSpikeAt = 0;
+    var noiseFloor = [];
+    var interceptLog = [];
+
+    var scopeFrozen = false;
+    var scopeFreezeUntil = 0;
+    var scopeMeasureX = -1;
+    var scopeTrailA = [];
+    var scopeTrailB = [];
+    var scopeAnomalyAt = 0;
+    var scopeAnomalyTrace = 'a';
+
+    var waterfallGrid = [];
+    var waterfallCol = 0;
+    var tuneCenter = 64;
+    var tunedCarrier = CARRIERS[0];
+    var streakHistory = [];
+
+    var radarContacts = [];
+    var radarSweep = 0;
+    var radarSectorLock = null;
+    var selectedContact = null;
+
+    var neuralNodes = [];
+    var neuralLinks = [];
+    var cascadeImpulses = [];
+    var nodeFireCounts = {};
+    var lastCascadePath = [];
+
+    var interceptBursts = [[], [], []];
+    var interceptCounters = [0, 0, 0];
+    var countermeasures = [];
+    var integrity = [82, 74, 88];
+    var interceptLogFast = [];
+    var cmAnimations = [];
+
+    var lockSparkData = [];
+
+    function initBootBars() {
+      var html = '';
+      for (var i = 0; i < 32; i++) {
+        html += '<span style="transition:height 0.3s ease ' + (i * 2) + 'ms"></span>';
+      }
+      bootBars.innerHTML = html;
+    }
+    initBootBars();
+
+    function resize() {
+      var wrap = document.getElementById('sr-main-wrap');
+      canvas.width = wrap.clientWidth;
+      canvas.height = wrap.clientHeight;
+      transCanvas.width = canvas.width;
+      transCanvas.height = canvas.height;
+    }
+    resize();
+    addEventListener('resize', resize);
+
+    function applyModeTheme(m) {
+      var cfg = MODES[m];
+      document.documentElement.style.setProperty('--mode-color', cfg.color);
+      document.documentElement.style.setProperty('--mode-dim', cfg.dim);
+      document.documentElement.style.setProperty('--mode-bg', cfg.bg);
+      document.documentElement.style.setProperty('--mode-accent-soft', cfg.color + '66');
+      document.body.style.background = cfg.bg;
+      freqEl.textContent = 'FREQ: ' + cfg.freq + ' · BAND: ' + cfg.band + ' · CH: ' + cfg.channel;
+      modeNameEl.textContent = cfg.name;
+      panelATitle.textContent = cfg.panels[0];
+      panelBTitle.textContent = cfg.panels[1];
+      panelCTitle.textContent = cfg.panels[2];
+    }
+
+    function initSpectrum() {
+      spectrumBars = [];
+      for (var i = 0; i < BAR_COUNT; i++) {
+        spectrumBars.push({ h: 0.1 + Math.random() * 0.15, target: 0.1 + Math.random() * 0.15 });
+      }
+      noiseFloor = [];
+      for (var j = 0; j < 60; j++) noiseFloor.push(0.12 + Math.random() * 0.05);
+      nextSpikeAt = performance.now() + 4000 + Math.random() * 4000;
+    }
+
+    function initWaterfall() {
+      waterfallGrid = [];
+      var rows = Math.ceil(canvas.height / 2) + 2;
+      for (var r = 0; r < rows; r++) {
+        var row = [];
+        for (var c = 0; c < BAR_COUNT; c++) row.push(Math.random() * 0.15);
+        waterfallGrid.push(row);
+      }
+      waterfallCol = 0;
+    }
+
+    function initRadar() {
+      radarContacts = [];
+      for (var i = 0; i < 12; i++) {
+        var ang = Math.random() * Math.PI * 2;
+        var dist = 0.15 + Math.random() * 0.75;
+        radarContacts.push({
+          name: SIEM_MODULES[i % SIEM_MODULES.length],
+          angle: ang,
+          dist: dist,
+          threat: Math.random(),
+          history: [],
+          ping: 0
+        });
+      }
+      radarSweep = 0;
+      radarSectorLock = null;
+    }
+
+    function initNeural() {
+      neuralNodes = [];
+      neuralLinks = [];
+      var names = SIEM_MODULES.slice(0, 12);
+      for (var i = 0; i < names.length; i++) {
+        var a = (i / names.length) * Math.PI * 2;
+        neuralNodes.push({
+          name: names[i],
+          x: 0.5 + Math.cos(a) * (0.25 + (i % 3) * 0.06),
+          y: 0.5 + Math.sin(a) * (0.25 + (i % 2) * 0.05),
+          r: 8 + (names[i].length % 5),
+          glow: 0,
+          fire: 0
+        });
+      }
+      var pairs = [[0,3],[1,4],[2,5],[3,6],[4,7],[5,8],[0,9],[1,10],[2,11],[6,9],[7,10],[8,11],[3,4],[5,6]];
+      pairs.forEach(function (p) {
+        if (neuralNodes[p[0]] && neuralNodes[p[1]]) {
+          neuralLinks.push({ a: p[0], b: p[1], pulse: -1 });
+        }
+      });
+      names.forEach(function (n) { nodeFireCounts[n] = nodeFireCounts[n] || 0; });
+    }
+
+    function initIntercept() {
+      interceptBursts = [[], [], []];
+      interceptCounters = [0, 0, 0];
+      for (var c = 0; c < 3; c++) {
+        for (var i = 0; i < 4; i++) {
+          interceptBursts[c].push({ x: Math.random(), active: false, until: 0, blocked: false });
+        }
+      }
+    }
+
+    initSpectrum();
+    initWaterfall();
+    initRadar();
+    initNeural();
+    initIntercept();
+    applyModeTheme(0);
+
+    function ensureAudio() {
+      if (!audioCtx) {
+        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playTone(freq, dur, gain, type) {
+      if (!sndOn) return;
+      var ac = ensureAudio();
+      if (!ac) return;
+      var osc = ac.createOscillator();
+      var g = ac.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.value = freq;
+      g.gain.value = gain || 0.06;
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+      osc.connect(g);
+      g.connect(ac.destination);
+      osc.start();
+      osc.stop(ac.currentTime + dur);
+    }
+
+    function playNoise(dur) {
+      if (!sndOn) return;
+      var ac = ensureAudio();
+      if (!ac) return;
+      var bufferSize = ac.sampleRate * dur;
+      var buffer = ac.createBuffer(1, bufferSize, ac.sampleRate);
+      var data = buffer.getChannelData(0);
+      for (var i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.08;
+      var src = ac.createBufferSource();
+      src.buffer = buffer;
+      var g = ac.createGain();
+      g.gain.value = 0.08;
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+      src.connect(g);
+      g.connect(ac.destination);
+      src.start();
+    }
+
+    function playModeChange() { playTone(440, 0.1, 0.05); }
+    function playRadarPing() { playTone(880, 0.15, 0.05); }
+    function playNeuralChord() {
+      if (!sndOn) return;
+      [220, 330, 440].forEach(function (f) { playTone(f, 0.2, 0.04); });
+    }
+    function playBlock() {
+      playTone(600, 0.08, 0.06);
+      setTimeout(function () { playTone(400, 0.08, 0.05); }, 80);
+    }
+
+    function utcNow() {
+      var d = new Date();
+      return [d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds()]
+        .map(function (n) { return (n < 10 ? '0' : '') + n; }).join(':') + ' UTC';
+    }
+    setInterval(function () { utcEl.textContent = utcNow(); }, 1000);
+    utcEl.textContent = utcNow();
+
+    function flickerStrength() {
+      strengthSegs.forEach(function (seg) {
+        seg.classList.toggle('lit', Math.random() < 0.72);
+      });
+    }
+    setInterval(flickerStrength, 200);
+    flickerStrength();
+
+    function addInterceptLine(sev) {
+      var d = new Date();
+      var ts = [d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds()]
+        .map(function (n) { return (n < 10 ? '0' : '') + n; }).join(':');
+      var rule = THREATS[(Math.random() * THREATS.length) | 0].replace(/\s/g, '-').toUpperCase();
+      var line = '[' + ts + '] INTERCEPT >> src:192.168.' +
+        ((Math.random() * 254) | 0) + '.' + ((Math.random() * 254) | 0) +
+        ' rule:' + rule + ' sev:' + (sev || 'HIGH');
+      interceptLog.unshift(line);
+      if (interceptLog.length > 14) interceptLog.pop();
+    }
+
+    function addThreatFeedLine() {
+      var d = new Date();
+      var ts = [d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds()]
+        .map(function (n) { return (n < 10 ? '0' : '') + n; }).join(':');
+      var t = THREATS[(Math.random() * THREATS.length) | 0];
+      interceptLogFast.unshift('[' + ts + '] ATTACK >> ' + t + ' vector:LIVE');
+      if (interceptLogFast.length > 16) interceptLogFast.pop();
+    }
+
+    function renderPanels() {
+      if (mode === 0) renderPanelsSpectrum();
+      else if (mode === 1) renderPanelsScope();
+      else if (mode === 2) renderPanelsWaterfall();
+      else if (mode === 3) renderPanelsRadar();
+      else if (mode === 4) renderPanelsNeural();
+      else renderPanelsIntercept();
+    }
+
+    function renderPanelsSpectrum() {
+      panelA.innerHTML = interceptLog.map(function (l) {
+        return '<div class="sr-log-line">' + l + '</div>';
+      }).join('') || '<div class="sr-log-line">Awaiting intercept…</div>';
+      panelB.innerHTML = '<canvas class="sr-mini-canvas" id="sr-mini-spec" width="320" height="60"></canvas>';
+      panelC.innerHTML = '<canvas class="sr-mini-canvas" id="sr-noise-chart" width="320" height="80"></canvas>';
+    }
+
+    function renderPanelsScope() {
+      var minA = 0.2, maxA = 0.9, rms = 0.45;
+      panelA.innerHTML =
+        '<div class="sr-stat-row"><span>MIN</span><span>' + minA.toFixed(2) + ' kHz</span></div>' +
+        '<div class="sr-stat-row"><span>MAX</span><span>' + maxA.toFixed(2) + ' kHz</span></div>' +
+        '<div class="sr-stat-row"><span>RMS</span><span>' + rms.toFixed(3) + '</span></div>' +
+        '<div class="sr-stat-row"><span>Anomaly/min</span><span>' + ((Math.random() * 4) | 0) + 1 + '</span></div>' +
+        '<div class="sr-stat-row"><span>Amplitude</span><span>' + (0.5 + Math.random() * 0.3).toFixed(2) + ' V</span></div>';
+      panelB.innerHTML =
+        '<div class="sr-slider-wrap"><label>TRIGGER LEVEL</label><input class="sr-slider" type="range" min="0" max="100" value="42" id="sr-trigger-slider"/></div>' +
+        '<div class="sr-stat-row"><span>TIMEBASE</span><span>5ms/div</span></div>' +
+        '<div class="sr-stat-row"><span>COUPLING</span><span id="sr-coupling">AC</span></div>';
+      panelC.innerHTML = '<canvas class="sr-mini-canvas" id="sr-lissajous" width="200" height="100"></canvas>';
+    }
+
+    function renderPanelsWaterfall() {
+      panelA.innerHTML =
+        '<div class="sr-stat-row"><span>Module</span><span>' + tunedCarrier + '</span></div>' +
+        '<div class="sr-stat-row"><span>Uptime</span><span>' + ((Math.random() * 900 + 100) | 0) + 'h</span></div>' +
+        '<div class="sr-stat-row"><span>Event rate</span><span>' + ((Math.random() * 400 + 50) | 0) + '/min</span></div>' +
+        '<div class="sr-stat-row"><span>Last alert</span><span>' + utcNow().replace(' UTC', '') + '</span></div>';
+      panelB.innerHTML = '<canvas class="sr-mini-canvas" id="sr-spec-slice" width="320" height="60"></canvas>';
+      panelC.innerHTML = streakHistory.slice(0, 8).map(function (s) {
+        return '<div class="sr-log-line threat">' + s + '</div>';
+      }).join('') || '<div class="sr-log-line">No streak events</div>';
+    }
+
+    function renderPanelsRadar() {
+      var rows = radarContacts.map(function (c) {
+        var sev = c.threat > 0.7 ? 'high' : c.threat > 0.4 ? 'med' : 'low';
+        var brg = ((c.angle * 180 / Math.PI) % 360) | 0;
+        return '<div class="sr-contact-row"><span>' + c.name + '</span><span>' + brg + '°</span><span class="sr-badge ' + sev + '">' + sev.toUpperCase() + '</span></div>';
+      }).join('');
+      panelA.innerHTML = rows;
+      var sel = selectedContact || radarContacts[0];
+      panelB.innerHTML = sel ? sel.history.map(function (h, i) {
+        return '<div class="sr-log-line">T-' + (sel.history.length - i) + ' bearing ' + h + '°</div>';
+      }).join('') || '<div class="sr-log-line">No track history</div>' : '';
+      panelC.innerHTML = sel ?
+        '<div class="sr-stat-row"><span>Contact</span><span>' + sel.name + '</span></div>' +
+        '<div class="sr-stat-row"><span>Type</span><span>' + (sel.threat > 0.6 ? 'external' : 'server') + '</span></div>' +
+        '<div class="sr-stat-row"><span>Response</span><span>' + ((Math.random() * 40 + 5) | 0) + 'ms</span></div>' +
+        '<div class="sr-stat-row"><span>Class</span><span>' + (sel.threat > 0.7 ? 'HOSTILE' : 'FRIENDLY') + '</span></div>' : '';
+    }
+
+    function renderPanelsNeural() {
+      var lastNode = neuralNodes.find(function (n) { return n.fire > 0; }) || neuralNodes[0];
+      var synHtml = neuralLinks.filter(function (l) { return l.a === neuralNodes.indexOf(lastNode) || l.b === neuralNodes.indexOf(lastNode); })
+        .slice(0, 6).map(function (l) {
+          var other = neuralNodes[l.a === neuralNodes.indexOf(lastNode) ? l.b : l.a];
+          return '<div class="sr-log-line">' + (other ? other.name : '?') + ' · str ' + (0.5 + Math.random() * 0.5).toFixed(2) + '</div>';
+        }).join('');
+      panelA.innerHTML = synHtml || '<div class="sr-log-line">Click a node to map synapses</div>';
+      var bars = neuralNodes.map(function (n) {
+        var cnt = nodeFireCounts[n.name] || 0;
+        return '<div class="sr-stat-row"><span>' + n.name + '</span><span>' + cnt + '</span></div>';
+      }).join('');
+      panelB.innerHTML = bars;
+      panelC.innerHTML = lastCascadePath.length ?
+        lastCascadePath.map(function (p, i) {
+          return (i ? ' → ' : '') + p;
+        }).join('') : '<div class="sr-log-line">Awaiting cascade</div>';
+    }
+
+    function renderPanelsIntercept() {
+      panelA.innerHTML = interceptLogFast.map(function (l) {
+        return '<div class="sr-log-line threat">' + l + '</div>';
+      }).join('') || '<div class="sr-log-line threat">Monitoring attack surface…</div>';
+      panelB.innerHTML = countermeasures.slice(0, 10).map(function (c) {
+        return '<div class="sr-log-line">' + c + '</div>';
+      }).join('') || '<div class="sr-log-line">No countermeasures yet</div>';
+      panelC.innerHTML =
+        ['Auth', 'Detection', 'Response'].map(function (label, i) {
+          return '<div class="sr-stat-row"><span>' + label + '</span><span>' + integrity[i] + '%</span></div>' +
+            '<div class="sr-integrity-bar"><div class="sr-integrity-fill" style="width:' + integrity[i] + '%"></div></div>';
+        }).join('');
+    }
+
+    renderPanels();
+    setInterval(function () {
+      if (!started || transitioning) return;
+      if (mode === 0) { addInterceptLine(); renderPanelsSpectrum(); }
+      if (mode === 5) { addThreatFeedLine(); renderPanelsIntercept(); }
+    }, mode === 5 ? 600 : 1200);
+
+    function drawSpectrum(now, elapsed) {
+      var w = canvas.width, h = canvas.height;
+      var cfg = MODES[0];
+      ctx.fillStyle = cfg.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      if (now >= nextSpikeAt) {
+        var start = (Math.random() * (BAR_COUNT - 6)) | 0;
+        var count = 3 + ((Math.random() * 3) | 0);
+        var label = THREATS[(Math.random() * THREATS.length) | 0];
+        spectrumSpikes.push({
+          start: start, count: count, label: label,
+          t0: now, decay: 1500, peak: 1.5 + Math.random() * 0.5
+        });
+        nextSpikeAt = now + 4000 + Math.random() * 4000;
+        playNoise(0.08);
+      }
+
+      spectrumSpikes = spectrumSpikes.filter(function (sp) { return now - sp.t0 < sp.decay; });
+
+      var barW = w / BAR_COUNT;
+      for (var i = 0; i < BAR_COUNT; i++) {
+        var base = 0.15 + Math.sin(elapsed * 0.3) * 0.05 + Math.sin(elapsed * 0.7 + i * 0.2) * 0.08;
+        base = Math.max(0.05, base);
+        var mult = 1;
+        var isSpike = false;
+        spectrumSpikes.forEach(function (sp) {
+          if (i >= sp.start && i < sp.start + sp.count) {
+            var prog = (now - sp.t0) / sp.decay;
+            mult = Math.max(mult, sp.peak * Math.exp(-prog * 3));
+            isSpike = true;
+          }
+        });
+        var bh = base * mult * h * 0.85;
+        spectrumBars[i].h += (base * mult - spectrumBars[i].h) * 0.15;
+        var x = i * barW;
+        var grad = ctx.createLinearGradient(0, h, 0, h - bh);
+        grad.addColorStop(0, isSpike ? '#7f1d1d' : cfg.bg);
+        grad.addColorStop(0.6, isSpike ? '#f97316' : cfg.dim);
+        grad.addColorStop(1, isSpike ? '#ef4444' : cfg.color);
+        ctx.fillStyle = grad;
+        ctx.fillRect(x + 1, h - bh, barW - 2, bh);
+        if (bh > h * 0.4) {
+          ctx.shadowColor = isSpike ? '#ef4444' : cfg.color;
+          ctx.shadowBlur = 8;
+          ctx.fillRect(x + 1, h - bh, barW - 2, 3);
+          ctx.shadowBlur = 0;
+        }
+      }
+
+      spectrumSpikes.forEach(function (sp) {
+        var cx = (sp.start + sp.count / 2) * barW;
+        ctx.font = '9px Consolas';
+        ctx.fillStyle = '#ef4444';
+        ctx.textAlign = 'center';
+        ctx.fillText(sp.label, cx, 24);
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText('HIGH', cx, 36);
+      });
+
+      drawMiniSpectrum();
+      drawNoiseChart();
+    }
+
+    function drawMiniSpectrum() {
+      var mc = document.getElementById('sr-mini-spec');
+      if (!mc) return;
+      var mctx = mc.getContext('2d');
+      var mw = mc.width, mh = mc.height;
+      mctx.fillStyle = '#030b06';
+      mctx.fillRect(0, 0, mw, mh);
+      var bw = mw / BAR_COUNT;
+      for (var i = 0; i < BAR_COUNT; i++) {
+        var bh = spectrumBars[i].h * mh * 0.9;
+        mctx.fillStyle = '#39ff14';
+        mctx.fillRect(i * bw, mh - bh, bw - 1, bh);
+      }
+    }
+
+    function drawNoiseChart() {
+      var nc = document.getElementById('sr-noise-chart');
+      if (!nc) return;
+      var nctx = nc.getContext('2d');
+      var nw = nc.width, nh = nc.height;
+      nctx.fillStyle = '#030b06';
+      nctx.fillRect(0, 0, nw, nh);
+      nctx.strokeStyle = '#00ff41';
+      nctx.lineWidth = 1;
+      nctx.beginPath();
+      noiseFloor.forEach(function (v, i) {
+        var x = (i / (noiseFloor.length - 1)) * nw;
+        var y = nh - v * nh * 3;
+        if (i === 0) nctx.moveTo(x, y); else nctx.lineTo(x, y);
+      });
+      nctx.stroke();
+    }
+
+    function drawOscilloscope(now, elapsed) {
+      var w = canvas.width, h = canvas.height;
+      var cfg = MODES[1];
+      ctx.fillStyle = 'rgba(26,15,0,0.25)';
+      ctx.fillRect(0, 0, w, h);
+
+      scopeTrailA.forEach(function (pt, idx) {
+        ctx.strokeStyle = 'rgba(245,158,11,' + (0.12 * (idx / scopeTrailA.length)) + ')';
+        ctx.beginPath();
+        pt.forEach(function (p, i) {
+          if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+        });
+        ctx.stroke();
+      });
+
+      var ptsA = [], ptsB = [];
+      for (var x = 0; x < w; x += 2) {
+        var nx = x / w;
+        var ya = 0.5 + Math.sin(nx * 12 + elapsed * 2) * 0.18 + Math.sin(nx * 3 + elapsed) * 0.08;
+        var yb = 0.5 + Math.sin(nx * 8 + elapsed * 1.5 + 1) * 0.12;
+        if (now > scopeAnomalyAt && now < scopeAnomalyAt + 400 && scopeAnomalyTrace === 'a' && nx > 0.4 && nx < 0.45) ya += 0.35;
+        if (now > scopeAnomalyAt && now < scopeAnomalyAt + 400 && scopeAnomalyTrace === 'b' && nx > 0.55 && nx < 0.6) yb += 0.35;
+        ptsA.push({ x: x, y: ya * h });
+        ptsB.push({ x: x, y: yb * h });
+      }
+      if (!scopeFrozen) {
+        scopeTrailA.push(ptsA);
+        if (scopeTrailA.length > 8) scopeTrailA.shift();
+      }
+
+      ctx.strokeStyle = cfg.color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ptsA.forEach(function (p, i) { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
+      ctx.stroke();
+      ctx.strokeStyle = '#fb923c';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ptsB.forEach(function (p, i) { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
+      ctx.stroke();
+
+      if (scopeMeasureX >= 0) {
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = '#fbbf24';
+        ctx.beginPath();
+        ctx.moveTo(scopeMeasureX, 0);
+        ctx.lineTo(scopeMeasureX, h);
+        ctx.moveTo(scopeMeasureX + 40, 0);
+        ctx.lineTo(scopeMeasureX + 40, h);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = '10px Consolas';
+        ctx.fillText('Δt 12.4ms', scopeMeasureX, 18);
+      }
+
+      var crossY = mouseY || h / 2;
+      ctx.strokeStyle = 'rgba(251,191,36,0.35)';
+      ctx.beginPath();
+      ctx.moveTo(0, crossY);
+      ctx.lineTo(w, crossY);
+      ctx.stroke();
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = '9px Consolas';
+      ctx.fillText(((h - crossY) / h * 1200) | 0 + ' evt/s', 8, crossY - 6);
+
+      if (now > scopeAnomalyAt + 3000) {
+        scopeAnomalyAt = now;
+        scopeAnomalyTrace = scopeAnomalyTrace === 'a' ? 'b' : 'a';
+      }
+      if (scopeFrozen && now > scopeFreezeUntil) scopeFrozen = false;
+
+      drawLissajous(ptsA, ptsB);
+    }
+
+    function drawLissajous(ptsA, ptsB) {
+      var lc = document.getElementById('sr-lissajous');
+      if (!lc || !ptsA.length) return;
+      var lctx = lc.getContext('2d');
+      lctx.fillStyle = '#1a0f00';
+      lctx.fillRect(0, 0, lc.width, lc.height);
+      lctx.strokeStyle = '#f59e0b';
+      lctx.beginPath();
+      for (var i = 0; i < ptsA.length; i += 3) {
+        var px = (ptsA[i].y / canvas.height) * lc.width;
+        var py = (ptsB[i].y / canvas.height) * lc.height;
+        if (i === 0) lctx.moveTo(px, py); else lctx.lineTo(px, py);
+      }
+      lctx.stroke();
+    }
+
+    function drawWaterfall(now, elapsed) {
+      var w = canvas.width, h = canvas.height;
+      var cfg = MODES[2];
+      var colW = w / BAR_COUNT;
+
+      if (waterfallGrid.length < 2) initWaterfall();
+      var row = [];
+      for (var c = 0; c < BAR_COUNT; c++) {
+        var v = Math.random() * 0.2;
+        CARRIERS.forEach(function (car, idx) {
+          var carrierCol = ((idx + 1) * (BAR_COUNT / (CARRIERS.length + 1))) | 0;
+          if (Math.abs(c - carrierCol) < 2) v = 0.5 + Math.random() * 0.3;
+        });
+        if (Math.abs(c - tuneCenter) < 3) v += 0.2;
+        if (Math.random() < 0.002) v = 0.95;
+        row.push(Math.min(1, v));
+      }
+      waterfallGrid.unshift(row);
+      if (waterfallGrid.length > Math.ceil(h / 2) + 2) waterfallGrid.pop();
+
+      ctx.fillStyle = cfg.bg;
+      ctx.fillRect(0, 0, w, h);
+      var rowH = 2;
+      waterfallGrid.forEach(function (r, ri) {
+        r.forEach(function (v, ci) {
+          var col;
+          if (v < 0.2) col = '#000d12';
+          else if (v < 0.5) col = '#0891b2';
+          else if (v < 0.8) col = '#06b6d4';
+          else col = '#f0f9ff';
+          ctx.fillStyle = col;
+          ctx.fillRect(ci * colW, ri * rowH, colW, rowH);
+        });
+      });
+
+      ctx.font = '8px Consolas';
+      ctx.fillStyle = cfg.color;
+      CARRIERS.forEach(function (car, idx) {
+        var cx = ((idx + 1) * (BAR_COUNT / (CARRIERS.length + 1))) | 0;
+        ctx.fillText(car, cx * colW - 20, 12);
+      });
+
+      if (Math.random() < 0.003) {
+        var streak = 'FHOP ' + THREATS[(Math.random() * THREATS.length) | 0] + ' @ ' + utcNow();
+        streakHistory.unshift(streak);
+        if (streakHistory.length > 8) streakHistory.pop();
+      }
+
+      drawSpecSlice(row);
+    }
+
+    function drawSpecSlice(row) {
+      var sc = document.getElementById('sr-spec-slice');
+      if (!sc || !row) return;
+      var sctx = sc.getContext('2d');
+      sctx.fillStyle = '#000d12';
+      sctx.fillRect(0, 0, sc.width, sc.height);
+      var bw = sc.width / row.length;
+      row.forEach(function (v, i) {
+        sctx.fillStyle = '#06b6d4';
+        sctx.fillRect(i * bw, sc.height - v * sc.height, bw - 1, v * sc.height);
+      });
+    }
+
+    function drawRadar(now, elapsed) {
+      var w = canvas.width, h = canvas.height;
+      var cfg = MODES[3];
+      var cx = w / 2, cy = h / 2;
+      var R = Math.min(w, h) * 0.42;
+      ctx.fillStyle = cfg.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = 'rgba(124,58,237,0.35)';
+      [0.25, 0.5, 0.75, 1].forEach(function (f) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, R * f, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+      for (var deg = 0; deg < 360; deg += 30) {
+        var a = deg * Math.PI / 180;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
+        ctx.stroke();
+      }
+
+      var sweepSpeed = radarSectorLock ? 0.008 : 0.04;
+      radarSweep = (radarSweep + sweepSpeed) % (Math.PI * 2);
+      var sweepAng = radarSectorLock ? radarSectorLock.angle : radarSweep;
+
+      ctx.strokeStyle = 'rgba(124,58,237,0.15)';
+      for (var t = 0; t < 270; t += 6) {
+        var ta = sweepAng - t * Math.PI / 180;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(ta) * R, cy + Math.sin(ta) * R);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = cfg.color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(sweepAng) * R, cy + Math.sin(sweepAng) * R);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+
+      radarContacts.forEach(function (c) {
+        var px = cx + Math.cos(c.angle) * c.dist * R;
+        var py = cy + Math.sin(c.angle) * c.dist * R;
+        var angDiff = Math.abs(Math.atan2(Math.sin(c.angle - sweepAng), Math.cos(c.angle - sweepAng)));
+        if (angDiff < 0.08) {
+          c.ping = 1;
+          if (c.threat > 0.7) playRadarPing();
+        }
+        c.ping *= 0.92;
+        var col = c.threat > 0.7 ? '#ef4444' : cfg.dim;
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        ctx.arc(px, py, 4 + c.threat * 6, 0, Math.PI * 2);
+        ctx.fill();
+        if (c.ping > 0.3) {
+          ctx.strokeStyle = 'rgba(167,139,250,' + c.ping + ')';
+          ctx.beginPath();
+          ctx.arc(px, py, 8 + (1 - c.ping) * 20, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.fillStyle = cfg.dim;
+        ctx.font = '8px Consolas';
+        ctx.fillText(c.name, px + 8, py - 4);
+      });
+
+      if (radarSectorLock) {
+        radarContacts.forEach(function (c) {
+          if (Math.abs(c.angle - radarSectorLock.angle) < 0.5) {
+            var px = cx + Math.cos(c.angle) * c.dist * R;
+            var py = cy + Math.sin(c.angle) * c.dist * R;
+            var lx = cx + Math.cos(radarSectorLock.angle) * radarSectorLock.dist * R;
+            var ly = cy + Math.sin(radarSectorLock.angle) * radarSectorLock.dist * R;
+            ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+            ctx.beginPath();
+            ctx.moveTo(lx, ly);
+            ctx.lineTo(px, py);
+            ctx.stroke();
+          }
+        });
+      }
+    }
+
+    function drawNeural(now, elapsed) {
+      var w = canvas.width, h = canvas.height;
+      var cfg = MODES[4];
+      ctx.fillStyle = cfg.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      neuralLinks.forEach(function (link) {
+        var na = neuralNodes[link.a], nb = neuralNodes[link.b];
+        if (!na || !nb) return;
+        ctx.strokeStyle = 'rgba(186,230,253,0.25)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(na.x * w, na.y * h);
+        ctx.lineTo(nb.x * w, nb.y * h);
+        ctx.stroke();
+        if (link.pulse >= 0 && link.pulse <= 1) {
+          var px = na.x * w + (nb.x * w - na.x * w) * link.pulse;
+          var py = na.y * h + (nb.y * h - na.y * h) * link.pulse;
+          ctx.fillStyle = '#fff';
+          ctx.beginPath();
+          ctx.arc(px, py, 3, 0, Math.PI * 2);
+          ctx.fill();
+          link.pulse += 0.04;
+          if (link.pulse > 1) link.pulse = -1;
+        }
+      });
+
+      cascadeImpulses.forEach(function (imp) {
+        imp.t += 0.025;
+        if (imp.t <= 1) {
+          var na = neuralNodes[imp.from], nb = neuralNodes[imp.to];
+          if (na && nb) {
+            var px = na.x * w + (nb.x * w - na.x * w) * imp.t;
+            var py = na.y * h + (nb.y * h - na.y * h) * imp.t;
+            ctx.fillStyle = '#fff';
+            ctx.shadowColor = '#bae6fd';
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            ctx.arc(px, py, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          }
+        }
+      });
+      cascadeImpulses = cascadeImpulses.filter(function (imp) { return imp.t <= 1.5; });
+
+      neuralNodes.forEach(function (n) {
+        n.glow *= 0.95;
+        n.fire *= 0.92;
+        var r = n.r + n.glow * 8;
+        var grd = ctx.createRadialGradient(n.x * w, n.y * h, 0, n.x * w, n.y * h, r * 2);
+        grd.addColorStop(0, '#fff');
+        grd.addColorStop(0.4, cfg.dim);
+        grd.addColorStop(1, 'transparent');
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(n.x * w, n.y * h, r * 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = cfg.dim;
+        ctx.font = '8px Consolas';
+        ctx.textAlign = 'center';
+        ctx.fillText(n.name, n.x * w, n.y * h + r + 10);
+      });
+    }
+
+    function drawIntercept(now, elapsed) {
+      var w = canvas.width, h = canvas.height;
+      var cfg = MODES[5];
+      ctx.fillStyle = cfg.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      var channels = ['CHANNEL A — ATTACK SURFACE', 'CHANNEL B — DETECTION ENGINE', 'CHANNEL C — RESPONSE'];
+      var chH = h / 3;
+      channels.forEach(function (label, ci) {
+        var y0 = ci * chH;
+        ctx.fillStyle = 'rgba(239,68,68,0.08)';
+        ctx.fillRect(0, y0, w, chH);
+        ctx.fillStyle = cfg.dim;
+        ctx.font = '9px Consolas';
+        ctx.fillText(label, 12, y0 + 16);
+        ctx.fillText('CNT: ' + interceptCounters[ci], w - 80, y0 + 16);
+
+        ctx.strokeStyle = cfg.color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (var x = 0; x < w; x += 3) {
+          var nx = x / w;
+          var y = y0 + chH / 2;
+          var burst = interceptBursts[ci].some(function (b) {
+            return b.active && nx > b.x - 0.05 && nx < b.x + 0.05;
+          });
+          if (burst) y += (Math.random() - 0.5) * chH * 0.6;
+          else y += Math.sin(nx * 20 + elapsed * 3 + ci) * 4;
+          if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        interceptBursts[ci].forEach(function (b) {
+          if (!b.active && Math.random() < 0.004) {
+            b.active = true;
+            b.x = Math.random();
+            b.until = now + 800 + Math.random() * 1200;
+            interceptCounters[ci]++;
+            integrity[ci] = Math.max(55, integrity[ci] - 3);
+            playNoise(0.08);
+          }
+          if (b.active && now > b.until) b.active = false;
+          if (b.blocked && now > b.blockedUntil) { b.blocked = false; b.active = false; }
+        });
+      });
+
+      cmAnimations.forEach(function (cm) {
+        cm.x += 0.03;
+        if (cm.x >= cm.targetX) {
+          cm.done = true;
+          interceptCounters[cm.ch] = Math.max(0, interceptCounters[cm.ch] - 1);
+          integrity[cm.ch] = Math.min(95, integrity[cm.ch] + 4);
+          interceptBursts[cm.ch].forEach(function (b) {
+            if (Math.abs(b.x - cm.targetX) < 0.06) {
+              b.blocked = true;
+              b.blockedUntil = now + 2000;
+              b.active = false;
+            }
+          });
+          playBlock();
+        }
+        var y0 = cm.ch * (h / 3) + h / 6;
+        ctx.fillStyle = '#fff';
+        ctx.shadowColor = '#22c55e';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(cm.x * w, y0, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        if (cm.done) {
+          ctx.fillStyle = '#22c55e';
+          ctx.fillText('[BLOCKED]', cm.targetX * w, y0 - 10);
+        }
+      });
+      cmAnimations = cmAnimations.filter(function (cm) { return !cm.done || performance.now() - cm.start < 2000; });
+    }
+
+    function drawFrame(now) {
+      if (!started) {
+        requestAnimationFrame(drawFrame);
+        return;
+      }
+      if (!transitioning && !driftActive) {
+        var elapsed = (now - t0) / 1000;
+        if (mode === 0) drawSpectrum(now, elapsed);
+        else if (mode === 1) drawOscilloscope(now, elapsed);
+        else if (mode === 2) drawWaterfall(now, elapsed);
+        else if (mode === 3) drawRadar(now, elapsed);
+        else if (mode === 4) drawNeural(now, elapsed);
+        else drawIntercept(now, elapsed);
+
+        if (mode === 0 && Math.random() < 0.05) {
+          noiseFloor.push(0.12 + Math.random() * 0.08);
+          if (noiseFloor.length > 60) noiseFloor.shift();
+        }
+      }
+      requestAnimationFrame(drawFrame);
+    }
+
+    function endTransitionVisuals() {
+      transWrap.classList.remove('active');
+      transCtx.clearRect(0, 0, transCanvas.width, transCanvas.height);
+      wipeLine.style.opacity = '0';
+      wipeLine.style.top = '0';
+      canvas.style.filter = '';
+    }
+
+    function runTransition(nextMode, cb) {
+      var TRANSITION_MS = 380;
+      transitioning = true;
+      var incoming = MODES[nextMode];
+      var panels = document.querySelectorAll('.sr-panel');
+      panels.forEach(function (p) { p.classList.add('fade-out'); });
+
+      transCtx.clearRect(0, 0, transCanvas.width, transCanvas.height);
+      transWrap.classList.add('active');
+      canvas.style.filter = 'contrast(1.8) brightness(1.4)';
+
+      setTimeout(function () {
+        transCtx.clearRect(0, 0, transCanvas.width, transCanvas.height);
+        for (var i = 0; i < 5000; i++) {
+          var sx = (Math.random() * transCanvas.width) | 0;
+          var sy = (Math.random() * transCanvas.height) | 0;
+          transCtx.fillStyle = 'rgb(' + ((Math.random() * 255) | 0) + ',' + ((Math.random() * 255) | 0) + ',' + ((Math.random() * 255) | 0) + ')';
+          transCtx.fillRect(sx, sy, 2, 2);
+        }
+      }, 80);
+
+      setTimeout(function () {
+        applyModeTheme(nextMode);
+        canvas.style.filter = '';
+        wipeLine.style.opacity = '1';
+        wipeLine.style.background = incoming.color;
+        wipeLine.style.boxShadow = '0 0 12px ' + incoming.color;
+        wipeLine.style.top = '0';
+        var wipeStart = performance.now();
+        function wipeStep(ts) {
+          var prog = Math.min(1, (ts - wipeStart) / 160);
+          wipeLine.style.top = (prog * 100) + '%';
+          if (prog < 1) requestAnimationFrame(wipeStep);
+        }
+        requestAnimationFrame(wipeStep);
+        mode = nextMode;
+        if (mode === 0) initSpectrum();
+        if (mode === 2) initWaterfall();
+        if (mode === 3) initRadar();
+        if (mode === 4) initNeural();
+        if (mode === 5) initIntercept();
+        renderPanels();
+      }, 80);
+
+      setTimeout(function () {
+        endTransitionVisuals();
+        canvas.style.opacity = '0.4';
+        canvas.style.transform = 'scale(0.98)';
+        panels.forEach(function (p) { p.classList.remove('fade-out'); });
+      }, 240);
+
+      setTimeout(function () {
+        canvas.style.transition = 'opacity 0.14s, transform 0.14s';
+        canvas.style.opacity = '1';
+        canvas.style.transform = 'scale(1)';
+        setTimeout(function () {
+          canvas.style.transition = '';
+          transitioning = false;
+          if (cb) cb();
+        }, 140);
+      }, TRANSITION_MS - 140);
+    }
+
+    function cycleMode() {
+      if (transitioning || !started) return;
+      var now = performance.now();
+      if (now - lastModeChangeAt < 500) return;
+      lastModeChangeAt = now;
+      var next = (mode + 1) % MODES.length;
+      playModeChange();
+      runTransition(next);
+    }
+
+    function showLockOn(name, type, extra) {
+      lockName.textContent = name;
+      lockBadge.textContent = type;
+      lockTs.textContent = 'Last event: ' + utcNow();
+      lockDetail.innerHTML = extra ||
+        '<div class="sr-log-line">Trigger count: ' + ((Math.random() * 90 + 10) | 0) + '</div>' +
+        '<div class="sr-log-line">Rule: SIG-' + ((Math.random() * 9000 + 1000) | 0) + '</div>' +
+        '<div class="sr-log-line">Severity: ' + (type === 'THREAT' ? 'HIGH' : 'MEDIUM') + '</div>';
+      lockSparkData = [];
+      for (var i = 0; i < 30; i++) lockSparkData.push(Math.random());
+      drawLockSpark();
+      lockEl.classList.add('on');
+    }
+
+    function drawLockSpark() {
+      lockSparkCtx.fillStyle = '#030b06';
+      lockSparkCtx.fillRect(0, 0, 256, 60);
+      lockSparkCtx.strokeStyle = MODES[mode].color;
+      lockSparkCtx.beginPath();
+      lockSparkData.forEach(function (v, i) {
+        var x = (i / 29) * 256;
+        var y = 60 - v * 50;
+        if (i === 0) lockSparkCtx.moveTo(x, y); else lockSparkCtx.lineTo(x, y);
+      });
+      lockSparkCtx.stroke();
+    }
+
+    function hideLockOn() { lockEl.classList.remove('on'); }
+
+    function hitTestSpectrum(mx) {
+      var barW = canvas.width / BAR_COUNT;
+      var idx = (mx / barW) | 0;
+      for (var i = 0; i < spectrumSpikes.length; i++) {
+        var sp = spectrumSpikes[i];
+        if (idx >= sp.start && idx < sp.start + sp.count) {
+          showLockOn(sp.label, 'THREAT');
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function hitTestRadar(mx, my) {
+      var w = canvas.width, h = canvas.height;
+      var cx = w / 2, cy = h / 2;
+      var R = Math.min(w, h) * 0.42;
+      for (var i = 0; i < radarContacts.length; i++) {
+        var c = radarContacts[i];
+        var px = cx + Math.cos(c.angle) * c.dist * R;
+        var py = cy + Math.sin(c.angle) * c.dist * R;
+        if (Math.hypot(mx - px, my - py) < 12 + c.threat * 6) {
+          selectedContact = c;
+          c.history.unshift(((c.angle * 180 / Math.PI) % 360) | 0);
+          if (c.history.length > 5) c.history.pop();
+          radarSectorLock = c;
+          showLockOn(c.name, c.threat > 0.6 ? 'THREAT' : 'MODULE');
+          renderPanelsRadar();
+          return true;
+        }
+      }
+      radarSectorLock = null;
+      return false;
+    }
+
+    function hitTestNeural(mx, my) {
+      var w = canvas.width, h = canvas.height;
+      for (var i = 0; i < neuralNodes.length; i++) {
+        var n = neuralNodes[i];
+        var px = n.x * w, py = n.y * h;
+        if (Math.hypot(mx - px, my - py) < n.r + 10) {
+          triggerCascade(i);
+          showLockOn(n.name, 'MODULE');
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function triggerCascade(nodeIdx) {
+      playNeuralChord();
+      var n = neuralNodes[nodeIdx];
+      n.glow = 1;
+      n.fire = 1;
+      nodeFireCounts[n.name] = (nodeFireCounts[n.name] || 0) + 1;
+      lastCascadePath = [n.name];
+      var visited = {};
+      visited[nodeIdx] = true;
+      function hop(from, depth) {
+        if (depth > 2) return;
+        neuralLinks.forEach(function (link) {
+          var to = link.a === from ? link.b : link.b === from ? link.a : -1;
+          if (to < 0 || visited[to]) return;
+          visited[to] = true;
+          cascadeImpulses.push({ from: from, to: to, t: 0 });
+          link.pulse = 0;
+          neuralNodes[to].glow = 0.8;
+          lastCascadePath.push(neuralNodes[to].name);
+          setTimeout(function () { hop(to, depth + 1); }, 400);
+        });
+      }
+      hop(nodeIdx, 0);
+      renderPanelsNeural();
+    }
+
+    var lastCanvasTapAt = 0;
+    var lastModeChangeAt = 0;
+
+    function handleCanvasClick(e) {
+      if (!started || transitioning) return;
+      var now = performance.now();
+      if (now - lastCanvasTapAt < 350) return;
+      lastCanvasTapAt = now;
+      var rect = canvas.getBoundingClientRect();
+      var mx = e.clientX - rect.left;
+      var my = e.clientY - rect.top;
+      var isDouble = now - lastClickTime < 350;
+      lastClickTime = now;
+
+      if (isDouble) {
+        cycleMode();
+        return;
+      }
+
+      var handled = false;
+      if (mode === 0) handled = hitTestSpectrum(mx);
+      else if (mode === 1) {
+        scopeFrozen = true;
+        scopeFreezeUntil = now + 800;
+        scopeMeasureX = mx;
+        handled = true;
+      } else if (mode === 2) {
+        tuneCenter = ((mx / canvas.width) * BAR_COUNT) | 0;
+        tunedCarrier = CARRIERS[Math.min(CARRIERS.length - 1, (tuneCenter / (BAR_COUNT / CARRIERS.length)) | 0)];
+        renderPanelsWaterfall();
+        handled = true;
+      } else if (mode === 3) handled = hitTestRadar(mx, my);
+      else if (mode === 4) handled = hitTestNeural(mx, my);
+      else if (mode === 5) {
+        var ch = (my / (canvas.height / 3)) | 0;
+        if (ch >= 0 && ch < 3) {
+          var targetX = mx / canvas.width;
+          cmAnimations.push({ ch: ch, x: 0, targetX: targetX, start: now, done: false });
+          var ts = utcNow();
+          countermeasures.unshift('[' + ts + '] CM deployed ch-' + String.fromCharCode(65 + ch));
+          if (countermeasures.length > 12) countermeasures.pop();
+          renderPanelsIntercept();
+          handled = true;
+        }
+      }
+
+      if (!handled) hideLockOn();
+    }
+
+    canvas.addEventListener('click', handleCanvasClick);
+    canvas.addEventListener('mousemove', function (e) {
+      var rect = canvas.getBoundingClientRect();
+      mouseX = e.clientX - rect.left;
+      mouseY = e.clientY - rect.top;
+    });
+
+    retuneBtn.addEventListener('click', cycleMode);
+    document.getElementById('sr-lockon-close').addEventListener('click', hideLockOn);
+
+    sndBtn.addEventListener('click', function () {
+      sndOn = !sndOn;
+      sndBtn.textContent = sndOn ? 'SND: ON' : 'SND: OFF';
+      sndBtn.setAttribute('aria-pressed', sndOn ? 'true' : 'false');
+      if (sndOn) ensureAudio();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.code === 'Space' && !e.target.matches('input, textarea')) {
+        e.preventDefault();
+        cycleMode();
+      }
+    });
+
+    function scheduleDrift() {
+      setTimeout(function () {
+        if (!started) { scheduleDrift(); return; }
+        triggerDrift();
+        scheduleDrift();
+      }, 45000 + Math.random() * 45000);
+    }
+
+    function triggerDrift() {
+      if (transitioning || driftActive) return;
+      driftActive = true;
+      driftBanner.classList.add('on');
+      transCtx.clearRect(0, 0, transCanvas.width, transCanvas.height);
+      for (var i = 0; i < 4000; i++) {
+        var sx = (Math.random() * transCanvas.width) | 0;
+        var sy = (Math.random() * transCanvas.height) | 0;
+        transCtx.fillStyle = 'rgb(' + ((Math.random() * 255) | 0) + ',' + ((Math.random() * 255) | 0) + ',' + ((Math.random() * 255) | 0) + ')';
+        transCtx.fillRect(sx, sy, 2, 2);
+      }
+      transWrap.classList.add('active');
+      var sweep = document.createElement('div');
+      sweep.style.cssText = 'position:fixed;top:44px;left:0;right:0;height:4px;background:' + MODES[mode].color + ';z-index:24;box-shadow:0 0 16px ' + MODES[mode].color;
+      document.body.appendChild(sweep);
+      var start = performance.now();
+      function driftAnim(ts) {
+        var prog = (ts - start) / 2000;
+        sweep.style.top = (44 + prog * window.innerHeight) + 'px';
+        if (prog < 1) requestAnimationFrame(driftAnim);
+        else {
+          sweep.remove();
+          endTransitionVisuals();
+          driftBanner.classList.remove('on');
+          driftActive = false;
+        }
+      }
+      requestAnimationFrame(driftAnim);
+    }
+    scheduleDrift();
+
+    var bootReady = false;
+    var bootStart = performance.now();
+    var monitoringStarted = false;
+
+    function beginMonitoring() {
+      if (monitoringStarted) return;
+      monitoringStarted = true;
+      bootReady = true;
+      bootEl.classList.add('hide');
+      setTimeout(function () { bootEl.style.display = 'none'; }, 400);
+      started = true;
+      t0 = performance.now();
+      var spans = bootBars.querySelectorAll('span');
+      spans.forEach(function (s, i) {
+        setTimeout(function () { s.style.height = (8 + Math.random() * 32) + 'px'; }, i * 2);
+      });
+      for (var i = 0; i < BAR_COUNT; i++) {
+        spectrumBars[i].h = 0;
+        (function (idx) {
+          setTimeout(function () {
+            spectrumBars[idx].h = 0.1 + Math.random() * 0.3;
+          }, idx * 2);
+        })(i);
+      }
+      addInterceptLine();
+      renderPanels();
+    }
+
+    function bootTick(now) {
+      var prog = Math.min(1, (now - bootStart) / 500);
+      bootBar.style.width = (prog * 100) + '%';
+      if (prog >= 1) {
+        beginMonitoring();
+        return;
+      }
+      requestAnimationFrame(bootTick);
+    }
+    requestAnimationFrame(bootTick);
+    requestAnimationFrame(drawFrame);
+    setTimeout(beginMonitoring, 600);
+
+    document.body.addEventListener('click', function (e) {
+      if (e.target.closest('#sr-coupling')) {
+        var el = document.getElementById('sr-coupling');
+        if (el) el.textContent = el.textContent === 'AC' ? 'DC' : 'AC';
+      }
+    }, true);
+
+    var params = new URLSearchParams(location.search);
+    var signalParam = params.get('signal') || params.get('gene');
+    if (signalParam) {
+      setTimeout(function () {
+        showLockOn(signalParam, 'MODULE', '<div class="sr-log-line">Deep link intercept for ' + signalParam + '</div>');
+      }, 2500);
+    }
+  })();
+  </script>
+</body>
+</html>

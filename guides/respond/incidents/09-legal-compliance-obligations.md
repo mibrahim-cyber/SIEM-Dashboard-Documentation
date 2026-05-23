@@ -1,0 +1,64 @@
+---
+module: Incident Response
+sidebar: Respond → Incidents
+section: Respond
+subsection: Legal and compliance obligations
+last_updated: 2026-05-23
+---
+
+# Legal and compliance obligations
+
+**Part of:** Respond → Incidents
+**One-sentence focus:** Group related alerts into concrete incidents with playbooks, status tracking, and analyst notes.
+
+![Incident Response main view](../../../screenshots/guides/respond-incidents.png)
+
+### What you are looking at
+
+Auditors care about timestamps (**FIRST SEEN**, **LAST SEEN**, note **TIMESTAMP** button), status transitions, and cross-module SOAR logs showing operator and reason on watchlist actions. Incidents lacks a built-in immutable audit trail; SOAR Audit Log and server-side alert storage provide stronger evidence chains.
+
+### What is happening underneath
+
+Alert persistence: POST `/api/alerts/batch` stores up to 1000 alerts. SOAR entries: SOAR log API. Cases: `api.saveCase`. Incident notes/steps: not persisted. RBAC (`canWrite`, `canAdmin`) gates mutating actions. Session usernames appear in SOAR log as `operator`. The Respond → Incidents view in Incidents screen is deliberately split into a triage queue and a detail workspace because SOC psychology research consistently shows that mixing list management with deep analysis in one scrolling canvas increases mis-clicks during high-stress events. When you filter by **CRITICAL** or sort by **ALERTS**, you are manipulating filtered and sorted list over the `incidents` array that `the SIEM context pipeline` derives from incident correlation in the correlation engine. That derivation runs on every alert mutation, which means incident counts can change while you have a card selected; watch the detail header if the underlying cluster grows because new alerts arrived from the same `sourceIp` within the sixty-second `IP_WINDOW_MS`. For executives, explain incidents as "attack folders" and alerts as "individual alarms inside the folder"; for engineers, cite the exact clustering key (`sourceIp` + temporal proximity) and note that category-based cross-IP correlation remains commented out in source.
+
+Shift handover should never rely on Incidents notes alone. The Incidents screen stores `notes` and playbook `steps` in component-local local screen state keyed by incident id; refreshing the browser or opening a second workstation does not retrieve a colleague's narrative. Pair this module with Case Manager the moment materiality thresholds trigger, typically any sustained **ACTIVE** **CRITICAL** incident, any incident touching crown-jewel assets in Asset Inventory, or any incident requiring legal/comms coordination. Copy **SOURCE IP**, **TRIGGERED RULES**, and playbook completion percentage into the case title or first note so downstream readers can reconstruct context without re-running correlation logic mentally.
+
+Incidents screen imports `acknowledgeAlert` and `resolveAlert` from context but does not wire them in the UI today; analysts must reconcile Alert Manager lifecycle manually. Playbook progress bars in the list view use default playbook length, not category-specific length, until the incident is opened: document this in analyst onboarding to prevent false confidence. Auto contained status from correlation after sixty seconds of quiet is not human closure; train teams to distinguish engine quiet from verified remediation. When extending the platform, persist `notes`/`steps` through the same API patterns as `updateCase`, and consider rendering `alertIds` in the detail pane for forensic traceability.
+
+### Why this matters
+
+GDPR breach notification, PCI forensic requirements, and cyber insurance claims require provable timelines. Gaps in note persistence create regulatory exposure if Incidents is treated as the system of record.
+
+### Step-by-step walkthrough
+
+1. Treat Case Manager + SOAR log as authoritative for audits, not Incidents notes alone.
+2. On critical incidents, ensure SOAR actions logged with operator identity.
+3. Capture screenshots with visible timestamps for interim board updates.
+4. Align **RESOLVED** with Alert Manager resolution and case closure dates.
+5. Retain SQLite/backend backups per retention policy.
+
+### Common questions
+
+#### Is every click audited in incidents?
+
+No. Status override and notes are local. SOAR blocks and case updates are better audited.
+
+#### Can insurers accept exports from this dashboard?
+
+PDF/CSV reports from Reporting → Reports plus SOAR log are stronger than Incidents UI alone.
+
+#### Who can dismiss incidents?
+
+Any user with UI access can click **DISMISSED**, role restrictions are not enforced on this component.
+
+#### Are demo simulated events marked?
+
+Alerts carry `simulated: true` when from Simulate Campaign; important for audit clarity.
+
+### How an analyst uses this during an active incident
+
+Legal hold: preserve Alert Manager data, export SOAR log, open case immediately, avoid **CLEAR** on notes until copied to permanent store. Brief counsel using correlated **FIRST SEEN** as incident start time. Run three drills weekly in lab: (1) Simulate Campaign → filter **CRITICAL** → complete full playbook in `PLAYBOOK` constant for detected category via `detectPlaybookType()` → status **CONTAINED** → SOAR block → status **RESOLVED**; (2) deliberate refresh mid-investigation to feel notes loss and reinforce Case Manager habit; (3) two-browser test where analysts compare `statusOverride` divergence while shared engine status still reflects alert recency. Time each drill; mature SOCs often target under eight minutes from campaign start to first documented containment note plus SOAR log entry.
+
+### Edge cases and gotchas
+
+Mixing simulated and production data without labelling misleads audits. Local-only notes violate "immutable log" expectations. Clock skew on client browsers affects **TIMESTAMP** button accuracy: prefer server timestamps in cases.

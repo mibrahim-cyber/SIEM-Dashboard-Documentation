@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="Daily threat summary and analyst tips from Meridian-7 SOC." />
+  <meta property="og:title" content="Daily Briefing — HABIBI-SIEM" />
+  <meta property="og:description" content="Daily threat summary and analyst tips from Meridian-7 SOC." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/motd-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Daily Briefing — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Daily threat summary and analyst tips from Meridian-7 SOC." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/motd-og.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Briefing — Meridian-7</title>
+  <link rel="stylesheet" href="assets/palette.css" />
+  <style>
+    body { min-height: 100vh; margin: 0; background: #020617; color: #cbd5e1; font: 13px/1.7 "IBM Plex Mono", Consolas, monospace; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .card { max-width: 520px; border: 1px solid rgba(56,189,248,.35); background: rgba(8,4,18,.98); padding: 28px; border-radius: 6px; }
+    h1 { font-size: 12px; letter-spacing: 4px; color: #38bdf8; margin-bottom: 16px; }
+    a { color: #a78bfa; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1 id="motd-date">DAILY BRIEFING</h1>
+    <p id="motd-body">Loading threat summary…</p>
+    <p style="margin-top:20px"><a href="index.html">← Return to Approach Vector</a> · <a href="terminal.html">Open Terminal</a></p>
+  </div>
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/siem-qol.js"></script>
+  <script src="assets/palette.js"></script>
+  <script>
+    SiemCore.bootPage('motd');
+    var today = new Date().toISOString().slice(0, 10);
+    document.getElementById('motd-date').textContent = 'DAILY BRIEFING · ' + today;
+    document.getElementById('motd-body').innerHTML =
+      'Threat level: <strong style="color:#fbbf24">ELEVATED</strong><br>' +
+      'Simulated credential stuffing against edge API.<br><br>' +
+      'Tip: Run <code>grep CRITICAL /var/log/siem/alerts.log</code> in The Terminal.<br><br>' +
+      '<em>— Meridian-7 SOC</em>';
+  </script>
+</body>
+</html>

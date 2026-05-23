@@ -1,0 +1,10 @@
+{
+  "events": [
+    { "t": 0, "label": "Baseline", "module": "SIEM Dashboard" },
+    { "t": 12, "label": "Ingest spike", "module": "Validation" },
+    { "t": 28, "label": "Rule hit", "module": "SQL Injection" },
+    { "t": 41, "label": "Alert opened", "module": "Alert Manager" },
+    { "t": 55, "label": "Playbook run", "module": "SOAR Console" },
+    { "t": 72, "label": "Posture review", "module": "Dashboard" }
+  ]
+}

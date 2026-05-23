@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" data-deck-page="network">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="45-node threat graph with packet capture and live event engine." />
+  <meta property="og:title" content="The Ghost Network — HABIBI-SIEM" />
+  <meta property="og:description" content="45-node threat graph with packet capture and live event engine." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/network-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Ghost Network — HABIBI-SIEM" />
+  <meta name="twitter:description" content="45-node threat graph with packet capture and live event engine." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/network-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Ghost Network — Meridian-7</title>
+  <link rel="stylesheet" href="assets/palette.css" />
+  <link rel="stylesheet" href="assets/deck-nav.css" />
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#020617;color:#e2e8f0;font-family:system-ui,sans-serif;overflow:hidden}
+    #hdr{position:fixed;top:0;left:0;right:0;height:40px;display:flex;align-items:center;gap:12px;padding:0 12px;background:rgba(15,23,42,.95);border-bottom:1px solid rgba(56,189,248,.2);font:600 10px/1 monospace;letter-spacing:2px;z-index:5}
+    #starfield{position:fixed;inset:40px 320px 0 0;pointer-events:none;z-index:0}
+    #graph{position:fixed;inset:40px 320px 0 0;z-index:1}#drawer{position:fixed;top:40px;right:0;width:320px;bottom:0;background:rgba(15,23,42,.96);border-left:1px solid rgba(56,189,248,.15);padding:16px;font-size:12px;overflow:auto;z-index:2}
+    #drawer h3{font-size:11px;letter-spacing:2px;color:#38bdf8;margin-bottom:8px}
+    .muted{color:#64748b}.btn{font:inherit;padding:6px 10px;margin-top:8px;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.35);color:#e2e8f0;cursor:pointer}
+    #packet-modal{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:50;padding:24px}
+    #packet-modal.on{display:flex}
+    #packet-body{max-width:640px;width:100%;background:#0f172a;border:1px solid #334155;font:10px/1.5 Consolas,monospace;color:#34d399;padding:16px;max-height:70vh;overflow:auto;white-space:pre-wrap}
+  </style>
+</head>
+<body>
+  <div id="hdr">GHOST NETWORK · 45 NODES · EVENT ENGINE <button class="btn" id="btn-audio" style="margin-left:auto">Ambient Audio</button></div>
+  <canvas id="starfield"></canvas>
+  <svg id="graph"></svg>
+  <aside id="drawer"><h3>NODE DETAIL</h3><p class="muted" id="drawer-body">Click a node to inspect.</p><button class="btn" id="btn-capture">Capture Packets</button></aside>
+  <div id="packet-modal"><div id="packet-body" aria-label="Wireshark-style packet capture"></div></div>
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/palette.js"></script>
+  <script>
+  (function(){
+    SiemCore.bootPage('network'); SiemCore.AchievementSystem.check('visit_network');
+    var stars=[],sf=document.getElementById('starfield'),sctx=sf.getContext('2d');
+    function resizeStar(){sf.width=innerWidth-320;sf.height=innerHeight-40;stars=[];for(var i=0;i<120;i++)stars.push({x:Math.random()*sf.width,y:Math.random()*sf.height,z:Math.random()});} resizeStar(); addEventListener('resize',resizeStar);
+    function drawStars(){sctx.fillStyle='rgba(2,6,23,0.35)';sctx.fillRect(0,0,sf.width,sf.height);stars.forEach(function(s){sctx.fillStyle='rgba(148,163,184,'+(0.2+s.z)+')';sctx.fillRect(s.x,s.y,1+s.z,1);});requestAnimationFrame(drawStars);} drawStars();
+    var nodes=[],links=[],sel=null,packets=[];
+    for(var i=0;i<45;i++) nodes.push({id:'n'+i,label:'host-'+i,group:i%5,type:['server','workstation','router','firewall','sensor'][i%5],ip:'10.'+(i%255)+'.'+(i%16)+'.'+(i%200+10)});
+    for(var j=0;j<60;j++){var a=nodes[Math.floor(Math.random()*45)],b=nodes[Math.floor(Math.random()*45)];if(a!==b)links.push({source:a.id,target:b.id});}
+    var svg=d3.select('#graph'),w=innerWidth-320,h=innerHeight-40;
+    svg.attr('width',w).attr('height',h);
+    var g=svg.append('g');
+    var sim=d3.forceSimulation(nodes).force('link',d3.forceLink(links).id(function(d){return d.id;}).distance(80)).force('charge',d3.forceManyBody(-120)).force('center',d3.forceCenter(w/2,h/2));
+    var link=g.selectAll('line').data(links).join('line').attr('stroke','rgba(56,189,248,0.2)').attr('stroke-width',1);
+    var node=g.selectAll('circle').data(nodes).join('circle').attr('r',8).attr('fill','#6366f1').style('cursor','pointer')
+      .on('click',function(ev,d){sel=d;document.getElementById('drawer-body').innerHTML='<strong>'+d.label+'</strong><br>Type: '+d.type+'<br>IP: '+d.ip+'<br>Group: '+d.group;});
+    node.append('title').text(function(d){return d.label;});
+    sim.on('tick',function(){link.attr('x1',function(d){return d.source.x;}).attr('y1',function(d){return d.source.y;}).attr('x2',function(d){return d.target.x;}).attr('y2',function(d){return d.target.y;});node.attr('cx',function(d){return d.x;}).attr('cy',function(d){return d.y;});});
+    SiemCore.EventEngine.subscribe(function(){node.attr('fill',function(d){return d===sel?'#fbbf24':'#6366f1';});if(Math.random()<0.3&&links.length){var L=links[Math.floor(Math.random()*links.length)];packets.push({src:L.source.label||L.source.id,dst:L.target.label||L.target.id,proto:['TCP','UDP','ICMP'][Math.floor(Math.random()*3)],len:Math.floor(Math.random()*1400+64)});if(packets.length>50)packets.shift();}});
+    SiemCore.EventEngine.start(2000);
+    document.getElementById('btn-capture').onclick=function(){
+      var body=document.getElementById('packet-body');
+      body.textContent=packets.slice(-12).map(function(p,i){return (i+1)+' '+p.proto+' '+p.src+' → '+p.dst+' len='+p.len;}).join('\n')||'No packets captured yet.';
+      document.getElementById('packet-modal').classList.add('on');
+    };
+    document.getElementById('packet-modal').onclick=function(e){if(e.target.id==='packet-modal')e.target.classList.remove('on');};
+    var ambient=null;
+    document.getElementById('btn-audio').onclick=function(){
+      if(typeof Tone==='undefined')return;
+      Tone.start().then(function(){
+        if(ambient){ambient.stop();ambient=null;document.getElementById('btn-audio').textContent='Ambient Audio';return;}
+        ambient=new Tone.Oscillator(110,'sine').toDestination();ambient.volume.value=-28;ambient.start();
+        document.getElementById('btn-audio').textContent='Stop Audio';
+      });
+    };
+  })();
+  </script>
+  <div id="deck-nav-root"></div>
+  <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="Unlock deck achievements by visiting experiences and completing challenges." />
+  <meta property="og:title" content="Achievements — HABIBI-SIEM" />
+  <meta property="og:description" content="Unlock deck achievements by visiting experiences and completing challenges." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/trophy-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Achievements — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Unlock deck achievements by visiting experiences and completing challenges." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/trophy-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Achievements — Meridian-7</title>
+  <link rel="stylesheet" href="assets/palette.css" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}body{min-height:100%;background:#020617;color:#e2e8f0;font-family:system-ui,sans-serif;padding:24px}
+    h1{font:700 24px/1 Orbitron,sans-serif;margin-bottom:8px}#count{color:#64748b;font-size:14px;margin-bottom:24px}
+    #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;max-width:960px}
+    .ach{padding:16px;border:1px solid rgba(148,163,184,.15);border-radius:8px;background:rgba(15,23,42,.6)}
+    .ach.unlocked{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.06)}
+    .ach-icon{font-size:24px;margin-bottom:8px}.ach-title{font-weight:600;margin-bottom:4px}.ach-desc{font-size:13px;color:#94a3b8}
+    .ach.locked{opacity:.45}
+    a{color:#38bdf8}
+  </style>
+</head>
+<body>
+  <h1>Achievements</h1>
+  <p id="count"></p>
+  <div id="grid"></div>
+  <p style="margin-top:24px"><a href="index.html">← Return to Approach</a></p>
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/palette.js"></script>
+  <script>
+  (function(){
+    SiemCore.bootPage('trophy');
+    var list=SiemCore.AchievementSystem.list();
+    document.getElementById('count').textContent=SiemCore.AchievementSystem.count()+' / '+list.length+' unlocked';
+    var grid=document.getElementById('grid');
+    list.forEach(function(a){
+      var el=document.createElement('div');
+      el.className='ach '+(a.unlocked?'unlocked':'locked');
+      el.innerHTML='<div class="ach-icon">'+(a.unlocked?a.icon:'?')+'</div><div class="ach-title">'+a.title+'</div><div class="ach-desc">'+a.desc+'</div>';
+      grid.appendChild(el);
+    });
+  })();
+  </script>
+</body>
+</html>

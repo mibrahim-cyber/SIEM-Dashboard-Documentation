@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" data-deck-page="heist">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="Stealth data extraction puzzle — evade guards across segmented zones." />
+  <meta property="og:title" content="The Heist — HABIBI-SIEM" />
+  <meta property="og:description" content="Stealth data extraction puzzle — evade guards across segmented zones." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/heist-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Heist — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Stealth data extraction puzzle — evade guards across segmented zones." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/heist-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Heist — Meridian-7</title>
+  <link rel="stylesheet" href="assets/palette.css" />
+  <link rel="stylesheet" href="assets/deck-nav.css" />
+  <script src="https://cdn.jsdelivr.net/npm/kaboom@3000.0.1/dist/kaboom.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#0a0408;overflow:hidden}
+    #hdr{position:fixed;top:0;left:0;right:0;height:32px;display:flex;align-items:center;padding:0 12px;font:600 9px/1 Consolas,monospace;letter-spacing:2px;color:#fbbf24;z-index:10;background:rgba(10,4,8,.9)}
+    canvas{display:block}
+  </style>
+</head>
+<body>
+  <div id="hdr">THE HEIST · STEALTH · Avoid IDS cones · Rule: failed_auth &gt; 3 triggers alert</div>
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/palette.js"></script>
+  <script>
+  (function(){
+    SiemCore.bootPage('heist'); SiemCore.AchievementSystem.check('visit_heist');
+    var k=kaboom({global:true,width:innerWidth,height:innerHeight-32,canvas:document.createElement('canvas'),background:[10,4,8]});
+    document.body.appendChild(document.querySelector('canvas'));
+    setGravity(0);
+    var player=add([rect(16,16),pos(40,innerHeight/2),color(56,189,248),area(),'player']);
+    var guard=add([rect(20,20),pos(innerWidth-120,innerHeight/2),color(248,113,113),area(),'guard']);
+    var vault=add([rect(40,60),pos(innerWidth-60,innerHeight/2-30),color(251,191,36),area(),'vault']);
+    var cone=add([polygon([vec2(0,0),vec2(80,40),vec2(80,-40)]),pos(innerWidth-120,innerHeight/2),color(248,113,113),opacity(0.15),rotate(0),'cone']);
+    add([text('Reach vault without entering IDS cone',{size:12}),pos(12,40),color(148,163,184)]);
+    var coneAngle=0,detected=false,failedAuth=0;
+    onUpdate(function(){
+      coneAngle+=dt()*0.8;cone.angle=coneAngle*30;
+      var px=player.pos.x,py=player.pos.y,gx=guard.pos.x,gy=guard.pos.y;
+      var dx=px-gx,dy=py-gy,dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<90&&!detected){
+        failedAuth++;
+        if(failedAuth>3){
+          detected=true;
+          add([text('DETECTED — Rule: failed_auth > 3',{size:14}),pos(innerWidth/2-180,innerHeight/2-40),color(248,113,113),fixed()]);
+          add([text('Read: read.html?doc=guides/investigate/event-graph',{size:11}),pos(innerWidth/2-200,innerHeight/2),color(148,163,184),fixed()]);
+          add([text('Read: read.html?doc=guides/rules/detection-basics',{size:11}),pos(innerWidth/2-200,innerHeight/2+24),color(148,163,184),fixed()]);
+          wait(4,function(){go('heist.html');});
+        }
+      }
+    });
+    onKeyDown('left',function(){player.move(-120,0);});
+    onKeyDown('right',function(){player.move(120,0);});
+    onKeyDown('up',function(){player.move(0,-120);});
+    onKeyDown('down',function(){player.move(0,120);});
+    player.onCollide('guard',function(){
+      if(detected)return;
+      detected=true;
+      add([text('GUARD CONTACT — Review detection rules',{size:14}),pos(innerWidth/2-180,innerHeight/2-20),color(248,113,113),fixed()]);
+      add([text('→ read.html?doc=guides/investigate/event-graph/',{size:11}),pos(innerWidth/2-160,innerHeight/2+16),color(56,189,248),fixed()]);
+      wait(3,function(){go('heist.html');});
+    });
+    player.onCollide('vault',function(){
+      add([text('VAULT ACCESSED — Exfil prevented',{size:16}),pos(innerWidth/2-140,innerHeight/2),color(52,211,153),fixed()]);
+      SiemCore.AchievementSystem.check('heist_win');
+    });
+  })();
+  </script>
+  <div id="deck-nav-root"></div>
+  <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
+</body>
+</html>

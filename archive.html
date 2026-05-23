@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" data-deck-page="archive">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="Three-dimensional log vault — navigate retained evidence in spatial memory." />
+  <meta property="og:title" content="The Deep Archive — HABIBI-SIEM" />
+  <meta property="og:description" content="Three-dimensional log vault — navigate retained evidence in spatial memory." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/archive-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Deep Archive — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Three-dimensional log vault — navigate retained evidence in spatial memory." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/archive-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Deep Archive — Meridian-7</title>
+  <link rel="stylesheet" href="assets/palette.css" />
+  <link rel="stylesheet" href="assets/deck-nav.css" />
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#0a0618;overflow:hidden;color:#c4b5fd;font-family:Consolas,monospace}
+    #hdr{position:fixed;top:0;left:0;right:0;height:36px;display:flex;align-items:center;padding:0 12px;font-size:10px;letter-spacing:2px;z-index:10;background:rgba(10,6,18,.9);border-bottom:1px solid rgba(196,181,253,.2)}
+    #archive-root{position:fixed;inset:36px 0 0}#overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:20;padding:24px}
+    #overlay.show{display:flex}#doc{max-width:560px;max-height:80vh;overflow:auto;background:#1e1b4b;padding:24px;border:1px solid #6366f1;line-height:1.6;font-family:Georgia,serif;color:#e2e8f0}
+    #hint{position:fixed;bottom:12px;left:12px;font-size:9px;color:#64748b;z-index:10}
+  </style>
+</head>
+<body>
+  <div id="hdr">DEEP ARCHIVE · 3D LIBRARY · Click cabinet drawer</div>
+  <div id="archive-root"></div>
+  <div id="overlay"><div id="doc"><h2>Incident Report M7-2019-004</h2><p>Supply chain compromise via signed update package. Detection delayed 72 hours due to trusted publisher flag.</p><p style="margin-top:12px">Further reading: guides/investigate/event-graph/</p><button onclick="document.getElementById('overlay').classList.remove('show')" style="margin-top:16px;padding:8px 16px;cursor:pointer">Close</button></div></div>
+  <p id="hint">WASD / arrows to walk aisles · Click drawer handle · Scroll doc with wheel</p>
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/palette.js"></script>
+  <script>
+  (function(){
+    SiemCore.bootPage('archive'); SiemCore.AchievementSystem.check('visit_archive');
+    var root=document.getElementById('archive-root');
+    var scene=new THREE.Scene();scene.background=new THREE.Color(0x0a0618);
+    var cam=new THREE.PerspectiveCamera(60,root.clientWidth/root.clientHeight,0.1,100);cam.position.set(0,1.6,4);
+    var renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(root.clientWidth,root.clientHeight);root.appendChild(renderer.domElement);
+    scene.add(new THREE.AmbientLight(0x6366f1,0.4));var dl=new THREE.DirectionalLight(0xffffff,0.8);dl.position.set(2,4,3);scene.add(dl);
+    var floor=new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.MeshStandardMaterial({color:0x1e1b4b}));floor.rotation.x=-Math.PI/2;scene.add(floor);
+    for(var i=0;i<5;i++){var cab=new THREE.Mesh(new THREE.BoxGeometry(1.2,2,0.6),new THREE.MeshStandardMaterial({color:0x312e81}));cab.position.set(i*2-4,1,-2);cab.userData.drawer=i===2;scene.add(cab);
+      var handle=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.08,0.1),new THREE.MeshStandardMaterial({color:0xc4b5fd}));handle.position.set(i*2-4,0.6,-1.65);handle.userData.drawer=i===2;scene.add(handle);}
+    var keys={}; addEventListener('keydown',function(e){keys[e.key.toLowerCase()]=true;}); addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false;});
+    var ray=new THREE.Raycaster(),mouse=new THREE.Vector2();
+    renderer.domElement.addEventListener('click',function(e){
+      var r=renderer.domElement.getBoundingClientRect();
+      mouse.x=((e.clientX-r.left)/r.width)*2-1;mouse.y=-((e.clientY-r.top)/r.height)*2+1;
+      ray.setFromCamera(mouse,cam);
+      var hits=ray.intersectObjects(scene.children,true);
+      hits.forEach(function(h){if(h.object.userData.drawer){document.getElementById('overlay').classList.add('show');if(typeof Lenis!=='undefined'&&!window._archiveLenis){window._archiveLenis=new Lenis({wrapper:document.getElementById('doc'),content:document.getElementById('doc'),smoothWheel:true});function raf(t){window._archiveLenis.raf(t);requestAnimationFrame(raf);}requestAnimationFrame(raf);}}});
+    });
+    addEventListener('resize',function(){cam.aspect=root.clientWidth/root.clientHeight;cam.updateProjectionMatrix();renderer.setSize(root.clientWidth,root.clientHeight);});
+    function animate(){
+      var spd=0.04;
+      if(keys['w']||keys['arrowup'])cam.position.z-=spd;
+      if(keys['s']||keys['arrowdown'])cam.position.z+=spd;
+      if(keys['a']||keys['arrowleft'])cam.position.x-=spd;
+      if(keys['d']||keys['arrowright'])cam.position.x+=spd;
+      cam.position.x=Math.max(-4,Math.min(4,cam.position.x));cam.position.z=Math.max(1.5,Math.min(6,cam.position.z));
+      requestAnimationFrame(animate);renderer.render(scene,cam);
+    } animate();
+  })();
+  </script>
+  <div id="deck-nav-root"></div>
+  <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
+</body>
+</html>

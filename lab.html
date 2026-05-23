@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" data-deck-page="lab">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="Detection experiment bay — tune rules against synthetic attack campaigns." />
+  <meta property="og:title" content="The Lab — HABIBI-SIEM" />
+  <meta property="og:description" content="Detection experiment bay — tune rules against synthetic attack campaigns." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/lab-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Lab — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Detection experiment bay — tune rules against synthetic attack campaigns." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/lab-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Lab — Meridian-7</title>
+  <link rel="stylesheet" href="assets/palette.css" />
+  <link rel="stylesheet" href="assets/deck-nav.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+  <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#020617;color:#e2e8f0;font-family:Consolas,monospace;overflow:hidden}
+    #hdr{height:36px;display:flex;align-items:center;padding:0 12px;font-size:10px;letter-spacing:2px;border-bottom:1px solid rgba(56,189,248,.2)}
+    #split{display:grid;grid-template-columns:1fr 1fr;height:calc(100% - 36px)}
+    #target{padding:12px;border-right:1px solid rgba(148,163,184,.15);overflow:auto}
+    #monitor{padding:12px;display:flex;flex-direction:column;gap:8px}
+    #xterm-wrap{flex:1;min-height:140px;background:#000;border:1px solid #334155;padding:4px}
+    #payloads{width:180px;position:fixed;left:0;bottom:0;top:36px;background:rgba(15,23,42,.96);border-right:1px solid rgba(148,163,184,.15);padding:8px;font-size:9px}
+    .payload{padding:6px;margin-bottom:4px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);cursor:pointer}
+    #chart-wrap{height:100px}
+  </style>
+</head>
+<body>
+  <div id="hdr">THE LAB · TARGET + SIEM MONITOR</div>
+  <aside id="payloads"><h3 style="font-size:8px;letter-spacing:2px;margin-bottom:8px">PAYLOADS</h3><div class="payload" data-p="' OR 1=1--">SQLi probe</div><div class="payload" data-p="&lt;script&gt;x&lt;/script&gt;">XSS probe</div><div class="payload" data-p="../../../etc/passwd">Path traversal</div></aside>
+  <div id="split" style="margin-left:180px">
+    <div id="target"><h3 style="font-size:10px;margin-bottom:8px">VULN APP (stub)</h3><input id="lab-input" style="width:100%;padding:8px;margin-bottom:8px;background:#1e293b;border:1px solid #475569;color:#e2e8f0;font:inherit" placeholder="Enter payload" /><button id="lab-send" style="padding:8px 16px;cursor:pointer;font:inherit">Send</button><p id="lab-response" style="margin-top:12px;font-size:11px;color:#94a3b8">Response will appear here.</p></div>
+    <div id="monitor"><div id="xterm-wrap"></div><div id="chart-wrap"><canvas id="metrics"></canvas></div></div>
+  </div>
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/palette.js"></script>
+  <script>
+  (function(){
+    SiemCore.bootPage('lab'); SiemCore.AchievementSystem.check('visit_lab');
+    var term=new Terminal({theme:{background:'#000000',foreground:'#34d399',cursor:'#38bdf8'},fontSize:10,fontFamily:'Consolas, monospace'});
+    var fitAddon = typeof FitAddon !== 'undefined' ? new FitAddon() : null;
+    if (fitAddon) term.loadAddon(fitAddon);
+    term.open(document.getElementById('xterm-wrap'));if(fitAddon)fitAddon.fit();
+    term.writeln('\x1b[32m> lab session online — tail -f /var/log/siem/alerts.log\x1b[0m');
+    var hits=0;
+    function appendLog(m){
+      var ts=new Date().toISOString().slice(11,19);
+      term.writeln('['+ts+'] '+m);
+    }
+    var chart=new Chart(document.getElementById('metrics'),{type:'line',data:{labels:[],datasets:[{label:'Alerts/min',data:[],borderColor:'#38bdf8',tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{beginAtZero:true}}}});
+    document.getElementById('lab-send').onclick=function(){
+      var p=document.getElementById('lab-input').value;
+      hits++; appendLog('ALERT rule=lab-test severity=HIGH payload='+JSON.stringify(p));
+      document.getElementById('lab-response').textContent='HTTP 500 — blocked by WAF (simulated)';
+      chart.data.labels.push('');chart.data.datasets[0].data.push(hits);if(chart.data.labels.length>20){chart.data.labels.shift();chart.data.datasets[0].data.shift();}chart.update();
+    };
+    document.querySelectorAll('.payload').forEach(function(el){el.onclick=function(){document.getElementById('lab-input').value=el.dataset.p;};});
+    setInterval(function(){appendLog('heartbeat src=lab-monitor status=ok');},8000);
+    addEventListener('resize',function(){if(fitAddon)fitAddon.fit();});
+  })();
+  </script>
+  <div id="deck-nav-root"></div>
+  <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
+</body>
+</html>

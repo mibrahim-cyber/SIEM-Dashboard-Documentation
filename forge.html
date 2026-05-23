@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" data-deck-page="forge">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="Detection rule crafting workshop — build and test STRIDE-aligned rules." />
+  <meta property="og:title" content="The Forge — HABIBI-SIEM" />
+  <meta property="og:description" content="Detection rule crafting workshop — build and test STRIDE-aligned rules." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/forge-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Forge — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Detection rule crafting workshop — build and test STRIDE-aligned rules." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/forge-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Forge — Meridian-7</title>
+  <link rel="stylesheet" href="assets/palette.css" />
+  <link rel="stylesheet" href="assets/deck-nav.css" />
+  <script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.26/dist/interact.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#020617;color:#e2e8f0;font-family:Consolas,monospace;overflow:hidden}
+    #hdr{height:36px;display:flex;align-items:center;gap:12px;padding:0 12px;font-size:10px;letter-spacing:2px;border-bottom:1px solid rgba(56,189,248,.2)}
+    #search{flex:1;max-width:200px;padding:4px 8px;font:inherit;background:#1e293b;border:1px solid #475569;color:#e2e8f0}
+    #layout{display:grid;grid-template-columns:200px 1fr 240px;height:calc(100% - 36px)}
+    #lib{border-right:1px solid rgba(148,163,184,.15);padding:8px;font-size:10px;overflow:auto}
+    .comp{padding:8px;margin-bottom:4px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);cursor:grab;border-radius:4px;touch-action:none}
+    #canvas-wrap{position:relative;background:#0f172a}
+    #forge-canvas{width:100%;height:100%;display:block}
+    #props{padding:8px;border-left:1px solid rgba(148,163,184,.15);font-size:10px;display:flex;flex-direction:column}
+    #console{margin-top:12px;padding:8px;background:#000;border:1px solid #334155;height:80px;overflow:auto;font-size:9px;color:#34d399}
+    #monaco{height:120px;border:1px solid #334155;margin-top:8px}
+    #export{margin-top:8px;width:100%;padding:6px;cursor:pointer;font:inherit;background:rgba(56,189,248,.15);border:1px solid #38bdf8;color:#e2e8f0}
+  </style>
+</head>
+<body>
+  <div id="hdr">THE FORGE · RULE BUILDER <input id="search" placeholder="Search components (Fuse)" /></div>
+  <div id="layout">
+    <div id="lib"><div class="comp" draggable="true" data-type="Trigger: Failed Login">Trigger: Failed Login</div><div class="comp" draggable="true" data-type="Filter: src_ip">Filter: src_ip</div><div class="comp" draggable="true" data-type="Action: Alert CRIT">Action: Alert CRIT</div><div class="comp" draggable="true" data-type="Enrich: GeoIP">Enrich: GeoIP</div></div>
+    <div id="canvas-wrap"><canvas id="forge-canvas"></canvas></div>
+    <div id="props"><h3 style="font-size:9px;letter-spacing:2px;margin-bottom:8px">PROPERTIES</h3><p id="sel-name" class="muted">Drop components</p><div id="console">&gt; ready</div><div id="monaco"></div><button id="export">Export JSON</button></div>
+  </div>
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/palette.js"></script>
+  <script>
+  (function(){
+    SiemCore.bootPage('forge'); SiemCore.AchievementSystem.check('visit_forge');
+    var blocks=[],canvas=document.getElementById('forge-canvas'),ctx=canvas.getContext('2d'),sel=null,editor=null;
+    function resize(){canvas.width=canvas.clientWidth;canvas.height=canvas.clientHeight} resize(); addEventListener('resize',resize);
+    var comps=[].slice.call(document.querySelectorAll('.comp'));
+    var fuse=typeof Fuse!=='undefined'?new Fuse(comps.map(function(c){return{type:c.dataset.type,el:c};}),{keys:['type'],threshold:0.4}):null;
+    document.getElementById('search').oninput=function(){
+      var q=this.value.trim();comps.forEach(function(c){c.style.display='';});
+      if(!q||!fuse)return;
+      var hits=fuse.search(q).map(function(r){return r.item.el;});
+      comps.forEach(function(c){c.style.display=hits.indexOf(c)>=0?'':'none';});
+    };
+    document.querySelectorAll('.comp').forEach(function(el){
+      el.addEventListener('dragstart',function(e){e.dataTransfer.setData('type',el.dataset.type);});
+    });
+    canvas.addEventListener('dragover',function(e){e.preventDefault();});
+    canvas.addEventListener('drop',function(e){
+      e.preventDefault();var r=canvas.getBoundingClientRect();
+      blocks.push({type:e.dataTransfer.getData('type'),x:e.clientX-r.left,y:e.clientY-r.top,w:120,h:40});
+      log('Added '+e.dataTransfer.getData('type'));
+      syncMonaco();
+    });
+    if(typeof interact!=='undefined'){
+      interact('.comp').draggable({listeners:{move:function(e){var t=e.target;t.style.transform='translate('+e.clientX+'px,'+e.clientY+'px)';}}});
+    }
+    canvas.addEventListener('click',function(e){
+      var r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+      sel=null; blocks.forEach(function(b){if(x>b.x&&x<b.x+b.w&&y>b.y&&y<b.y+b.h)sel=b;});
+      document.getElementById('sel-name').textContent=sel?sel.type:'Drop components';
+    });
+    function log(m){document.getElementById('console').innerHTML+='<br>&gt; '+m;}
+    function syncMonaco(){
+      var json=JSON.stringify({rule:'custom',blocks:blocks},null,2);
+      if(editor)editor.setValue(json);
+    }
+    if(typeof require!=='undefined'){
+      require.config({paths:{vs:'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs'}});
+      require(['vs/editor/editor.main'],function(){
+        editor=monaco.editor.create(document.getElementById('monaco'),{value:'{\n  "rule": "custom",\n  "blocks": []\n}',language:'json',theme:'vs-dark',minimap:{enabled:false},fontSize:10,automaticLayout:true});
+      });
+    }
+    document.getElementById('export').onclick=function(){
+      var json=JSON.stringify({rule:'custom',blocks:blocks},null,2);
+      log('Exported '+blocks.length+' blocks');
+      syncMonaco();
+      navigator.clipboard&&navigator.clipboard.writeText(json);
+    };
+    function bezier(p0,p1,p2,t){var u=1-t;return u*u*p0+2*u*t*p1+t*t*p2;}
+    function draw(){
+      ctx.fillStyle='#0f172a';ctx.fillRect(0,0,canvas.width,canvas.height);
+      blocks.forEach(function(b,i){
+        ctx.fillStyle=sel===b?'rgba(251,191,36,.3)':'rgba(56,189,248,.15)';
+        ctx.strokeStyle='#38bdf8';ctx.fillRect(b.x,b.y,b.w,b.h);ctx.strokeRect(b.x,b.y,b.w,b.h);
+        ctx.fillStyle='#e2e8f0';ctx.font='10px monospace';ctx.fillText(b.type,b.x+6,b.y+24);
+        if(i>0){
+          var p=blocks[i-1],x0=p.x+p.w/2,y0=p.y+p.h,x1=b.x+b.w/2,y1=b.y,cx=(x0+x1)/2,cy=(y0+y1)/2-30;
+          ctx.beginPath();ctx.moveTo(x0,y0);
+          for(var t=0;t<=1;t+=0.05){ctx.lineTo(bezier(x0,cx,x1,t),bezier(y0,cy,y1,t));}
+          ctx.strokeStyle='rgba(148,163,184,.55)';ctx.stroke();
+        }
+      });
+    }
+    SiemCore.CanvasLoop.create(canvas,draw,{targetFps:30}).start();
+  })();
+  </script>
+  <div id="deck-nav-root"></div>
+  <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
+</body>
+</html>

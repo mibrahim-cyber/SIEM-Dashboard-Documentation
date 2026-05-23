@@ -1,0 +1,20 @@
+[
+  {
+    "id": "phish-wave",
+    "title": "Phish wave — finance desk",
+    "brief": "Three users clicked the same lure. Triage auth logs and mailbox rules within ten minutes.",
+    "path": ["AuthContext", "Alert Manager", "SOAR Console"]
+  },
+  {
+    "id": "sql-surge",
+    "title": "SQL probe on edge API",
+    "brief": "WAF flagged union attempts. Confirm rule coverage and open a tabletop on ingest validation.",
+    "path": ["Validation", "SQL Injection", "DetectionEngine"]
+  },
+  {
+    "id": "insider-export",
+    "title": "Bulk export anomaly",
+    "brief": "UEBA scored a midnight zip pull. Check RBAC and audit trail before escalation.",
+    "path": ["RBAC", "SQLite DB", "Dashboard"]
+  }
+]

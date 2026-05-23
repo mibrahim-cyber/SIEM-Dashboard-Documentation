@@ -1,0 +1,2806 @@
+{
+  "generated_at": "2026-05-23T01:23:01.700277+00:00",
+  "source": [
+    "guides/**/INDEX.md",
+    "scripts/SUBTOPIC-MANIFEST.json"
+  ],
+  "module_count": 27,
+  "page_count": 217,
+  "modules": [
+    {
+      "module": "configure/correlation-builder",
+      "module_title": "Correlation Builder: documentation index",
+      "index_path": "guides/configure/correlation-builder/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/configure/correlation-builder/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-what-correlation-means.md",
+          "path": "guides/configure/correlation-builder/02-what-correlation-means.md",
+          "title": "What correlation means in SIEM"
+        },
+        {
+          "file": "03-correlation-builder-ui.md",
+          "path": "guides/configure/correlation-builder/03-correlation-builder-ui.md",
+          "title": "The correlation builder UI"
+        },
+        {
+          "file": "04-event-pattern-design.md",
+          "path": "guides/configure/correlation-builder/04-event-pattern-design.md",
+          "title": "Event pattern design"
+        },
+        {
+          "file": "05-time-windows.md",
+          "path": "guides/configure/correlation-builder/05-time-windows.md",
+          "title": "Why time windows matter"
+        },
+        {
+          "file": "06-testing-before-deployment.md",
+          "path": "guides/configure/correlation-builder/06-testing-before-deployment.md",
+          "title": "Testing a correlation rule before deployment"
+        },
+        {
+          "file": "07-performance-cost.md",
+          "path": "guides/configure/correlation-builder/07-performance-cost.md",
+          "title": "Performance cost of complex correlations"
+        },
+        {
+          "file": "08-real-world-examples.md",
+          "path": "guides/configure/correlation-builder/08-real-world-examples.md",
+          "title": "Real-world correlation examples"
+        }
+      ]
+    },
+    {
+      "module": "configure/rules-engine",
+      "module_title": "Rules Engine: documentation index",
+      "index_path": "guides/configure/rules-engine/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/configure/rules-engine/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-what-is-a-detection-rule.md",
+          "path": "guides/configure/rules-engine/02-what-is-a-detection-rule.md",
+          "title": "What a detection rule is"
+        },
+        {
+          "file": "03-rule-anatomy.md",
+          "path": "guides/configure/rules-engine/03-rule-anatomy.md",
+          "title": "Rule anatomy"
+        },
+        {
+          "file": "04-sliding-window.md",
+          "path": "guides/configure/rules-engine/04-sliding-window.md",
+          "title": "The sliding window"
+        },
+        {
+          "file": "05-sequence-rules.md",
+          "path": "guides/configure/rules-engine/05-sequence-rules.md",
+          "title": "Sequence rules (correlation rules)"
+        },
+        {
+          "file": "06-creating-a-rule.md",
+          "path": "guides/configure/rules-engine/06-creating-a-rule.md",
+          "title": "Creating a new rule from scratch"
+        },
+        {
+          "file": "07-tuning-false-positives.md",
+          "path": "guides/configure/rules-engine/07-tuning-false-positives.md",
+          "title": "Tuning rules to reduce false positives"
+        },
+        {
+          "file": "08-rule-versioning.md",
+          "path": "guides/configure/rules-engine/08-rule-versioning.md",
+          "title": "Rule versioning and change management"
+        },
+        {
+          "file": "09-importing-sigma-rules.md",
+          "path": "guides/configure/rules-engine/09-importing-sigma-rules.md",
+          "title": "Importing community SIGMA rules"
+        }
+      ]
+    },
+    {
+      "module": "infrastructure/analytics",
+      "module_title": "Analytics: documentation index",
+      "index_path": "guides/infrastructure/analytics/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/infrastructure/analytics/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-operational-vs-analytics.md",
+          "path": "guides/infrastructure/analytics/02-operational-vs-analytics.md",
+          "title": "Operational dashboards vs analytics"
+        },
+        {
+          "file": "03-chart-types.md",
+          "path": "guides/infrastructure/analytics/03-chart-types.md",
+          "title": "Every chart type in the analytics view"
+        },
+        {
+          "file": "04-alert-volume-over-time.md",
+          "path": "guides/infrastructure/analytics/04-alert-volume-over-time.md",
+          "title": "Alert volume over time"
+        },
+        {
+          "file": "05-top-ranked-lists.md",
+          "path": "guides/infrastructure/analytics/05-top-ranked-lists.md",
+          "title": "Top attackers, assets, and rules"
+        },
+        {
+          "file": "06-mttd-mttr.md",
+          "path": "guides/infrastructure/analytics/06-mttd-mttr.md",
+          "title": "MTTD and MTTR"
+        },
+        {
+          "file": "07-trend-analysis.md",
+          "path": "guides/infrastructure/analytics/07-trend-analysis.md",
+          "title": "Trend analysis"
+        },
+        {
+          "file": "08-budget-justification.md",
+          "path": "guides/infrastructure/analytics/08-budget-justification.md",
+          "title": "Using analytics to justify budget"
+        }
+      ]
+    },
+    {
+      "module": "infrastructure/asset-inventory",
+      "module_title": "Asset inventory: documentation index",
+      "index_path": "guides/infrastructure/asset-inventory/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/infrastructure/asset-inventory/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-cannot-protect-what-you-cannot-see.md",
+          "path": "guides/infrastructure/asset-inventory/02-cannot-protect-what-you-cannot-see.md",
+          "title": "Why asset inventory is foundational"
+        },
+        {
+          "file": "03-what-is-an-asset.md",
+          "path": "guides/infrastructure/asset-inventory/03-what-is-an-asset.md",
+          "title": "What an asset is in this context"
+        },
+        {
+          "file": "04-asset-record-fields.md",
+          "path": "guides/infrastructure/asset-inventory/04-asset-record-fields.md",
+          "title": "Every field in an asset record"
+        },
+        {
+          "file": "05-asset-discovery.md",
+          "path": "guides/infrastructure/asset-inventory/05-asset-discovery.md",
+          "title": "Asset discovery methods"
+        },
+        {
+          "file": "06-asset-lifecycle.md",
+          "path": "guides/infrastructure/asset-inventory/06-asset-lifecycle.md",
+          "title": "Asset lifecycle"
+        },
+        {
+          "file": "07-orphaned-assets.md",
+          "path": "guides/infrastructure/asset-inventory/07-orphaned-assets.md",
+          "title": "The orphaned asset problem"
+        },
+        {
+          "file": "08-compliance-inventory.md",
+          "path": "guides/infrastructure/asset-inventory/08-compliance-inventory.md",
+          "title": "Asset inventory and compliance"
+        }
+      ]
+    },
+    {
+      "module": "ingest-config/log-ingestion",
+      "module_title": "Log Ingestion — Documentation Index",
+      "index_path": "guides/ingest-config/log-ingestion/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/ingest-config/log-ingestion/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-ingestion-pipeline-end-to-end.md",
+          "path": "guides/ingest-config/log-ingestion/02-ingestion-pipeline-end-to-end.md",
+          "title": "The ingestion pipeline end to end"
+        },
+        {
+          "file": "03-log-source-types.md",
+          "path": "guides/ingest-config/log-ingestion/03-log-source-types.md",
+          "title": "Log source types"
+        },
+        {
+          "file": "04-validate-endpoint.md",
+          "path": "guides/ingest-config/log-ingestion/04-validate-endpoint.md",
+          "title": "The validate endpoint"
+        },
+        {
+          "file": "05-parsing-grok.md",
+          "path": "guides/ingest-config/log-ingestion/05-parsing-grok.md",
+          "title": "Parsing with regex and Grok"
+        },
+        {
+          "file": "06-enrichment-at-ingestion.md",
+          "path": "guides/ingest-config/log-ingestion/06-enrichment-at-ingestion.md",
+          "title": "Enrichment at ingestion time"
+        },
+        {
+          "file": "07-log-volume-management.md",
+          "path": "guides/ingest-config/log-ingestion/07-log-volume-management.md",
+          "title": "Log volume management"
+        },
+        {
+          "file": "08-log-integrity.md",
+          "path": "guides/ingest-config/log-ingestion/08-log-integrity.md",
+          "title": "Log integrity and tamper evidence"
+        },
+        {
+          "file": "09-ingestion-errors-retries.md",
+          "path": "guides/ingest-config/log-ingestion/09-ingestion-errors-retries.md",
+          "title": "Ingestion errors and retries"
+        }
+      ]
+    },
+    {
+      "module": "ingest-config/settings",
+      "module_title": "Settings — Documentation Index",
+      "index_path": "guides/ingest-config/settings/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/ingest-config/settings/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-settings-architecture.md",
+          "path": "guides/ingest-config/settings/02-settings-architecture.md",
+          "title": "Settings architecture"
+        },
+        {
+          "file": "03-authentication-settings.md",
+          "path": "guides/ingest-config/settings/03-authentication-settings.md",
+          "title": "Authentication settings"
+        },
+        {
+          "file": "04-rbac-roles.md",
+          "path": "guides/ingest-config/settings/04-rbac-roles.md",
+          "title": "User roles and RBAC"
+        },
+        {
+          "file": "05-threat-feed-api-keys.md",
+          "path": "guides/ingest-config/settings/05-threat-feed-api-keys.md",
+          "title": "Threat feed API key management"
+        },
+        {
+          "file": "06-sound-notifications.md",
+          "path": "guides/ingest-config/settings/06-sound-notifications.md",
+          "title": "Sound alerts and notification settings"
+        },
+        {
+          "file": "07-deduplication-toggle.md",
+          "path": "guides/ingest-config/settings/07-deduplication-toggle.md",
+          "title": "Deduplication toggle"
+        },
+        {
+          "file": "08-settings-audit-log.md",
+          "path": "guides/ingest-config/settings/08-settings-audit-log.md",
+          "title": "Audit log of settings changes"
+        },
+        {
+          "file": "09-backup-restore-config.md",
+          "path": "guides/ingest-config/settings/09-backup-restore-config.md",
+          "title": "Backup and restore of configuration"
+        }
+      ]
+    },
+    {
+      "module": "intelligence/ioc-watchlist",
+      "module_title": "IOC Watchlist documentation index",
+      "index_path": "guides/intelligence/ioc-watchlist/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/intelligence/ioc-watchlist/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-ioc-taxonomy.md",
+          "path": "guides/intelligence/ioc-watchlist/02-ioc-taxonomy.md",
+          "title": "What an Indicator of Compromise is"
+        },
+        {
+          "file": "03-organisation-threat-layer.md",
+          "path": "guides/intelligence/ioc-watchlist/03-organisation-threat-layer.md",
+          "title": "The watchlist as organisation threat intelligence"
+        },
+        {
+          "file": "04-adding-an-entry.md",
+          "path": "guides/intelligence/ioc-watchlist/04-adding-an-entry.md",
+          "title": "Adding an entry"
+        },
+        {
+          "file": "05-realtime-matching.md",
+          "path": "guides/intelligence/ioc-watchlist/05-realtime-matching.md",
+          "title": "How watchlist matching works in real time"
+        },
+        {
+          "file": "06-removing-stale-entries.md",
+          "path": "guides/intelligence/ioc-watchlist/06-removing-stale-entries.md",
+          "title": "Removing stale entries"
+        },
+        {
+          "file": "07-sharing-watchlists.md",
+          "path": "guides/intelligence/ioc-watchlist/07-sharing-watchlists.md",
+          "title": "Sharing watchlists"
+        },
+        {
+          "file": "08-audit-trail.md",
+          "path": "guides/intelligence/ioc-watchlist/08-audit-trail.md",
+          "title": "Audit trail"
+        }
+      ]
+    },
+    {
+      "module": "intelligence/risk-scoring",
+      "module_title": "Risk Scoring documentation index",
+      "index_path": "guides/intelligence/risk-scoring/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/intelligence/risk-scoring/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-why-single-risk-number.md",
+          "path": "guides/intelligence/risk-scoring/02-why-single-risk-number.md",
+          "title": "Why a single risk number per asset"
+        },
+        {
+          "file": "03-risk-formula.md",
+          "path": "guides/intelligence/risk-scoring/03-risk-formula.md",
+          "title": "The risk formula"
+        },
+        {
+          "file": "04-asset-criticality.md",
+          "path": "guides/intelligence/risk-scoring/04-asset-criticality.md",
+          "title": "Asset criticality classification"
+        },
+        {
+          "file": "05-dynamic-vs-static-scoring.md",
+          "path": "guides/intelligence/risk-scoring/05-dynamic-vs-static-scoring.md",
+          "title": "Dynamic vs static scoring"
+        },
+        {
+          "file": "06-risk-appetite-tolerance.md",
+          "path": "guides/intelligence/risk-scoring/06-risk-appetite-tolerance.md",
+          "title": "Risk appetite and risk tolerance"
+        },
+        {
+          "file": "07-board-reporting.md",
+          "path": "guides/intelligence/risk-scoring/07-board-reporting.md",
+          "title": "Using risk scores for board reporting"
+        },
+        {
+          "file": "08-risk-score-history.md",
+          "path": "guides/intelligence/risk-scoring/08-risk-score-history.md",
+          "title": "Risk score history and trending"
+        }
+      ]
+    },
+    {
+      "module": "intelligence/threat-intel",
+      "module_title": "Threat Intelligence documentation index",
+      "index_path": "guides/intelligence/threat-intel/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/intelligence/threat-intel/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-what-threat-intel-is.md",
+          "path": "guides/intelligence/threat-intel/02-what-threat-intel-is.md",
+          "title": "What threat intelligence is and is not"
+        },
+        {
+          "file": "03-external-feeds.md",
+          "path": "guides/intelligence/threat-intel/03-external-feeds.md",
+          "title": "AbuseIPDB and VirusTotal feeds"
+        },
+        {
+          "file": "04-querying-feeds.md",
+          "path": "guides/intelligence/threat-intel/04-querying-feeds.md",
+          "title": "How the dashboard queries feeds"
+        },
+        {
+          "file": "05-confidence-score.md",
+          "path": "guides/intelligence/threat-intel/05-confidence-score.md",
+          "title": "The confidence score"
+        },
+        {
+          "file": "06-ioc-types.md",
+          "path": "guides/intelligence/threat-intel/06-ioc-types.md",
+          "title": "IOC types explained"
+        },
+        {
+          "file": "07-threat-categories.md",
+          "path": "guides/intelligence/threat-intel/07-threat-categories.md",
+          "title": "Threat categories"
+        },
+        {
+          "file": "08-feed-staleness-ttl.md",
+          "path": "guides/intelligence/threat-intel/08-feed-staleness-ttl.md",
+          "title": "Feed staleness and TTL"
+        },
+        {
+          "file": "09-api-keys-rate-limits.md",
+          "path": "guides/intelligence/threat-intel/09-api-keys-rate-limits.md",
+          "title": "API key management and rate limiting"
+        }
+      ]
+    },
+    {
+      "module": "intelligence/vuln-intel",
+      "module_title": "Vulnerability Intel documentation index",
+      "index_path": "guides/intelligence/vuln-intel/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/intelligence/vuln-intel/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-vuln-exploit-threat.md",
+          "path": "guides/intelligence/vuln-intel/02-vuln-exploit-threat.md",
+          "title": "Vulnerability vs exploit vs threat"
+        },
+        {
+          "file": "03-cve-and-cvss.md",
+          "path": "guides/intelligence/vuln-intel/03-cve-and-cvss.md",
+          "title": "CVE explained from scratch"
+        },
+        {
+          "file": "04-matching-to-assets.md",
+          "path": "guides/intelligence/vuln-intel/04-matching-to-assets.md",
+          "title": "Matching vulnerability data to asset inventory"
+        },
+        {
+          "file": "05-patch-prioritisation.md",
+          "path": "guides/intelligence/vuln-intel/05-patch-prioritisation.md",
+          "title": "Patch prioritisation"
+        },
+        {
+          "file": "06-zero-day-vs-n-day.md",
+          "path": "guides/intelligence/vuln-intel/06-zero-day-vs-n-day.md",
+          "title": "Zero-day vs n-day"
+        },
+        {
+          "file": "07-compensating-controls.md",
+          "path": "guides/intelligence/vuln-intel/07-compensating-controls.md",
+          "title": "Compensating controls"
+        },
+        {
+          "file": "08-vulnerability-lifecycle.md",
+          "path": "guides/intelligence/vuln-intel/08-vulnerability-lifecycle.md",
+          "title": "The vulnerability lifecycle"
+        }
+      ]
+    },
+    {
+      "module": "investigate/event-graph",
+      "module_title": "Event Graph documentation index",
+      "index_path": "guides/investigate/event-graph/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/investigate/event-graph/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-graph-theory-basics.md",
+          "path": "guides/investigate/event-graph/02-graph-theory-basics.md",
+          "title": "Graph theory basics for non-technical readers"
+        },
+        {
+          "file": "03-node-types.md",
+          "path": "guides/investigate/event-graph/03-node-types.md",
+          "title": "What each node type represents"
+        },
+        {
+          "file": "04-edge-types.md",
+          "path": "guides/investigate/event-graph/04-edge-types.md",
+          "title": "Edge types and attack relationships"
+        },
+        {
+          "file": "05-building-the-graph.md",
+          "path": "guides/investigate/event-graph/05-building-the-graph.md",
+          "title": "How the event graph is built from raw logs"
+        },
+        {
+          "file": "06-tracing-compromise.md",
+          "path": "guides/investigate/event-graph/06-tracing-compromise.md",
+          "title": "Using the graph to trace a compromise"
+        },
+        {
+          "file": "07-graph-filtering.md",
+          "path": "guides/investigate/event-graph/07-graph-filtering.md",
+          "title": "Graph filtering"
+        },
+        {
+          "file": "08-pivoting-workflow.md",
+          "path": "guides/investigate/event-graph/08-pivoting-workflow.md",
+          "title": "Pivoting from event graph to raw logs"
+        }
+      ]
+    },
+    {
+      "module": "investigate/geo-map",
+      "module_title": "Geo Map documentation index",
+      "index_path": "guides/investigate/geo-map/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/investigate/geo-map/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-ip-geolocation.md",
+          "path": "guides/investigate/geo-map/02-ip-geolocation.md",
+          "title": "How IP geolocation works"
+        },
+        {
+          "file": "03-geo-map-visual-elements.md",
+          "path": "guides/investigate/geo-map/03-geo-map-visual-elements.md",
+          "title": "What the geo map shows"
+        },
+        {
+          "file": "04-impossible-travel.md",
+          "path": "guides/investigate/geo-map/04-impossible-travel.md",
+          "title": "Impossible travel detection"
+        },
+        {
+          "file": "05-country-threat-context.md",
+          "path": "guides/investigate/geo-map/05-country-threat-context.md",
+          "title": "Country-level threat context"
+        },
+        {
+          "file": "06-isp-asn-column.md",
+          "path": "guides/investigate/geo-map/06-isp-asn-column.md",
+          "title": "The ISP/ASN column"
+        },
+        {
+          "file": "07-geo-map-during-ddos.md",
+          "path": "guides/investigate/geo-map/07-geo-map-during-ddos.md",
+          "title": "Using the geo map during a DDoS"
+        }
+      ]
+    },
+    {
+      "module": "investigate/heatmap-calendar",
+      "module_title": "Heatmap Calendar documentation index",
+      "index_path": "guides/investigate/heatmap-calendar/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/investigate/heatmap-calendar/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-heatmap-concept.md",
+          "path": "guides/investigate/heatmap-calendar/02-heatmap-concept.md",
+          "title": "What a heatmap calendar is"
+        },
+        {
+          "file": "03-time-based-attack-patterns.md",
+          "path": "guides/investigate/heatmap-calendar/03-time-based-attack-patterns.md",
+          "title": "Time-based patterns in attacks"
+        },
+        {
+          "file": "04-reading-the-calendar.md",
+          "path": "guides/investigate/heatmap-calendar/04-reading-the-calendar.md",
+          "title": "How to read the calendar"
+        },
+        {
+          "file": "05-layering-metrics.md",
+          "path": "guides/investigate/heatmap-calendar/05-layering-metrics.md",
+          "title": "Comparing multiple metrics on the calendar"
+        },
+        {
+          "file": "06-slow-burn-attacks.md",
+          "path": "guides/investigate/heatmap-calendar/06-slow-burn-attacks.md",
+          "title": "Detecting slow-burn attacks"
+        },
+        {
+          "file": "07-shift-handover.md",
+          "path": "guides/investigate/heatmap-calendar/07-shift-handover.md",
+          "title": "Shift-handover use"
+        }
+      ]
+    },
+    {
+      "module": "investigate/network-map",
+      "module_title": "Network Map documentation index",
+      "index_path": "guides/investigate/network-map/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/investigate/network-map/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-what-the-map-shows.md",
+          "path": "guides/investigate/network-map/02-what-the-map-shows.md",
+          "title": "What is being shown on the network map"
+        },
+        {
+          "file": "03-data-sources.md",
+          "path": "guides/investigate/network-map/03-data-sources.md",
+          "title": "How the map is built from flow and firewall data"
+        },
+        {
+          "file": "04-normal-vs-anomalous.md",
+          "path": "guides/investigate/network-map/04-normal-vs-anomalous.md",
+          "title": "Normal vs anomalous traffic patterns"
+        },
+        {
+          "file": "05-subnet-grouping.md",
+          "path": "guides/investigate/network-map/05-subnet-grouping.md",
+          "title": "Subnet grouping and asset classification"
+        },
+        {
+          "file": "06-lateral-movement-visual.md",
+          "path": "guides/investigate/network-map/06-lateral-movement-visual.md",
+          "title": "Lateral movement on the network map"
+        },
+        {
+          "file": "07-external-connections.md",
+          "path": "guides/investigate/network-map/07-external-connections.md",
+          "title": "External connections and egress"
+        },
+        {
+          "file": "08-click-through-to-logs.md",
+          "path": "guides/investigate/network-map/08-click-through-to-logs.md",
+          "title": "Clicking through to raw event logs"
+        }
+      ]
+    },
+    {
+      "module": "investigate/threat-hunt",
+      "module_title": "Threat Hunt documentation index",
+      "index_path": "guides/investigate/threat-hunt/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/investigate/threat-hunt/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-threat-hunting-philosophy.md",
+          "path": "guides/investigate/threat-hunt/02-threat-hunting-philosophy.md",
+          "title": "The philosophy of threat hunting"
+        },
+        {
+          "file": "03-hypothesis-vs-data-driven.md",
+          "path": "guides/investigate/threat-hunt/03-hypothesis-vs-data-driven.md",
+          "title": "Hypothesis-driven vs data-driven hunting"
+        },
+        {
+          "file": "04-query-interface.md",
+          "path": "guides/investigate/threat-hunt/04-query-interface.md",
+          "title": "The query interface"
+        },
+        {
+          "file": "05-built-in-templates.md",
+          "path": "guides/investigate/threat-hunt/05-built-in-templates.md",
+          "title": "Built-in hunt templates"
+        },
+        {
+          "file": "06-saving-scheduling-hunts.md",
+          "path": "guides/investigate/threat-hunt/06-saving-scheduling-hunts.md",
+          "title": "Saving and scheduling hunts"
+        },
+        {
+          "file": "07-documenting-a-hunt.md",
+          "path": "guides/investigate/threat-hunt/07-documenting-a-hunt.md",
+          "title": "How to document a hunt"
+        },
+        {
+          "file": "08-hunt-to-detection-rule.md",
+          "path": "guides/investigate/threat-hunt/08-hunt-to-detection-rule.md",
+          "title": "Converting hunt findings into detection rules"
+        }
+      ]
+    },
+    {
+      "module": "investigate/ueba",
+      "module_title": "UEBA documentation index",
+      "index_path": "guides/investigate/ueba/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/investigate/ueba/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-ueba-invented.md",
+          "path": "guides/investigate/ueba/02-ueba-invented.md",
+          "title": "What UEBA means and why it was invented"
+        },
+        {
+          "file": "03-baselining.md",
+          "path": "guides/investigate/ueba/03-baselining.md",
+          "title": "Baselining explained"
+        },
+        {
+          "file": "04-risk-score.md",
+          "path": "guides/investigate/ueba/04-risk-score.md",
+          "title": "The risk score"
+        },
+        {
+          "file": "05-insider-threat.md",
+          "path": "guides/investigate/ueba/05-insider-threat.md",
+          "title": "Insider threat detection"
+        },
+        {
+          "file": "06-entity-behaviour.md",
+          "path": "guides/investigate/ueba/06-entity-behaviour.md",
+          "title": "Entity behaviour beyond users"
+        },
+        {
+          "file": "07-false-positive-management.md",
+          "path": "guides/investigate/ueba/07-false-positive-management.md",
+          "title": "False positive management"
+        },
+        {
+          "file": "08-ueba-and-compliance.md",
+          "path": "guides/investigate/ueba/08-ueba-and-compliance.md",
+          "title": "UEBA and compliance"
+        }
+      ]
+    },
+    {
+      "module": "monitor/alert-manager",
+      "module_title": "Alert Manager documentation index",
+      "index_path": "guides/monitor/alert-manager/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/monitor/alert-manager/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-alert-lifecycle.md",
+          "path": "guides/monitor/alert-manager/02-alert-lifecycle.md",
+          "title": "The alert lifecycle"
+        },
+        {
+          "file": "03-alert-record-fields.md",
+          "path": "guides/monitor/alert-manager/03-alert-record-fields.md",
+          "title": "Every field in an alert record"
+        },
+        {
+          "file": "04-mitre-att-and-ck.md",
+          "path": "guides/monitor/alert-manager/04-mitre-att-and-ck.md",
+          "title": "MITRE ATT&CK integration"
+        },
+        {
+          "file": "05-bulk-actions.md",
+          "path": "guides/monitor/alert-manager/05-bulk-actions.md",
+          "title": "Bulk actions and alert fatigue"
+        },
+        {
+          "file": "06-suppression-and-tuning.md",
+          "path": "guides/monitor/alert-manager/06-suppression-and-tuning.md",
+          "title": "Alert suppression and tuning"
+        },
+        {
+          "file": "07-sla-timers.md",
+          "path": "guides/monitor/alert-manager/07-sla-timers.md",
+          "title": "SLA timers and compliance"
+        },
+        {
+          "file": "08-alert-vs-case.md",
+          "path": "guides/monitor/alert-manager/08-alert-vs-case.md",
+          "title": "The difference between an alert and a case"
+        }
+      ]
+    },
+    {
+      "module": "monitor/live-feed",
+      "module_title": "Live Feed documentation index",
+      "index_path": "guides/monitor/live-feed/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/monitor/live-feed/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-live-feed-concept.md",
+          "path": "guides/monitor/live-feed/02-live-feed-concept.md",
+          "title": "What a live feed is in SIEM terms"
+        },
+        {
+          "file": "03-event-table-columns.md",
+          "path": "guides/monitor/live-feed/03-event-table-columns.md",
+          "title": "Every column in the live event table"
+        },
+        {
+          "file": "04-log-normalisation-walkthrough.md",
+          "path": "guides/monitor/live-feed/04-log-normalisation-walkthrough.md",
+          "title": "Log normalisation detailed"
+        },
+        {
+          "file": "05-filtering-and-search.md",
+          "path": "guides/monitor/live-feed/05-filtering-and-search.md",
+          "title": "Filtering and search"
+        },
+        {
+          "file": "06-deduplication.md",
+          "path": "guides/monitor/live-feed/06-deduplication.md",
+          "title": "Deduplication"
+        },
+        {
+          "file": "07-pagination-performance.md",
+          "path": "guides/monitor/live-feed/07-pagination-performance.md",
+          "title": "Pagination vs infinite scroll"
+        },
+        {
+          "file": "08-first-five-minutes.md",
+          "path": "guides/monitor/live-feed/08-first-five-minutes.md",
+          "title": "Live feed during the first 5 minutes of an incident"
+        }
+      ]
+    },
+    {
+      "module": "monitor/overview",
+      "module_title": "Overview documentation index",
+      "index_path": "guides/monitor/overview/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/monitor/overview/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-dashboard-at-a-glance-philosophy.md",
+          "path": "guides/monitor/overview/02-dashboard-at-a-glance-philosophy.md",
+          "title": "The dashboard-at-a-glance philosophy"
+        },
+        {
+          "file": "03-metric-cards-explained.md",
+          "path": "guides/monitor/overview/03-metric-cards-explained.md",
+          "title": "Every metric card shown"
+        },
+        {
+          "file": "04-simulate-campaign.md",
+          "path": "guides/monitor/overview/04-simulate-campaign.md",
+          "title": "The Simulate Campaign button"
+        },
+        {
+          "file": "05-severity-levels.md",
+          "path": "guides/monitor/overview/05-severity-levels.md",
+          "title": "Severity levels (Critical / High / Medium / Low / Info)"
+        },
+        {
+          "file": "06-auto-refresh-real-time.md",
+          "path": "guides/monitor/overview/06-auto-refresh-real-time.md",
+          "title": "How the overview auto-refreshes"
+        },
+        {
+          "file": "07-alerts-vs-incidents.md",
+          "path": "guides/monitor/overview/07-alerts-vs-incidents.md",
+          "title": "Alerts fired vs incidents created"
+        }
+      ]
+    },
+    {
+      "module": "monitor/pipeline-health",
+      "module_title": "Pipeline Health documentation index",
+      "index_path": "guides/monitor/pipeline-health/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/monitor/pipeline-health/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-pipeline-end-to-end.md",
+          "path": "guides/monitor/pipeline-health/02-pipeline-end-to-end.md",
+          "title": "What the pipeline means end to end"
+        },
+        {
+          "file": "03-pipeline-metrics.md",
+          "path": "guides/monitor/pipeline-health/03-pipeline-metrics.md",
+          "title": "Pipeline health metrics"
+        },
+        {
+          "file": "04-pipeline-as-security-control.md",
+          "path": "guides/monitor/pipeline-health/04-pipeline-as-security-control.md",
+          "title": "Why pipeline health is a security control"
+        },
+        {
+          "file": "05-log-source-status.md",
+          "path": "guides/monitor/pipeline-health/05-log-source-status.md",
+          "title": "Log source status indicators"
+        },
+        {
+          "file": "06-parser-errors.md",
+          "path": "guides/monitor/pipeline-health/06-parser-errors.md",
+          "title": "Parser error detailed"
+        },
+        {
+          "file": "07-capacity-planning.md",
+          "path": "guides/monitor/pipeline-health/07-capacity-planning.md",
+          "title": "Capacity planning"
+        }
+      ]
+    },
+    {
+      "module": "monitor/timeline",
+      "module_title": "Attack Timeline documentation index",
+      "index_path": "guides/monitor/timeline/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/monitor/timeline/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-kill-chain-basics.md",
+          "path": "guides/monitor/timeline/02-kill-chain-basics.md",
+          "title": "What a kill chain is"
+        },
+        {
+          "file": "03-mapping-events-to-phases.md",
+          "path": "guides/monitor/timeline/03-mapping-events-to-phases.md",
+          "title": "Mapping raw events onto kill chain phases"
+        },
+        {
+          "file": "04-timeline-visualisation.md",
+          "path": "guides/monitor/timeline/04-timeline-visualisation.md",
+          "title": "The timeline visualisation"
+        },
+        {
+          "file": "05-why-timeline-beats-lists.md",
+          "path": "guides/monitor/timeline/05-why-timeline-beats-lists.md",
+          "title": "Why visualising attacks as a timeline is more useful than a flat list"
+        },
+        {
+          "file": "06-cross-source-correlation.md",
+          "path": "guides/monitor/timeline/06-cross-source-correlation.md",
+          "title": "Correlating events across multiple source systems"
+        },
+        {
+          "file": "07-lateral-movement-on-timeline.md",
+          "path": "guides/monitor/timeline/07-lateral-movement-on-timeline.md",
+          "title": "Lateral movement detection on the timeline"
+        },
+        {
+          "file": "08-for-non-technical-managers.md",
+          "path": "guides/monitor/timeline/08-for-non-technical-managers.md",
+          "title": "How the timeline helps a non-technical manager"
+        },
+        {
+          "file": "09-exporting-timeline.md",
+          "path": "guides/monitor/timeline/09-exporting-timeline.md",
+          "title": "Exporting the timeline for incident reports"
+        }
+      ]
+    },
+    {
+      "module": "reporting/executive-view",
+      "module_title": "Executive View — Documentation Index",
+      "index_path": "guides/reporting/executive-view/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/reporting/executive-view/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-why-executives-need-different-view.md",
+          "path": "guides/reporting/executive-view/02-why-executives-need-different-view.md",
+          "title": "Why executives need a different view"
+        },
+        {
+          "file": "03-every-kpi-element.md",
+          "path": "guides/reporting/executive-view/03-every-kpi-element.md",
+          "title": "Every element of the executive view"
+        },
+        {
+          "file": "04-security-posture-score.md",
+          "path": "guides/reporting/executive-view/04-security-posture-score.md",
+          "title": "Security posture score"
+        },
+        {
+          "file": "05-so-what-principle.md",
+          "path": "guides/reporting/executive-view/05-so-what-principle.md",
+          "title": "The so what principle"
+        },
+        {
+          "file": "06-comparing-periods.md",
+          "path": "guides/reporting/executive-view/06-comparing-periods.md",
+          "title": "Comparing periods"
+        },
+        {
+          "file": "07-benchmark-data.md",
+          "path": "guides/reporting/executive-view/07-benchmark-data.md",
+          "title": "Benchmark data"
+        },
+        {
+          "file": "08-board-meeting-use.md",
+          "path": "guides/reporting/executive-view/08-board-meeting-use.md",
+          "title": "Using the executive view in a board meeting"
+        }
+      ]
+    },
+    {
+      "module": "reporting/reports",
+      "module_title": "Reports — Documentation Index",
+      "index_path": "guides/reporting/reports/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/reporting/reports/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-report-types.md",
+          "path": "guides/reporting/reports/02-report-types.md",
+          "title": "Report types available"
+        },
+        {
+          "file": "03-compliance-mapping.md",
+          "path": "guides/reporting/reports/03-compliance-mapping.md",
+          "title": "Compliance report mapping"
+        },
+        {
+          "file": "04-report-customisation.md",
+          "path": "guides/reporting/reports/04-report-customisation.md",
+          "title": "Report customisation"
+        },
+        {
+          "file": "05-export-formats.md",
+          "path": "guides/reporting/reports/05-export-formats.md",
+          "title": "Export formats and use cases"
+        },
+        {
+          "file": "06-scheduled-reports-in-reports.md",
+          "path": "guides/reporting/reports/06-scheduled-reports-in-reports.md",
+          "title": "Scheduled reports"
+        },
+        {
+          "file": "07-report-integrity.md",
+          "path": "guides/reporting/reports/07-report-integrity.md",
+          "title": "Report integrity"
+        }
+      ]
+    },
+    {
+      "module": "reporting/scheduler",
+      "module_title": "Scheduler — Documentation Index",
+      "index_path": "guides/reporting/scheduler/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/reporting/scheduler/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-operational-case-for-scheduling.md",
+          "path": "guides/reporting/scheduler/02-operational-case-for-scheduling.md",
+          "title": "Operational case for scheduled reports"
+        },
+        {
+          "file": "03-cron-syntax.md",
+          "path": "guides/reporting/scheduler/03-cron-syntax.md",
+          "title": "Cron syntax explained"
+        },
+        {
+          "file": "04-schedule-record-fields.md",
+          "path": "guides/reporting/scheduler/04-schedule-record-fields.md",
+          "title": "Every field in a schedule record"
+        },
+        {
+          "file": "05-delivery-mechanics.md",
+          "path": "guides/reporting/scheduler/05-delivery-mechanics.md",
+          "title": "Delivery mechanics"
+        },
+        {
+          "file": "06-failure-handling.md",
+          "path": "guides/reporting/scheduler/06-failure-handling.md",
+          "title": "Failure handling"
+        },
+        {
+          "file": "07-retention.md",
+          "path": "guides/reporting/scheduler/07-retention.md",
+          "title": "Retention policy"
+        }
+      ]
+    },
+    {
+      "module": "respond/case-manager",
+      "module_title": "Case Manager documentation index",
+      "index_path": "guides/respond/case-manager/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/respond/case-manager/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-cases-incidents-alerts-hierarchy.md",
+          "path": "guides/respond/case-manager/02-cases-incidents-alerts-hierarchy.md",
+          "title": "Cases vs incidents vs alerts"
+        },
+        {
+          "file": "03-when-to-create-a-case.md",
+          "path": "guides/respond/case-manager/03-when-to-create-a-case.md",
+          "title": "When to create a case"
+        },
+        {
+          "file": "04-case-fields.md",
+          "path": "guides/respond/case-manager/04-case-fields.md",
+          "title": "Case fields"
+        },
+        {
+          "file": "05-evidence-chain.md",
+          "path": "guides/respond/case-manager/05-evidence-chain.md",
+          "title": "The evidence chain"
+        },
+        {
+          "file": "06-case-statuses.md",
+          "path": "guides/respond/case-manager/06-case-statuses.md",
+          "title": "Case statuses"
+        },
+        {
+          "file": "07-collaboration.md",
+          "path": "guides/respond/case-manager/07-collaboration.md",
+          "title": "Collaboration"
+        },
+        {
+          "file": "08-reporting-from-cases.md",
+          "path": "guides/respond/case-manager/08-reporting-from-cases.md",
+          "title": "Reporting from cases"
+        }
+      ]
+    },
+    {
+      "module": "respond/incidents",
+      "module_title": "Incident Response documentation index",
+      "index_path": "guides/respond/incidents/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/respond/incidents/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-incident-vs-alert-vs-event.md",
+          "path": "guides/respond/incidents/02-incident-vs-alert-vs-event.md",
+          "title": "Incident vs alert vs event"
+        },
+        {
+          "file": "03-severity-tiers-p1-p4.md",
+          "path": "guides/respond/incidents/03-severity-tiers-p1-p4.md",
+          "title": "Incident severity tiers P1–P4"
+        },
+        {
+          "file": "04-incident-record-fields.md",
+          "path": "guides/respond/incidents/04-incident-record-fields.md",
+          "title": "The incident record"
+        },
+        {
+          "file": "05-ir-workflow.md",
+          "path": "guides/respond/incidents/05-ir-workflow.md",
+          "title": "Incident response workflow"
+        },
+        {
+          "file": "06-containment-actions.md",
+          "path": "guides/respond/incidents/06-containment-actions.md",
+          "title": "Containment actions"
+        },
+        {
+          "file": "07-communication-during-incident.md",
+          "path": "guides/respond/incidents/07-communication-during-incident.md",
+          "title": "Communication during an incident"
+        },
+        {
+          "file": "08-post-incident-review.md",
+          "path": "guides/respond/incidents/08-post-incident-review.md",
+          "title": "Post-incident review"
+        },
+        {
+          "file": "09-legal-compliance-obligations.md",
+          "path": "guides/respond/incidents/09-legal-compliance-obligations.md",
+          "title": "Legal and compliance obligations"
+        }
+      ]
+    },
+    {
+      "module": "respond/soar-console",
+      "module_title": "SOAR Console documentation index",
+      "index_path": "guides/respond/soar-console/INDEX.md",
+      "pages": [
+        {
+          "file": "01-how-to-use.md",
+          "path": "guides/respond/soar-console/01-how-to-use.md",
+          "title": "How to use this module"
+        },
+        {
+          "file": "02-what-soar-means.md",
+          "path": "guides/respond/soar-console/02-what-soar-means.md",
+          "title": "What SOAR means and why it was invented"
+        },
+        {
+          "file": "03-playbook-concept.md",
+          "path": "guides/respond/soar-console/03-playbook-concept.md",
+          "title": "The playbook concept"
+        },
+        {
+          "file": "04-soar-log-table.md",
+          "path": "guides/respond/soar-console/04-soar-log-table.md",
+          "title": "Every element of the SOAR log table"
+        },
+        {
+          "file": "05-example-playbook-walkthrough.md",
+          "path": "guides/respond/soar-console/05-example-playbook-walkthrough.md",
+          "title": "Example playbook walkthrough"
+        },
+        {
+          "file": "06-human-in-the-loop.md",
+          "path": "guides/respond/soar-console/06-human-in-the-loop.md",
+          "title": "Human-in-the-loop vs fully automated"
+        },
+        {
+          "file": "07-audit-trail-automation.md",
+          "path": "guides/respond/soar-console/07-audit-trail-automation.md",
+          "title": "Audit trail of automated actions"
+        },
+        {
+          "file": "08-building-playbooks.md",
+          "path": "guides/respond/soar-console/08-building-playbooks.md",
+          "title": "Building new playbooks"
+        },
+        {
+          "file": "09-measuring-soar-effectiveness.md",
+          "path": "guides/respond/soar-console/09-measuring-soar-effectiveness.md",
+          "title": "Measuring SOAR effectiveness"
+        }
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/configure/correlation-builder/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "configure/correlation-builder",
+      "module_title": "Correlation Builder: documentation index"
+    },
+    {
+      "file": "02-what-correlation-means.md",
+      "path": "guides/configure/correlation-builder/02-what-correlation-means.md",
+      "title": "What correlation means in SIEM",
+      "module": "configure/correlation-builder",
+      "module_title": "Correlation Builder: documentation index"
+    },
+    {
+      "file": "03-correlation-builder-ui.md",
+      "path": "guides/configure/correlation-builder/03-correlation-builder-ui.md",
+      "title": "The correlation builder UI",
+      "module": "configure/correlation-builder",
+      "module_title": "Correlation Builder: documentation index"
+    },
+    {
+      "file": "04-event-pattern-design.md",
+      "path": "guides/configure/correlation-builder/04-event-pattern-design.md",
+      "title": "Event pattern design",
+      "module": "configure/correlation-builder",
+      "module_title": "Correlation Builder: documentation index"
+    },
+    {
+      "file": "05-time-windows.md",
+      "path": "guides/configure/correlation-builder/05-time-windows.md",
+      "title": "Why time windows matter",
+      "module": "configure/correlation-builder",
+      "module_title": "Correlation Builder: documentation index"
+    },
+    {
+      "file": "06-testing-before-deployment.md",
+      "path": "guides/configure/correlation-builder/06-testing-before-deployment.md",
+      "title": "Testing a correlation rule before deployment",
+      "module": "configure/correlation-builder",
+      "module_title": "Correlation Builder: documentation index"
+    },
+    {
+      "file": "07-performance-cost.md",
+      "path": "guides/configure/correlation-builder/07-performance-cost.md",
+      "title": "Performance cost of complex correlations",
+      "module": "configure/correlation-builder",
+      "module_title": "Correlation Builder: documentation index"
+    },
+    {
+      "file": "08-real-world-examples.md",
+      "path": "guides/configure/correlation-builder/08-real-world-examples.md",
+      "title": "Real-world correlation examples",
+      "module": "configure/correlation-builder",
+      "module_title": "Correlation Builder: documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/configure/rules-engine/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "configure/rules-engine",
+      "module_title": "Rules Engine: documentation index"
+    },
+    {
+      "file": "02-what-is-a-detection-rule.md",
+      "path": "guides/configure/rules-engine/02-what-is-a-detection-rule.md",
+      "title": "What a detection rule is",
+      "module": "configure/rules-engine",
+      "module_title": "Rules Engine: documentation index"
+    },
+    {
+      "file": "03-rule-anatomy.md",
+      "path": "guides/configure/rules-engine/03-rule-anatomy.md",
+      "title": "Rule anatomy",
+      "module": "configure/rules-engine",
+      "module_title": "Rules Engine: documentation index"
+    },
+    {
+      "file": "04-sliding-window.md",
+      "path": "guides/configure/rules-engine/04-sliding-window.md",
+      "title": "The sliding window",
+      "module": "configure/rules-engine",
+      "module_title": "Rules Engine: documentation index"
+    },
+    {
+      "file": "05-sequence-rules.md",
+      "path": "guides/configure/rules-engine/05-sequence-rules.md",
+      "title": "Sequence rules (correlation rules)",
+      "module": "configure/rules-engine",
+      "module_title": "Rules Engine: documentation index"
+    },
+    {
+      "file": "06-creating-a-rule.md",
+      "path": "guides/configure/rules-engine/06-creating-a-rule.md",
+      "title": "Creating a new rule from scratch",
+      "module": "configure/rules-engine",
+      "module_title": "Rules Engine: documentation index"
+    },
+    {
+      "file": "07-tuning-false-positives.md",
+      "path": "guides/configure/rules-engine/07-tuning-false-positives.md",
+      "title": "Tuning rules to reduce false positives",
+      "module": "configure/rules-engine",
+      "module_title": "Rules Engine: documentation index"
+    },
+    {
+      "file": "08-rule-versioning.md",
+      "path": "guides/configure/rules-engine/08-rule-versioning.md",
+      "title": "Rule versioning and change management",
+      "module": "configure/rules-engine",
+      "module_title": "Rules Engine: documentation index"
+    },
+    {
+      "file": "09-importing-sigma-rules.md",
+      "path": "guides/configure/rules-engine/09-importing-sigma-rules.md",
+      "title": "Importing community SIGMA rules",
+      "module": "configure/rules-engine",
+      "module_title": "Rules Engine: documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/infrastructure/analytics/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "infrastructure/analytics",
+      "module_title": "Analytics: documentation index"
+    },
+    {
+      "file": "02-operational-vs-analytics.md",
+      "path": "guides/infrastructure/analytics/02-operational-vs-analytics.md",
+      "title": "Operational dashboards vs analytics",
+      "module": "infrastructure/analytics",
+      "module_title": "Analytics: documentation index"
+    },
+    {
+      "file": "03-chart-types.md",
+      "path": "guides/infrastructure/analytics/03-chart-types.md",
+      "title": "Every chart type in the analytics view",
+      "module": "infrastructure/analytics",
+      "module_title": "Analytics: documentation index"
+    },
+    {
+      "file": "04-alert-volume-over-time.md",
+      "path": "guides/infrastructure/analytics/04-alert-volume-over-time.md",
+      "title": "Alert volume over time",
+      "module": "infrastructure/analytics",
+      "module_title": "Analytics: documentation index"
+    },
+    {
+      "file": "05-top-ranked-lists.md",
+      "path": "guides/infrastructure/analytics/05-top-ranked-lists.md",
+      "title": "Top attackers, assets, and rules",
+      "module": "infrastructure/analytics",
+      "module_title": "Analytics: documentation index"
+    },
+    {
+      "file": "06-mttd-mttr.md",
+      "path": "guides/infrastructure/analytics/06-mttd-mttr.md",
+      "title": "MTTD and MTTR",
+      "module": "infrastructure/analytics",
+      "module_title": "Analytics: documentation index"
+    },
+    {
+      "file": "07-trend-analysis.md",
+      "path": "guides/infrastructure/analytics/07-trend-analysis.md",
+      "title": "Trend analysis",
+      "module": "infrastructure/analytics",
+      "module_title": "Analytics: documentation index"
+    },
+    {
+      "file": "08-budget-justification.md",
+      "path": "guides/infrastructure/analytics/08-budget-justification.md",
+      "title": "Using analytics to justify budget",
+      "module": "infrastructure/analytics",
+      "module_title": "Analytics: documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/infrastructure/asset-inventory/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "infrastructure/asset-inventory",
+      "module_title": "Asset inventory: documentation index"
+    },
+    {
+      "file": "02-cannot-protect-what-you-cannot-see.md",
+      "path": "guides/infrastructure/asset-inventory/02-cannot-protect-what-you-cannot-see.md",
+      "title": "Why asset inventory is foundational",
+      "module": "infrastructure/asset-inventory",
+      "module_title": "Asset inventory: documentation index"
+    },
+    {
+      "file": "03-what-is-an-asset.md",
+      "path": "guides/infrastructure/asset-inventory/03-what-is-an-asset.md",
+      "title": "What an asset is in this context",
+      "module": "infrastructure/asset-inventory",
+      "module_title": "Asset inventory: documentation index"
+    },
+    {
+      "file": "04-asset-record-fields.md",
+      "path": "guides/infrastructure/asset-inventory/04-asset-record-fields.md",
+      "title": "Every field in an asset record",
+      "module": "infrastructure/asset-inventory",
+      "module_title": "Asset inventory: documentation index"
+    },
+    {
+      "file": "05-asset-discovery.md",
+      "path": "guides/infrastructure/asset-inventory/05-asset-discovery.md",
+      "title": "Asset discovery methods",
+      "module": "infrastructure/asset-inventory",
+      "module_title": "Asset inventory: documentation index"
+    },
+    {
+      "file": "06-asset-lifecycle.md",
+      "path": "guides/infrastructure/asset-inventory/06-asset-lifecycle.md",
+      "title": "Asset lifecycle",
+      "module": "infrastructure/asset-inventory",
+      "module_title": "Asset inventory: documentation index"
+    },
+    {
+      "file": "07-orphaned-assets.md",
+      "path": "guides/infrastructure/asset-inventory/07-orphaned-assets.md",
+      "title": "The orphaned asset problem",
+      "module": "infrastructure/asset-inventory",
+      "module_title": "Asset inventory: documentation index"
+    },
+    {
+      "file": "08-compliance-inventory.md",
+      "path": "guides/infrastructure/asset-inventory/08-compliance-inventory.md",
+      "title": "Asset inventory and compliance",
+      "module": "infrastructure/asset-inventory",
+      "module_title": "Asset inventory: documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/ingest-config/log-ingestion/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "ingest-config/log-ingestion",
+      "module_title": "Log Ingestion — Documentation Index"
+    },
+    {
+      "file": "02-ingestion-pipeline-end-to-end.md",
+      "path": "guides/ingest-config/log-ingestion/02-ingestion-pipeline-end-to-end.md",
+      "title": "The ingestion pipeline end to end",
+      "module": "ingest-config/log-ingestion",
+      "module_title": "Log Ingestion — Documentation Index"
+    },
+    {
+      "file": "03-log-source-types.md",
+      "path": "guides/ingest-config/log-ingestion/03-log-source-types.md",
+      "title": "Log source types",
+      "module": "ingest-config/log-ingestion",
+      "module_title": "Log Ingestion — Documentation Index"
+    },
+    {
+      "file": "04-validate-endpoint.md",
+      "path": "guides/ingest-config/log-ingestion/04-validate-endpoint.md",
+      "title": "The validate endpoint",
+      "module": "ingest-config/log-ingestion",
+      "module_title": "Log Ingestion — Documentation Index"
+    },
+    {
+      "file": "05-parsing-grok.md",
+      "path": "guides/ingest-config/log-ingestion/05-parsing-grok.md",
+      "title": "Parsing with regex and Grok",
+      "module": "ingest-config/log-ingestion",
+      "module_title": "Log Ingestion — Documentation Index"
+    },
+    {
+      "file": "06-enrichment-at-ingestion.md",
+      "path": "guides/ingest-config/log-ingestion/06-enrichment-at-ingestion.md",
+      "title": "Enrichment at ingestion time",
+      "module": "ingest-config/log-ingestion",
+      "module_title": "Log Ingestion — Documentation Index"
+    },
+    {
+      "file": "07-log-volume-management.md",
+      "path": "guides/ingest-config/log-ingestion/07-log-volume-management.md",
+      "title": "Log volume management",
+      "module": "ingest-config/log-ingestion",
+      "module_title": "Log Ingestion — Documentation Index"
+    },
+    {
+      "file": "08-log-integrity.md",
+      "path": "guides/ingest-config/log-ingestion/08-log-integrity.md",
+      "title": "Log integrity and tamper evidence",
+      "module": "ingest-config/log-ingestion",
+      "module_title": "Log Ingestion — Documentation Index"
+    },
+    {
+      "file": "09-ingestion-errors-retries.md",
+      "path": "guides/ingest-config/log-ingestion/09-ingestion-errors-retries.md",
+      "title": "Ingestion errors and retries",
+      "module": "ingest-config/log-ingestion",
+      "module_title": "Log Ingestion — Documentation Index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/ingest-config/settings/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "ingest-config/settings",
+      "module_title": "Settings — Documentation Index"
+    },
+    {
+      "file": "02-settings-architecture.md",
+      "path": "guides/ingest-config/settings/02-settings-architecture.md",
+      "title": "Settings architecture",
+      "module": "ingest-config/settings",
+      "module_title": "Settings — Documentation Index"
+    },
+    {
+      "file": "03-authentication-settings.md",
+      "path": "guides/ingest-config/settings/03-authentication-settings.md",
+      "title": "Authentication settings",
+      "module": "ingest-config/settings",
+      "module_title": "Settings — Documentation Index"
+    },
+    {
+      "file": "04-rbac-roles.md",
+      "path": "guides/ingest-config/settings/04-rbac-roles.md",
+      "title": "User roles and RBAC",
+      "module": "ingest-config/settings",
+      "module_title": "Settings — Documentation Index"
+    },
+    {
+      "file": "05-threat-feed-api-keys.md",
+      "path": "guides/ingest-config/settings/05-threat-feed-api-keys.md",
+      "title": "Threat feed API key management",
+      "module": "ingest-config/settings",
+      "module_title": "Settings — Documentation Index"
+    },
+    {
+      "file": "06-sound-notifications.md",
+      "path": "guides/ingest-config/settings/06-sound-notifications.md",
+      "title": "Sound alerts and notification settings",
+      "module": "ingest-config/settings",
+      "module_title": "Settings — Documentation Index"
+    },
+    {
+      "file": "07-deduplication-toggle.md",
+      "path": "guides/ingest-config/settings/07-deduplication-toggle.md",
+      "title": "Deduplication toggle",
+      "module": "ingest-config/settings",
+      "module_title": "Settings — Documentation Index"
+    },
+    {
+      "file": "08-settings-audit-log.md",
+      "path": "guides/ingest-config/settings/08-settings-audit-log.md",
+      "title": "Audit log of settings changes",
+      "module": "ingest-config/settings",
+      "module_title": "Settings — Documentation Index"
+    },
+    {
+      "file": "09-backup-restore-config.md",
+      "path": "guides/ingest-config/settings/09-backup-restore-config.md",
+      "title": "Backup and restore of configuration",
+      "module": "ingest-config/settings",
+      "module_title": "Settings — Documentation Index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/intelligence/ioc-watchlist/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "intelligence/ioc-watchlist",
+      "module_title": "IOC Watchlist documentation index"
+    },
+    {
+      "file": "02-ioc-taxonomy.md",
+      "path": "guides/intelligence/ioc-watchlist/02-ioc-taxonomy.md",
+      "title": "What an Indicator of Compromise is",
+      "module": "intelligence/ioc-watchlist",
+      "module_title": "IOC Watchlist documentation index"
+    },
+    {
+      "file": "03-organisation-threat-layer.md",
+      "path": "guides/intelligence/ioc-watchlist/03-organisation-threat-layer.md",
+      "title": "The watchlist as organisation threat intelligence",
+      "module": "intelligence/ioc-watchlist",
+      "module_title": "IOC Watchlist documentation index"
+    },
+    {
+      "file": "04-adding-an-entry.md",
+      "path": "guides/intelligence/ioc-watchlist/04-adding-an-entry.md",
+      "title": "Adding an entry",
+      "module": "intelligence/ioc-watchlist",
+      "module_title": "IOC Watchlist documentation index"
+    },
+    {
+      "file": "05-realtime-matching.md",
+      "path": "guides/intelligence/ioc-watchlist/05-realtime-matching.md",
+      "title": "How watchlist matching works in real time",
+      "module": "intelligence/ioc-watchlist",
+      "module_title": "IOC Watchlist documentation index"
+    },
+    {
+      "file": "06-removing-stale-entries.md",
+      "path": "guides/intelligence/ioc-watchlist/06-removing-stale-entries.md",
+      "title": "Removing stale entries",
+      "module": "intelligence/ioc-watchlist",
+      "module_title": "IOC Watchlist documentation index"
+    },
+    {
+      "file": "07-sharing-watchlists.md",
+      "path": "guides/intelligence/ioc-watchlist/07-sharing-watchlists.md",
+      "title": "Sharing watchlists",
+      "module": "intelligence/ioc-watchlist",
+      "module_title": "IOC Watchlist documentation index"
+    },
+    {
+      "file": "08-audit-trail.md",
+      "path": "guides/intelligence/ioc-watchlist/08-audit-trail.md",
+      "title": "Audit trail",
+      "module": "intelligence/ioc-watchlist",
+      "module_title": "IOC Watchlist documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/intelligence/risk-scoring/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "intelligence/risk-scoring",
+      "module_title": "Risk Scoring documentation index"
+    },
+    {
+      "file": "02-why-single-risk-number.md",
+      "path": "guides/intelligence/risk-scoring/02-why-single-risk-number.md",
+      "title": "Why a single risk number per asset",
+      "module": "intelligence/risk-scoring",
+      "module_title": "Risk Scoring documentation index"
+    },
+    {
+      "file": "03-risk-formula.md",
+      "path": "guides/intelligence/risk-scoring/03-risk-formula.md",
+      "title": "The risk formula",
+      "module": "intelligence/risk-scoring",
+      "module_title": "Risk Scoring documentation index"
+    },
+    {
+      "file": "04-asset-criticality.md",
+      "path": "guides/intelligence/risk-scoring/04-asset-criticality.md",
+      "title": "Asset criticality classification",
+      "module": "intelligence/risk-scoring",
+      "module_title": "Risk Scoring documentation index"
+    },
+    {
+      "file": "05-dynamic-vs-static-scoring.md",
+      "path": "guides/intelligence/risk-scoring/05-dynamic-vs-static-scoring.md",
+      "title": "Dynamic vs static scoring",
+      "module": "intelligence/risk-scoring",
+      "module_title": "Risk Scoring documentation index"
+    },
+    {
+      "file": "06-risk-appetite-tolerance.md",
+      "path": "guides/intelligence/risk-scoring/06-risk-appetite-tolerance.md",
+      "title": "Risk appetite and risk tolerance",
+      "module": "intelligence/risk-scoring",
+      "module_title": "Risk Scoring documentation index"
+    },
+    {
+      "file": "07-board-reporting.md",
+      "path": "guides/intelligence/risk-scoring/07-board-reporting.md",
+      "title": "Using risk scores for board reporting",
+      "module": "intelligence/risk-scoring",
+      "module_title": "Risk Scoring documentation index"
+    },
+    {
+      "file": "08-risk-score-history.md",
+      "path": "guides/intelligence/risk-scoring/08-risk-score-history.md",
+      "title": "Risk score history and trending",
+      "module": "intelligence/risk-scoring",
+      "module_title": "Risk Scoring documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/intelligence/threat-intel/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "intelligence/threat-intel",
+      "module_title": "Threat Intelligence documentation index"
+    },
+    {
+      "file": "02-what-threat-intel-is.md",
+      "path": "guides/intelligence/threat-intel/02-what-threat-intel-is.md",
+      "title": "What threat intelligence is and is not",
+      "module": "intelligence/threat-intel",
+      "module_title": "Threat Intelligence documentation index"
+    },
+    {
+      "file": "03-external-feeds.md",
+      "path": "guides/intelligence/threat-intel/03-external-feeds.md",
+      "title": "AbuseIPDB and VirusTotal feeds",
+      "module": "intelligence/threat-intel",
+      "module_title": "Threat Intelligence documentation index"
+    },
+    {
+      "file": "04-querying-feeds.md",
+      "path": "guides/intelligence/threat-intel/04-querying-feeds.md",
+      "title": "How the dashboard queries feeds",
+      "module": "intelligence/threat-intel",
+      "module_title": "Threat Intelligence documentation index"
+    },
+    {
+      "file": "05-confidence-score.md",
+      "path": "guides/intelligence/threat-intel/05-confidence-score.md",
+      "title": "The confidence score",
+      "module": "intelligence/threat-intel",
+      "module_title": "Threat Intelligence documentation index"
+    },
+    {
+      "file": "06-ioc-types.md",
+      "path": "guides/intelligence/threat-intel/06-ioc-types.md",
+      "title": "IOC types explained",
+      "module": "intelligence/threat-intel",
+      "module_title": "Threat Intelligence documentation index"
+    },
+    {
+      "file": "07-threat-categories.md",
+      "path": "guides/intelligence/threat-intel/07-threat-categories.md",
+      "title": "Threat categories",
+      "module": "intelligence/threat-intel",
+      "module_title": "Threat Intelligence documentation index"
+    },
+    {
+      "file": "08-feed-staleness-ttl.md",
+      "path": "guides/intelligence/threat-intel/08-feed-staleness-ttl.md",
+      "title": "Feed staleness and TTL",
+      "module": "intelligence/threat-intel",
+      "module_title": "Threat Intelligence documentation index"
+    },
+    {
+      "file": "09-api-keys-rate-limits.md",
+      "path": "guides/intelligence/threat-intel/09-api-keys-rate-limits.md",
+      "title": "API key management and rate limiting",
+      "module": "intelligence/threat-intel",
+      "module_title": "Threat Intelligence documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/intelligence/vuln-intel/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "intelligence/vuln-intel",
+      "module_title": "Vulnerability Intel documentation index"
+    },
+    {
+      "file": "02-vuln-exploit-threat.md",
+      "path": "guides/intelligence/vuln-intel/02-vuln-exploit-threat.md",
+      "title": "Vulnerability vs exploit vs threat",
+      "module": "intelligence/vuln-intel",
+      "module_title": "Vulnerability Intel documentation index"
+    },
+    {
+      "file": "03-cve-and-cvss.md",
+      "path": "guides/intelligence/vuln-intel/03-cve-and-cvss.md",
+      "title": "CVE explained from scratch",
+      "module": "intelligence/vuln-intel",
+      "module_title": "Vulnerability Intel documentation index"
+    },
+    {
+      "file": "04-matching-to-assets.md",
+      "path": "guides/intelligence/vuln-intel/04-matching-to-assets.md",
+      "title": "Matching vulnerability data to asset inventory",
+      "module": "intelligence/vuln-intel",
+      "module_title": "Vulnerability Intel documentation index"
+    },
+    {
+      "file": "05-patch-prioritisation.md",
+      "path": "guides/intelligence/vuln-intel/05-patch-prioritisation.md",
+      "title": "Patch prioritisation",
+      "module": "intelligence/vuln-intel",
+      "module_title": "Vulnerability Intel documentation index"
+    },
+    {
+      "file": "06-zero-day-vs-n-day.md",
+      "path": "guides/intelligence/vuln-intel/06-zero-day-vs-n-day.md",
+      "title": "Zero-day vs n-day",
+      "module": "intelligence/vuln-intel",
+      "module_title": "Vulnerability Intel documentation index"
+    },
+    {
+      "file": "07-compensating-controls.md",
+      "path": "guides/intelligence/vuln-intel/07-compensating-controls.md",
+      "title": "Compensating controls",
+      "module": "intelligence/vuln-intel",
+      "module_title": "Vulnerability Intel documentation index"
+    },
+    {
+      "file": "08-vulnerability-lifecycle.md",
+      "path": "guides/intelligence/vuln-intel/08-vulnerability-lifecycle.md",
+      "title": "The vulnerability lifecycle",
+      "module": "intelligence/vuln-intel",
+      "module_title": "Vulnerability Intel documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/investigate/event-graph/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "investigate/event-graph",
+      "module_title": "Event Graph documentation index"
+    },
+    {
+      "file": "02-graph-theory-basics.md",
+      "path": "guides/investigate/event-graph/02-graph-theory-basics.md",
+      "title": "Graph theory basics for non-technical readers",
+      "module": "investigate/event-graph",
+      "module_title": "Event Graph documentation index"
+    },
+    {
+      "file": "03-node-types.md",
+      "path": "guides/investigate/event-graph/03-node-types.md",
+      "title": "What each node type represents",
+      "module": "investigate/event-graph",
+      "module_title": "Event Graph documentation index"
+    },
+    {
+      "file": "04-edge-types.md",
+      "path": "guides/investigate/event-graph/04-edge-types.md",
+      "title": "Edge types and attack relationships",
+      "module": "investigate/event-graph",
+      "module_title": "Event Graph documentation index"
+    },
+    {
+      "file": "05-building-the-graph.md",
+      "path": "guides/investigate/event-graph/05-building-the-graph.md",
+      "title": "How the event graph is built from raw logs",
+      "module": "investigate/event-graph",
+      "module_title": "Event Graph documentation index"
+    },
+    {
+      "file": "06-tracing-compromise.md",
+      "path": "guides/investigate/event-graph/06-tracing-compromise.md",
+      "title": "Using the graph to trace a compromise",
+      "module": "investigate/event-graph",
+      "module_title": "Event Graph documentation index"
+    },
+    {
+      "file": "07-graph-filtering.md",
+      "path": "guides/investigate/event-graph/07-graph-filtering.md",
+      "title": "Graph filtering",
+      "module": "investigate/event-graph",
+      "module_title": "Event Graph documentation index"
+    },
+    {
+      "file": "08-pivoting-workflow.md",
+      "path": "guides/investigate/event-graph/08-pivoting-workflow.md",
+      "title": "Pivoting from event graph to raw logs",
+      "module": "investigate/event-graph",
+      "module_title": "Event Graph documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/investigate/geo-map/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "investigate/geo-map",
+      "module_title": "Geo Map documentation index"
+    },
+    {
+      "file": "02-ip-geolocation.md",
+      "path": "guides/investigate/geo-map/02-ip-geolocation.md",
+      "title": "How IP geolocation works",
+      "module": "investigate/geo-map",
+      "module_title": "Geo Map documentation index"
+    },
+    {
+      "file": "03-geo-map-visual-elements.md",
+      "path": "guides/investigate/geo-map/03-geo-map-visual-elements.md",
+      "title": "What the geo map shows",
+      "module": "investigate/geo-map",
+      "module_title": "Geo Map documentation index"
+    },
+    {
+      "file": "04-impossible-travel.md",
+      "path": "guides/investigate/geo-map/04-impossible-travel.md",
+      "title": "Impossible travel detection",
+      "module": "investigate/geo-map",
+      "module_title": "Geo Map documentation index"
+    },
+    {
+      "file": "05-country-threat-context.md",
+      "path": "guides/investigate/geo-map/05-country-threat-context.md",
+      "title": "Country-level threat context",
+      "module": "investigate/geo-map",
+      "module_title": "Geo Map documentation index"
+    },
+    {
+      "file": "06-isp-asn-column.md",
+      "path": "guides/investigate/geo-map/06-isp-asn-column.md",
+      "title": "The ISP/ASN column",
+      "module": "investigate/geo-map",
+      "module_title": "Geo Map documentation index"
+    },
+    {
+      "file": "07-geo-map-during-ddos.md",
+      "path": "guides/investigate/geo-map/07-geo-map-during-ddos.md",
+      "title": "Using the geo map during a DDoS",
+      "module": "investigate/geo-map",
+      "module_title": "Geo Map documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/investigate/heatmap-calendar/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "investigate/heatmap-calendar",
+      "module_title": "Heatmap Calendar documentation index"
+    },
+    {
+      "file": "02-heatmap-concept.md",
+      "path": "guides/investigate/heatmap-calendar/02-heatmap-concept.md",
+      "title": "What a heatmap calendar is",
+      "module": "investigate/heatmap-calendar",
+      "module_title": "Heatmap Calendar documentation index"
+    },
+    {
+      "file": "03-time-based-attack-patterns.md",
+      "path": "guides/investigate/heatmap-calendar/03-time-based-attack-patterns.md",
+      "title": "Time-based patterns in attacks",
+      "module": "investigate/heatmap-calendar",
+      "module_title": "Heatmap Calendar documentation index"
+    },
+    {
+      "file": "04-reading-the-calendar.md",
+      "path": "guides/investigate/heatmap-calendar/04-reading-the-calendar.md",
+      "title": "How to read the calendar",
+      "module": "investigate/heatmap-calendar",
+      "module_title": "Heatmap Calendar documentation index"
+    },
+    {
+      "file": "05-layering-metrics.md",
+      "path": "guides/investigate/heatmap-calendar/05-layering-metrics.md",
+      "title": "Comparing multiple metrics on the calendar",
+      "module": "investigate/heatmap-calendar",
+      "module_title": "Heatmap Calendar documentation index"
+    },
+    {
+      "file": "06-slow-burn-attacks.md",
+      "path": "guides/investigate/heatmap-calendar/06-slow-burn-attacks.md",
+      "title": "Detecting slow-burn attacks",
+      "module": "investigate/heatmap-calendar",
+      "module_title": "Heatmap Calendar documentation index"
+    },
+    {
+      "file": "07-shift-handover.md",
+      "path": "guides/investigate/heatmap-calendar/07-shift-handover.md",
+      "title": "Shift-handover use",
+      "module": "investigate/heatmap-calendar",
+      "module_title": "Heatmap Calendar documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/investigate/network-map/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "investigate/network-map",
+      "module_title": "Network Map documentation index"
+    },
+    {
+      "file": "02-what-the-map-shows.md",
+      "path": "guides/investigate/network-map/02-what-the-map-shows.md",
+      "title": "What is being shown on the network map",
+      "module": "investigate/network-map",
+      "module_title": "Network Map documentation index"
+    },
+    {
+      "file": "03-data-sources.md",
+      "path": "guides/investigate/network-map/03-data-sources.md",
+      "title": "How the map is built from flow and firewall data",
+      "module": "investigate/network-map",
+      "module_title": "Network Map documentation index"
+    },
+    {
+      "file": "04-normal-vs-anomalous.md",
+      "path": "guides/investigate/network-map/04-normal-vs-anomalous.md",
+      "title": "Normal vs anomalous traffic patterns",
+      "module": "investigate/network-map",
+      "module_title": "Network Map documentation index"
+    },
+    {
+      "file": "05-subnet-grouping.md",
+      "path": "guides/investigate/network-map/05-subnet-grouping.md",
+      "title": "Subnet grouping and asset classification",
+      "module": "investigate/network-map",
+      "module_title": "Network Map documentation index"
+    },
+    {
+      "file": "06-lateral-movement-visual.md",
+      "path": "guides/investigate/network-map/06-lateral-movement-visual.md",
+      "title": "Lateral movement on the network map",
+      "module": "investigate/network-map",
+      "module_title": "Network Map documentation index"
+    },
+    {
+      "file": "07-external-connections.md",
+      "path": "guides/investigate/network-map/07-external-connections.md",
+      "title": "External connections and egress",
+      "module": "investigate/network-map",
+      "module_title": "Network Map documentation index"
+    },
+    {
+      "file": "08-click-through-to-logs.md",
+      "path": "guides/investigate/network-map/08-click-through-to-logs.md",
+      "title": "Clicking through to raw event logs",
+      "module": "investigate/network-map",
+      "module_title": "Network Map documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/investigate/threat-hunt/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "investigate/threat-hunt",
+      "module_title": "Threat Hunt documentation index"
+    },
+    {
+      "file": "02-threat-hunting-philosophy.md",
+      "path": "guides/investigate/threat-hunt/02-threat-hunting-philosophy.md",
+      "title": "The philosophy of threat hunting",
+      "module": "investigate/threat-hunt",
+      "module_title": "Threat Hunt documentation index"
+    },
+    {
+      "file": "03-hypothesis-vs-data-driven.md",
+      "path": "guides/investigate/threat-hunt/03-hypothesis-vs-data-driven.md",
+      "title": "Hypothesis-driven vs data-driven hunting",
+      "module": "investigate/threat-hunt",
+      "module_title": "Threat Hunt documentation index"
+    },
+    {
+      "file": "04-query-interface.md",
+      "path": "guides/investigate/threat-hunt/04-query-interface.md",
+      "title": "The query interface",
+      "module": "investigate/threat-hunt",
+      "module_title": "Threat Hunt documentation index"
+    },
+    {
+      "file": "05-built-in-templates.md",
+      "path": "guides/investigate/threat-hunt/05-built-in-templates.md",
+      "title": "Built-in hunt templates",
+      "module": "investigate/threat-hunt",
+      "module_title": "Threat Hunt documentation index"
+    },
+    {
+      "file": "06-saving-scheduling-hunts.md",
+      "path": "guides/investigate/threat-hunt/06-saving-scheduling-hunts.md",
+      "title": "Saving and scheduling hunts",
+      "module": "investigate/threat-hunt",
+      "module_title": "Threat Hunt documentation index"
+    },
+    {
+      "file": "07-documenting-a-hunt.md",
+      "path": "guides/investigate/threat-hunt/07-documenting-a-hunt.md",
+      "title": "How to document a hunt",
+      "module": "investigate/threat-hunt",
+      "module_title": "Threat Hunt documentation index"
+    },
+    {
+      "file": "08-hunt-to-detection-rule.md",
+      "path": "guides/investigate/threat-hunt/08-hunt-to-detection-rule.md",
+      "title": "Converting hunt findings into detection rules",
+      "module": "investigate/threat-hunt",
+      "module_title": "Threat Hunt documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/investigate/ueba/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "investigate/ueba",
+      "module_title": "UEBA documentation index"
+    },
+    {
+      "file": "02-ueba-invented.md",
+      "path": "guides/investigate/ueba/02-ueba-invented.md",
+      "title": "What UEBA means and why it was invented",
+      "module": "investigate/ueba",
+      "module_title": "UEBA documentation index"
+    },
+    {
+      "file": "03-baselining.md",
+      "path": "guides/investigate/ueba/03-baselining.md",
+      "title": "Baselining explained",
+      "module": "investigate/ueba",
+      "module_title": "UEBA documentation index"
+    },
+    {
+      "file": "04-risk-score.md",
+      "path": "guides/investigate/ueba/04-risk-score.md",
+      "title": "The risk score",
+      "module": "investigate/ueba",
+      "module_title": "UEBA documentation index"
+    },
+    {
+      "file": "05-insider-threat.md",
+      "path": "guides/investigate/ueba/05-insider-threat.md",
+      "title": "Insider threat detection",
+      "module": "investigate/ueba",
+      "module_title": "UEBA documentation index"
+    },
+    {
+      "file": "06-entity-behaviour.md",
+      "path": "guides/investigate/ueba/06-entity-behaviour.md",
+      "title": "Entity behaviour beyond users",
+      "module": "investigate/ueba",
+      "module_title": "UEBA documentation index"
+    },
+    {
+      "file": "07-false-positive-management.md",
+      "path": "guides/investigate/ueba/07-false-positive-management.md",
+      "title": "False positive management",
+      "module": "investigate/ueba",
+      "module_title": "UEBA documentation index"
+    },
+    {
+      "file": "08-ueba-and-compliance.md",
+      "path": "guides/investigate/ueba/08-ueba-and-compliance.md",
+      "title": "UEBA and compliance",
+      "module": "investigate/ueba",
+      "module_title": "UEBA documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/monitor/alert-manager/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "monitor/alert-manager",
+      "module_title": "Alert Manager documentation index"
+    },
+    {
+      "file": "02-alert-lifecycle.md",
+      "path": "guides/monitor/alert-manager/02-alert-lifecycle.md",
+      "title": "The alert lifecycle",
+      "module": "monitor/alert-manager",
+      "module_title": "Alert Manager documentation index"
+    },
+    {
+      "file": "03-alert-record-fields.md",
+      "path": "guides/monitor/alert-manager/03-alert-record-fields.md",
+      "title": "Every field in an alert record",
+      "module": "monitor/alert-manager",
+      "module_title": "Alert Manager documentation index"
+    },
+    {
+      "file": "04-mitre-att-and-ck.md",
+      "path": "guides/monitor/alert-manager/04-mitre-att-and-ck.md",
+      "title": "MITRE ATT&CK integration",
+      "module": "monitor/alert-manager",
+      "module_title": "Alert Manager documentation index"
+    },
+    {
+      "file": "05-bulk-actions.md",
+      "path": "guides/monitor/alert-manager/05-bulk-actions.md",
+      "title": "Bulk actions and alert fatigue",
+      "module": "monitor/alert-manager",
+      "module_title": "Alert Manager documentation index"
+    },
+    {
+      "file": "06-suppression-and-tuning.md",
+      "path": "guides/monitor/alert-manager/06-suppression-and-tuning.md",
+      "title": "Alert suppression and tuning",
+      "module": "monitor/alert-manager",
+      "module_title": "Alert Manager documentation index"
+    },
+    {
+      "file": "07-sla-timers.md",
+      "path": "guides/monitor/alert-manager/07-sla-timers.md",
+      "title": "SLA timers and compliance",
+      "module": "monitor/alert-manager",
+      "module_title": "Alert Manager documentation index"
+    },
+    {
+      "file": "08-alert-vs-case.md",
+      "path": "guides/monitor/alert-manager/08-alert-vs-case.md",
+      "title": "The difference between an alert and a case",
+      "module": "monitor/alert-manager",
+      "module_title": "Alert Manager documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/monitor/live-feed/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "monitor/live-feed",
+      "module_title": "Live Feed documentation index"
+    },
+    {
+      "file": "02-live-feed-concept.md",
+      "path": "guides/monitor/live-feed/02-live-feed-concept.md",
+      "title": "What a live feed is in SIEM terms",
+      "module": "monitor/live-feed",
+      "module_title": "Live Feed documentation index"
+    },
+    {
+      "file": "03-event-table-columns.md",
+      "path": "guides/monitor/live-feed/03-event-table-columns.md",
+      "title": "Every column in the live event table",
+      "module": "monitor/live-feed",
+      "module_title": "Live Feed documentation index"
+    },
+    {
+      "file": "04-log-normalisation-walkthrough.md",
+      "path": "guides/monitor/live-feed/04-log-normalisation-walkthrough.md",
+      "title": "Log normalisation detailed",
+      "module": "monitor/live-feed",
+      "module_title": "Live Feed documentation index"
+    },
+    {
+      "file": "05-filtering-and-search.md",
+      "path": "guides/monitor/live-feed/05-filtering-and-search.md",
+      "title": "Filtering and search",
+      "module": "monitor/live-feed",
+      "module_title": "Live Feed documentation index"
+    },
+    {
+      "file": "06-deduplication.md",
+      "path": "guides/monitor/live-feed/06-deduplication.md",
+      "title": "Deduplication",
+      "module": "monitor/live-feed",
+      "module_title": "Live Feed documentation index"
+    },
+    {
+      "file": "07-pagination-performance.md",
+      "path": "guides/monitor/live-feed/07-pagination-performance.md",
+      "title": "Pagination vs infinite scroll",
+      "module": "monitor/live-feed",
+      "module_title": "Live Feed documentation index"
+    },
+    {
+      "file": "08-first-five-minutes.md",
+      "path": "guides/monitor/live-feed/08-first-five-minutes.md",
+      "title": "Live feed during the first 5 minutes of an incident",
+      "module": "monitor/live-feed",
+      "module_title": "Live Feed documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/monitor/overview/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "monitor/overview",
+      "module_title": "Overview documentation index"
+    },
+    {
+      "file": "02-dashboard-at-a-glance-philosophy.md",
+      "path": "guides/monitor/overview/02-dashboard-at-a-glance-philosophy.md",
+      "title": "The dashboard-at-a-glance philosophy",
+      "module": "monitor/overview",
+      "module_title": "Overview documentation index"
+    },
+    {
+      "file": "03-metric-cards-explained.md",
+      "path": "guides/monitor/overview/03-metric-cards-explained.md",
+      "title": "Every metric card shown",
+      "module": "monitor/overview",
+      "module_title": "Overview documentation index"
+    },
+    {
+      "file": "04-simulate-campaign.md",
+      "path": "guides/monitor/overview/04-simulate-campaign.md",
+      "title": "The Simulate Campaign button",
+      "module": "monitor/overview",
+      "module_title": "Overview documentation index"
+    },
+    {
+      "file": "05-severity-levels.md",
+      "path": "guides/monitor/overview/05-severity-levels.md",
+      "title": "Severity levels (Critical / High / Medium / Low / Info)",
+      "module": "monitor/overview",
+      "module_title": "Overview documentation index"
+    },
+    {
+      "file": "06-auto-refresh-real-time.md",
+      "path": "guides/monitor/overview/06-auto-refresh-real-time.md",
+      "title": "How the overview auto-refreshes",
+      "module": "monitor/overview",
+      "module_title": "Overview documentation index"
+    },
+    {
+      "file": "07-alerts-vs-incidents.md",
+      "path": "guides/monitor/overview/07-alerts-vs-incidents.md",
+      "title": "Alerts fired vs incidents created",
+      "module": "monitor/overview",
+      "module_title": "Overview documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/monitor/pipeline-health/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "monitor/pipeline-health",
+      "module_title": "Pipeline Health documentation index"
+    },
+    {
+      "file": "02-pipeline-end-to-end.md",
+      "path": "guides/monitor/pipeline-health/02-pipeline-end-to-end.md",
+      "title": "What the pipeline means end to end",
+      "module": "monitor/pipeline-health",
+      "module_title": "Pipeline Health documentation index"
+    },
+    {
+      "file": "03-pipeline-metrics.md",
+      "path": "guides/monitor/pipeline-health/03-pipeline-metrics.md",
+      "title": "Pipeline health metrics",
+      "module": "monitor/pipeline-health",
+      "module_title": "Pipeline Health documentation index"
+    },
+    {
+      "file": "04-pipeline-as-security-control.md",
+      "path": "guides/monitor/pipeline-health/04-pipeline-as-security-control.md",
+      "title": "Why pipeline health is a security control",
+      "module": "monitor/pipeline-health",
+      "module_title": "Pipeline Health documentation index"
+    },
+    {
+      "file": "05-log-source-status.md",
+      "path": "guides/monitor/pipeline-health/05-log-source-status.md",
+      "title": "Log source status indicators",
+      "module": "monitor/pipeline-health",
+      "module_title": "Pipeline Health documentation index"
+    },
+    {
+      "file": "06-parser-errors.md",
+      "path": "guides/monitor/pipeline-health/06-parser-errors.md",
+      "title": "Parser error detailed",
+      "module": "monitor/pipeline-health",
+      "module_title": "Pipeline Health documentation index"
+    },
+    {
+      "file": "07-capacity-planning.md",
+      "path": "guides/monitor/pipeline-health/07-capacity-planning.md",
+      "title": "Capacity planning",
+      "module": "monitor/pipeline-health",
+      "module_title": "Pipeline Health documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/monitor/timeline/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "monitor/timeline",
+      "module_title": "Attack Timeline documentation index"
+    },
+    {
+      "file": "02-kill-chain-basics.md",
+      "path": "guides/monitor/timeline/02-kill-chain-basics.md",
+      "title": "What a kill chain is",
+      "module": "monitor/timeline",
+      "module_title": "Attack Timeline documentation index"
+    },
+    {
+      "file": "03-mapping-events-to-phases.md",
+      "path": "guides/monitor/timeline/03-mapping-events-to-phases.md",
+      "title": "Mapping raw events onto kill chain phases",
+      "module": "monitor/timeline",
+      "module_title": "Attack Timeline documentation index"
+    },
+    {
+      "file": "04-timeline-visualisation.md",
+      "path": "guides/monitor/timeline/04-timeline-visualisation.md",
+      "title": "The timeline visualisation",
+      "module": "monitor/timeline",
+      "module_title": "Attack Timeline documentation index"
+    },
+    {
+      "file": "05-why-timeline-beats-lists.md",
+      "path": "guides/monitor/timeline/05-why-timeline-beats-lists.md",
+      "title": "Why visualising attacks as a timeline is more useful than a flat list",
+      "module": "monitor/timeline",
+      "module_title": "Attack Timeline documentation index"
+    },
+    {
+      "file": "06-cross-source-correlation.md",
+      "path": "guides/monitor/timeline/06-cross-source-correlation.md",
+      "title": "Correlating events across multiple source systems",
+      "module": "monitor/timeline",
+      "module_title": "Attack Timeline documentation index"
+    },
+    {
+      "file": "07-lateral-movement-on-timeline.md",
+      "path": "guides/monitor/timeline/07-lateral-movement-on-timeline.md",
+      "title": "Lateral movement detection on the timeline",
+      "module": "monitor/timeline",
+      "module_title": "Attack Timeline documentation index"
+    },
+    {
+      "file": "08-for-non-technical-managers.md",
+      "path": "guides/monitor/timeline/08-for-non-technical-managers.md",
+      "title": "How the timeline helps a non-technical manager",
+      "module": "monitor/timeline",
+      "module_title": "Attack Timeline documentation index"
+    },
+    {
+      "file": "09-exporting-timeline.md",
+      "path": "guides/monitor/timeline/09-exporting-timeline.md",
+      "title": "Exporting the timeline for incident reports",
+      "module": "monitor/timeline",
+      "module_title": "Attack Timeline documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/reporting/executive-view/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "reporting/executive-view",
+      "module_title": "Executive View — Documentation Index"
+    },
+    {
+      "file": "02-why-executives-need-different-view.md",
+      "path": "guides/reporting/executive-view/02-why-executives-need-different-view.md",
+      "title": "Why executives need a different view",
+      "module": "reporting/executive-view",
+      "module_title": "Executive View — Documentation Index"
+    },
+    {
+      "file": "03-every-kpi-element.md",
+      "path": "guides/reporting/executive-view/03-every-kpi-element.md",
+      "title": "Every element of the executive view",
+      "module": "reporting/executive-view",
+      "module_title": "Executive View — Documentation Index"
+    },
+    {
+      "file": "04-security-posture-score.md",
+      "path": "guides/reporting/executive-view/04-security-posture-score.md",
+      "title": "Security posture score",
+      "module": "reporting/executive-view",
+      "module_title": "Executive View — Documentation Index"
+    },
+    {
+      "file": "05-so-what-principle.md",
+      "path": "guides/reporting/executive-view/05-so-what-principle.md",
+      "title": "The so what principle",
+      "module": "reporting/executive-view",
+      "module_title": "Executive View — Documentation Index"
+    },
+    {
+      "file": "06-comparing-periods.md",
+      "path": "guides/reporting/executive-view/06-comparing-periods.md",
+      "title": "Comparing periods",
+      "module": "reporting/executive-view",
+      "module_title": "Executive View — Documentation Index"
+    },
+    {
+      "file": "07-benchmark-data.md",
+      "path": "guides/reporting/executive-view/07-benchmark-data.md",
+      "title": "Benchmark data",
+      "module": "reporting/executive-view",
+      "module_title": "Executive View — Documentation Index"
+    },
+    {
+      "file": "08-board-meeting-use.md",
+      "path": "guides/reporting/executive-view/08-board-meeting-use.md",
+      "title": "Using the executive view in a board meeting",
+      "module": "reporting/executive-view",
+      "module_title": "Executive View — Documentation Index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/reporting/reports/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "reporting/reports",
+      "module_title": "Reports — Documentation Index"
+    },
+    {
+      "file": "02-report-types.md",
+      "path": "guides/reporting/reports/02-report-types.md",
+      "title": "Report types available",
+      "module": "reporting/reports",
+      "module_title": "Reports — Documentation Index"
+    },
+    {
+      "file": "03-compliance-mapping.md",
+      "path": "guides/reporting/reports/03-compliance-mapping.md",
+      "title": "Compliance report mapping",
+      "module": "reporting/reports",
+      "module_title": "Reports — Documentation Index"
+    },
+    {
+      "file": "04-report-customisation.md",
+      "path": "guides/reporting/reports/04-report-customisation.md",
+      "title": "Report customisation",
+      "module": "reporting/reports",
+      "module_title": "Reports — Documentation Index"
+    },
+    {
+      "file": "05-export-formats.md",
+      "path": "guides/reporting/reports/05-export-formats.md",
+      "title": "Export formats and use cases",
+      "module": "reporting/reports",
+      "module_title": "Reports — Documentation Index"
+    },
+    {
+      "file": "06-scheduled-reports-in-reports.md",
+      "path": "guides/reporting/reports/06-scheduled-reports-in-reports.md",
+      "title": "Scheduled reports",
+      "module": "reporting/reports",
+      "module_title": "Reports — Documentation Index"
+    },
+    {
+      "file": "07-report-integrity.md",
+      "path": "guides/reporting/reports/07-report-integrity.md",
+      "title": "Report integrity",
+      "module": "reporting/reports",
+      "module_title": "Reports — Documentation Index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/reporting/scheduler/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "reporting/scheduler",
+      "module_title": "Scheduler — Documentation Index"
+    },
+    {
+      "file": "02-operational-case-for-scheduling.md",
+      "path": "guides/reporting/scheduler/02-operational-case-for-scheduling.md",
+      "title": "Operational case for scheduled reports",
+      "module": "reporting/scheduler",
+      "module_title": "Scheduler — Documentation Index"
+    },
+    {
+      "file": "03-cron-syntax.md",
+      "path": "guides/reporting/scheduler/03-cron-syntax.md",
+      "title": "Cron syntax explained",
+      "module": "reporting/scheduler",
+      "module_title": "Scheduler — Documentation Index"
+    },
+    {
+      "file": "04-schedule-record-fields.md",
+      "path": "guides/reporting/scheduler/04-schedule-record-fields.md",
+      "title": "Every field in a schedule record",
+      "module": "reporting/scheduler",
+      "module_title": "Scheduler — Documentation Index"
+    },
+    {
+      "file": "05-delivery-mechanics.md",
+      "path": "guides/reporting/scheduler/05-delivery-mechanics.md",
+      "title": "Delivery mechanics",
+      "module": "reporting/scheduler",
+      "module_title": "Scheduler — Documentation Index"
+    },
+    {
+      "file": "06-failure-handling.md",
+      "path": "guides/reporting/scheduler/06-failure-handling.md",
+      "title": "Failure handling",
+      "module": "reporting/scheduler",
+      "module_title": "Scheduler — Documentation Index"
+    },
+    {
+      "file": "07-retention.md",
+      "path": "guides/reporting/scheduler/07-retention.md",
+      "title": "Retention policy",
+      "module": "reporting/scheduler",
+      "module_title": "Scheduler — Documentation Index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/respond/case-manager/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "respond/case-manager",
+      "module_title": "Case Manager documentation index"
+    },
+    {
+      "file": "02-cases-incidents-alerts-hierarchy.md",
+      "path": "guides/respond/case-manager/02-cases-incidents-alerts-hierarchy.md",
+      "title": "Cases vs incidents vs alerts",
+      "module": "respond/case-manager",
+      "module_title": "Case Manager documentation index"
+    },
+    {
+      "file": "03-when-to-create-a-case.md",
+      "path": "guides/respond/case-manager/03-when-to-create-a-case.md",
+      "title": "When to create a case",
+      "module": "respond/case-manager",
+      "module_title": "Case Manager documentation index"
+    },
+    {
+      "file": "04-case-fields.md",
+      "path": "guides/respond/case-manager/04-case-fields.md",
+      "title": "Case fields",
+      "module": "respond/case-manager",
+      "module_title": "Case Manager documentation index"
+    },
+    {
+      "file": "05-evidence-chain.md",
+      "path": "guides/respond/case-manager/05-evidence-chain.md",
+      "title": "The evidence chain",
+      "module": "respond/case-manager",
+      "module_title": "Case Manager documentation index"
+    },
+    {
+      "file": "06-case-statuses.md",
+      "path": "guides/respond/case-manager/06-case-statuses.md",
+      "title": "Case statuses",
+      "module": "respond/case-manager",
+      "module_title": "Case Manager documentation index"
+    },
+    {
+      "file": "07-collaboration.md",
+      "path": "guides/respond/case-manager/07-collaboration.md",
+      "title": "Collaboration",
+      "module": "respond/case-manager",
+      "module_title": "Case Manager documentation index"
+    },
+    {
+      "file": "08-reporting-from-cases.md",
+      "path": "guides/respond/case-manager/08-reporting-from-cases.md",
+      "title": "Reporting from cases",
+      "module": "respond/case-manager",
+      "module_title": "Case Manager documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/respond/incidents/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "respond/incidents",
+      "module_title": "Incident Response documentation index"
+    },
+    {
+      "file": "02-incident-vs-alert-vs-event.md",
+      "path": "guides/respond/incidents/02-incident-vs-alert-vs-event.md",
+      "title": "Incident vs alert vs event",
+      "module": "respond/incidents",
+      "module_title": "Incident Response documentation index"
+    },
+    {
+      "file": "03-severity-tiers-p1-p4.md",
+      "path": "guides/respond/incidents/03-severity-tiers-p1-p4.md",
+      "title": "Incident severity tiers P1–P4",
+      "module": "respond/incidents",
+      "module_title": "Incident Response documentation index"
+    },
+    {
+      "file": "04-incident-record-fields.md",
+      "path": "guides/respond/incidents/04-incident-record-fields.md",
+      "title": "The incident record",
+      "module": "respond/incidents",
+      "module_title": "Incident Response documentation index"
+    },
+    {
+      "file": "05-ir-workflow.md",
+      "path": "guides/respond/incidents/05-ir-workflow.md",
+      "title": "Incident response workflow",
+      "module": "respond/incidents",
+      "module_title": "Incident Response documentation index"
+    },
+    {
+      "file": "06-containment-actions.md",
+      "path": "guides/respond/incidents/06-containment-actions.md",
+      "title": "Containment actions",
+      "module": "respond/incidents",
+      "module_title": "Incident Response documentation index"
+    },
+    {
+      "file": "07-communication-during-incident.md",
+      "path": "guides/respond/incidents/07-communication-during-incident.md",
+      "title": "Communication during an incident",
+      "module": "respond/incidents",
+      "module_title": "Incident Response documentation index"
+    },
+    {
+      "file": "08-post-incident-review.md",
+      "path": "guides/respond/incidents/08-post-incident-review.md",
+      "title": "Post-incident review",
+      "module": "respond/incidents",
+      "module_title": "Incident Response documentation index"
+    },
+    {
+      "file": "09-legal-compliance-obligations.md",
+      "path": "guides/respond/incidents/09-legal-compliance-obligations.md",
+      "title": "Legal and compliance obligations",
+      "module": "respond/incidents",
+      "module_title": "Incident Response documentation index"
+    },
+    {
+      "file": "01-how-to-use.md",
+      "path": "guides/respond/soar-console/01-how-to-use.md",
+      "title": "How to use this module",
+      "module": "respond/soar-console",
+      "module_title": "SOAR Console documentation index"
+    },
+    {
+      "file": "02-what-soar-means.md",
+      "path": "guides/respond/soar-console/02-what-soar-means.md",
+      "title": "What SOAR means and why it was invented",
+      "module": "respond/soar-console",
+      "module_title": "SOAR Console documentation index"
+    },
+    {
+      "file": "03-playbook-concept.md",
+      "path": "guides/respond/soar-console/03-playbook-concept.md",
+      "title": "The playbook concept",
+      "module": "respond/soar-console",
+      "module_title": "SOAR Console documentation index"
+    },
+    {
+      "file": "04-soar-log-table.md",
+      "path": "guides/respond/soar-console/04-soar-log-table.md",
+      "title": "Every element of the SOAR log table",
+      "module": "respond/soar-console",
+      "module_title": "SOAR Console documentation index"
+    },
+    {
+      "file": "05-example-playbook-walkthrough.md",
+      "path": "guides/respond/soar-console/05-example-playbook-walkthrough.md",
+      "title": "Example playbook walkthrough",
+      "module": "respond/soar-console",
+      "module_title": "SOAR Console documentation index"
+    },
+    {
+      "file": "06-human-in-the-loop.md",
+      "path": "guides/respond/soar-console/06-human-in-the-loop.md",
+      "title": "Human-in-the-loop vs fully automated",
+      "module": "respond/soar-console",
+      "module_title": "SOAR Console documentation index"
+    },
+    {
+      "file": "07-audit-trail-automation.md",
+      "path": "guides/respond/soar-console/07-audit-trail-automation.md",
+      "title": "Audit trail of automated actions",
+      "module": "respond/soar-console",
+      "module_title": "SOAR Console documentation index"
+    },
+    {
+      "file": "08-building-playbooks.md",
+      "path": "guides/respond/soar-console/08-building-playbooks.md",
+      "title": "Building new playbooks",
+      "module": "respond/soar-console",
+      "module_title": "SOAR Console documentation index"
+    },
+    {
+      "file": "09-measuring-soar-effectiveness.md",
+      "path": "guides/respond/soar-console/09-measuring-soar-effectiveness.md",
+      "title": "Measuring SOAR effectiveness",
+      "module": "respond/soar-console",
+      "module_title": "SOAR Console documentation index"
+    }
+  ]
+}

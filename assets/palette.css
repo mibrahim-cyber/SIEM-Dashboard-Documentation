@@ -1,0 +1,111 @@
+/* Global command palette — Ctrl+K */
+#siem-palette-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: min(12vh, 96px) 16px 16px;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s;
+}
+#siem-palette-overlay.siem-palette--open {
+  opacity: 1;
+  visibility: visible;
+}
+#siem-palette-panel {
+  width: min(560px, 100%);
+  background: rgba(10, 6, 18, 0.96);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(56, 189, 248, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  transform: translateY(-8px) scale(0.98);
+  transition: transform 0.22s ease;
+}
+#siem-palette-overlay.siem-palette--open #siem-palette-panel {
+  transform: none;
+}
+#siem-palette-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+#siem-palette-input-wrap svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  stroke: #38bdf8;
+  fill: none;
+  stroke-width: 2;
+}
+#siem-palette-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #e2e8f0;
+  font: 500 15px/1.4 "IBM Plex Mono", Consolas, monospace;
+  outline: none;
+}
+#siem-palette-input::placeholder { color: #64748b; }
+#siem-palette-list {
+  max-height: min(50vh, 420px);
+  overflow-y: auto;
+  padding: 6px 0 8px;
+}
+.siem-palette-group-label {
+  padding: 8px 16px 4px;
+  font: 600 9px/1 "IBM Plex Mono", monospace;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #64748b;
+}
+.siem-palette-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  color: #cbd5e1;
+  font: 400 13px/1.35 "IBM Plex Sans", system-ui, sans-serif;
+}
+.siem-palette-item:hover,
+.siem-palette-item.siem-palette-item--active {
+  background: rgba(56, 189, 248, 0.1);
+  color: #f8fafc;
+}
+.siem-palette-item-label { flex: 1; }
+.siem-palette-item-kbd {
+  font: 500 10px/1 "IBM Plex Mono", monospace;
+  color: #64748b;
+  padding: 3px 6px;
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  border-radius: 4px;
+}
+.siem-palette-empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: #64748b;
+  font: 400 13px/1.4 "IBM Plex Sans", sans-serif;
+}
+#siem-palette-footer {
+  padding: 8px 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  font: 400 10px/1 "IBM Plex Mono", monospace;
+  color: #475569;
+  display: flex;
+  gap: 16px;
+}
+@media (prefers-reduced-motion: reduce) {
+  #siem-palette-overlay, #siem-palette-panel { transition: none; }
+}
+@media (max-width: 900px) {
+  #siem-palette-overlay { padding-top: 8vh; }
+  #siem-palette-panel { border-radius: 0; width: 100%; }
+}

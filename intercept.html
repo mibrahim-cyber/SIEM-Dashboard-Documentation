@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" data-deck-page="intercept">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="Signal decode chamber — interrogate captured traffic and extract IOCs." />
+  <meta property="og:title" content="The Interrogation Room — HABIBI-SIEM" />
+  <meta property="og:description" content="Signal decode chamber — interrogate captured traffic and extract IOCs." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/intercept-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Interrogation Room — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Signal decode chamber — interrogate captured traffic and extract IOCs." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/intercept-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Interrogation Room — Meridian-7</title>
+  <link rel="stylesheet" href="assets/palette.css" />
+  <link rel="stylesheet" href="assets/deck-nav.css" />
+  <script src="https://cdn.jsdelivr.net/npm/typed.js@2.1.0/dist/typed.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#0a0618;color:#e2e8f0;font-family:Georgia,serif;display:flex}
+    #sidebar{width:220px;background:rgba(15,10,30,.95);border-right:1px solid rgba(148,163,184,.15);padding:12px;font-family:Consolas,monospace;font-size:10px}
+    #sidebar h3{font-size:9px;letter-spacing:2px;color:#64748b;margin-bottom:8px}
+    .sess{padding:8px;margin-bottom:4px;border:1px solid transparent;cursor:pointer;border-radius:4px}
+    .sess:hover,.sess.active{border-color:rgba(167,139,250,.4);background:rgba(99,102,241,.1)}
+    .sess.locked{opacity:.4;cursor:not-allowed}
+    #main{flex:1;display:flex;flex-direction:column;padding:20px}
+    #transcript{flex:1;overflow:auto;font-size:15px;line-height:1.7;max-width:680px}
+    .line{margin-bottom:12px}.speaker{font-weight:700;color:#a78bfa;font-family:Consolas,monospace;font-size:11px}
+    #decrypt-bar{padding:12px 0;border-top:1px solid rgba(148,163,184,.15);display:flex;gap:8px;align-items:center;font-family:Consolas,monospace;font-size:11px}
+    #decrypt-bar input{flex:1;padding:8px;background:#1e1b4b;border:1px solid #6366f1;color:#e2e8f0;font:inherit}
+    #decrypt-bar button{padding:8px 16px;background:rgba(99,102,241,.2);border:1px solid #6366f1;color:#c4b5fd;cursor:pointer;font:inherit}
+  </style>
+</head>
+<body>
+  <aside id="sidebar"><h3>SESSIONS</h3><div id="sess-list"></div></aside>
+  <main id="main">
+    <div id="transcript"></div>
+    <div id="decrypt-bar">
+      <span>DECRYPT TRAFFIC:</span>
+      <input id="decrypt-key" placeholder="Enter session key" />
+      <button id="decrypt-btn">DECRYPT</button>
+    </div>
+  </main>
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/palette.js"></script>
+  <script>
+  (function(){
+    SiemCore.bootPage('intercept'); SiemCore.AchievementSystem.check('visit_intercept');
+    var tick=typeof Howl!=='undefined'?new Howl({src:['data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAAA='],volume:0.15}):null;
+    var SESSIONS=[
+      {id:'A',title:'SESSION-ALPHA',key:'alpha-7',lines:[{s:'ANALYST',t:'What triggered the initial alert?'},{s:'SUBJECT',t:'Unauthorized SSH from 203.0.113.8 at 03:14 UTC.'}]},
+      {id:'B',title:'SESSION-BETA',key:'beta-7',lines:[{s:'ANALYST',t:'Describe the lateral movement path.'},{s:'SUBJECT',t:'Pivot through jump host 10.0.4.12 to domain controller.'}]},
+      {id:'C',title:'SESSION-GAMMA',key:'gamma-7',lines:[{s:'ANALYST',t:'What data left the network?'},{s:'SUBJECT',t:'Customer PII archive — 2.3 GB to 198.51.100.44.'}]},
+      {id:'D',title:'SESSION-DELTA',key:'delta-7',lines:[{s:'ANALYST',t:'Who authorized the service account?'},{s:'SUBJECT',t:'No one. It was provisioned via compromised CI pipeline.'}]},
+      {id:'O',title:'SESSION-OMEGA',key:null,locked:true,lines:[{s:'SYSTEM',t:'[ENCRYPTED — clearance required]'}]}
+    ];
+    var cur=0,decrypted={};
+    var list=document.getElementById('sess-list'),trans=document.getElementById('transcript');
+    SESSIONS.forEach(function(s,i){
+      var el=document.createElement('div');el.className='sess'+(s.locked?' locked':'')+(i===0?' active':'');
+      el.textContent=s.title;el.title=s.locked?'Locked':s.key||'';
+      el.onclick=function(){if(s.locked&&!decrypted.O)return;cur=i;render();document.querySelectorAll('.sess').forEach(function(x){x.classList.remove('active');});el.classList.add('active');};
+      list.appendChild(el);
+    });
+    function render(){
+      var s=SESSIONS[cur];trans.innerHTML='';
+      s.lines.forEach(function(ln,i){
+        var div=document.createElement('div');div.className='line';
+        div.innerHTML='<div class="speaker">'+ln.s+'</div><div class="typed-'+i+'"></div>';
+        trans.appendChild(div);
+        if(typeof Typed!=='undefined'){
+          new Typed('.typed-'+i,{strings:[ln.t],typeSpeed:28,showCursor:false});
+        } else div.querySelector('div:last-child').textContent=ln.t;
+      });
+      if(typeof gsap!=='undefined')gsap.from(trans.children,{opacity:0,y:8,stagger:0.1,duration:0.35});
+      if(tick)tick.play();
+    }
+    document.getElementById('decrypt-btn').onclick=function(){
+      var k=document.getElementById('decrypt-key').value;
+      if(k===SESSIONS[cur].key){decrypted[SESSIONS[cur].id]=true;document.getElementById('decrypt-key').value='';render();}
+      if(k==='omega-master'){SESSIONS[4].locked=false;SESSIONS[4].lines=[{s:'OMEGA',t:'Full traffic dump decrypted. Exfil destination: 198.51.100.44'}];decrypted.O=true;document.querySelectorAll('.sess')[4].classList.remove('locked');render();}
+    };
+    render();
+  })();
+  </script>
+  <div id="deck-nav-root"></div>
+  <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
+</body>
+</html>

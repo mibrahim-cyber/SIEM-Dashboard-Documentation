@@ -1,0 +1,302 @@
+{
+  "generated": "2026-05-23T02:13:22Z",
+  "nodes": {
+    "SIEM Dashboard": {
+      "label": "SIEM Dashboard",
+      "dir": "docs/02-architecture/",
+      "score": 0.8,
+      "words": 4390,
+      "pages": 9,
+      "screenshots": 0,
+      "links": 14,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "Documentation": {
+      "label": "Documentation",
+      "dir": "docs/",
+      "score": 0.8,
+      "words": 58879,
+      "pages": 136,
+      "screenshots": 0,
+      "links": 362,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "Architecture": {
+      "label": "Architecture",
+      "dir": "docs/02-architecture/",
+      "score": 0.8,
+      "words": 4390,
+      "pages": 9,
+      "screenshots": 0,
+      "links": 14,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "Backend API": {
+      "label": "Backend API",
+      "dir": "docs/03-backend/",
+      "score": 0.8,
+      "words": 6865,
+      "pages": 17,
+      "screenshots": 0,
+      "links": 34,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "SQLite DB": {
+      "label": "SQLite DB",
+      "dir": "docs/03-backend/",
+      "score": 0.8,
+      "words": 6865,
+      "pages": 17,
+      "screenshots": 0,
+      "links": 34,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "RBAC": {
+      "label": "RBAC",
+      "dir": "docs/08-security/",
+      "score": 0.8,
+      "words": 6273,
+      "pages": 15,
+      "screenshots": 0,
+      "links": 42,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "Cryptography": {
+      "label": "Cryptography",
+      "dir": "docs/03-backend/",
+      "score": 0.8,
+      "words": 6865,
+      "pages": 17,
+      "screenshots": 0,
+      "links": 34,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "Validation": {
+      "label": "Validation",
+      "dir": "docs/03-backend/",
+      "score": 0.8,
+      "words": 6865,
+      "pages": 17,
+      "screenshots": 0,
+      "links": 34,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "Threat Intel": {
+      "label": "Threat Intel",
+      "dir": "docs/03-backend/",
+      "score": 0.8,
+      "words": 6865,
+      "pages": 17,
+      "screenshots": 0,
+      "links": 34,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "GeoIP": {
+      "label": "GeoIP",
+      "dir": "docs/03-backend/",
+      "score": 0.8,
+      "words": 6865,
+      "pages": 17,
+      "screenshots": 0,
+      "links": 34,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "React Shell": {
+      "label": "React Shell",
+      "dir": "docs/04-frontend/",
+      "score": 0.8,
+      "words": 3624,
+      "pages": 9,
+      "screenshots": 0,
+      "links": 18,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "AuthContext": {
+      "label": "AuthContext",
+      "dir": "docs/04-frontend/",
+      "score": 0.8,
+      "words": 3624,
+      "pages": 9,
+      "screenshots": 0,
+      "links": 18,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "SiemContext": {
+      "label": "SiemContext",
+      "dir": "docs/04-frontend/",
+      "score": 0.8,
+      "words": 3624,
+      "pages": 9,
+      "screenshots": 0,
+      "links": 18,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "API Client": {
+      "label": "API Client",
+      "dir": "docs/04-frontend/",
+      "score": 0.8,
+      "words": 3624,
+      "pages": 9,
+      "screenshots": 0,
+      "links": 18,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "DetectionEngine": {
+      "label": "DetectionEngine",
+      "dir": "docs/05-detection-engine/",
+      "score": 0.8,
+      "words": 9121,
+      "pages": 22,
+      "screenshots": 0,
+      "links": 64,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "rules.js": {
+      "label": "rules.js",
+      "dir": "docs/05-detection-engine/",
+      "score": 0.8,
+      "words": 9121,
+      "pages": 22,
+      "screenshots": 0,
+      "links": 64,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "Correlation": {
+      "label": "Correlation",
+      "dir": "docs/05-detection-engine/",
+      "score": 0.8,
+      "words": 9121,
+      "pages": 22,
+      "screenshots": 0,
+      "links": 64,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "SQL Injection": {
+      "label": "SQL Injection",
+      "dir": "docs/05-detection-engine/",
+      "score": 0.8,
+      "words": 9121,
+      "pages": 22,
+      "screenshots": 0,
+      "links": 64,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "XSS Attempt": {
+      "label": "XSS Attempt",
+      "dir": "docs/05-detection-engine/",
+      "score": 0.8,
+      "words": 9121,
+      "pages": 22,
+      "screenshots": 0,
+      "links": 64,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "Brute Force": {
+      "label": "Brute Force",
+      "dir": "docs/05-detection-engine/",
+      "score": 0.8,
+      "words": 9121,
+      "pages": 22,
+      "screenshots": 0,
+      "links": 64,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "Dashboard": {
+      "label": "Dashboard",
+      "dir": "guides/monitor/overview/",
+      "score": 1.0,
+      "words": 6495,
+      "pages": 8,
+      "screenshots": 2,
+      "links": 9,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "Alert Manager": {
+      "label": "Alert Manager",
+      "dir": "guides/monitor/alert-manager/",
+      "score": 1.0,
+      "words": 3673,
+      "pages": 9,
+      "screenshots": 2,
+      "links": 10,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "SOAR Console": {
+      "label": "SOAR Console",
+      "dir": "guides/respond/soar-console/",
+      "score": 1.0,
+      "words": 6780,
+      "pages": 10,
+      "screenshots": 9,
+      "links": 18,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "Geo Map": {
+      "label": "Geo Map",
+      "dir": "guides/investigate/geo-map/",
+      "score": 1.0,
+      "words": 5378,
+      "pages": 8,
+      "screenshots": 7,
+      "links": 14,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "Pentest RBAC": {
+      "label": "Pentest RBAC",
+      "dir": "pentests/",
+      "score": 0.7,
+      "words": 1368,
+      "pages": 3,
+      "screenshots": 0,
+      "links": 0,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "Pentest CSRF": {
+      "label": "Pentest CSRF",
+      "dir": "pentests/",
+      "score": 0.7,
+      "words": 1368,
+      "pages": 3,
+      "screenshots": 0,
+      "links": 0,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    },
+    "Pentest Input": {
+      "label": "Pentest Input",
+      "dir": "pentests/",
+      "score": 0.7,
+      "words": 1368,
+      "pages": 3,
+      "screenshots": 0,
+      "links": 0,
+      "stale": false,
+      "daysSinceEdit": 0.0
+    }
+  }
+}

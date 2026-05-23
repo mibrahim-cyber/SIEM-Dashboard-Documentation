@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" data-deck-page="breach">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="Red-team containment simulation — isolate nodes and stop lateral movement." />
+  <meta property="og:title" content="The Breach — HABIBI-SIEM" />
+  <meta property="og:description" content="Red-team containment simulation — isolate nodes and stop lateral movement." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/breach-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Breach — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Red-team containment simulation — isolate nodes and stop lateral movement." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/breach-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Breach — Meridian-7</title>
+  <link rel="stylesheet" href="assets/palette.css" />
+  <link rel="stylesheet" href="assets/deck-nav.css" />
+  <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#0a0408;color:#fecaca;font-family:Consolas,monospace;overflow:hidden}
+    #hud{position:fixed;top:0;left:0;right:0;height:40px;display:flex;align-items:center;gap:16px;padding:0 12px;background:rgba(20,8,12,.95);border-bottom:1px solid rgba(248,113,113,.3);font-size:10px;letter-spacing:2px;z-index:10}
+    #canvas-wrap{position:fixed;top:40px;left:0;right:0;bottom:80px}#breach-canvas{width:100%;height:100%;display:block;cursor:pointer}
+    #panel{position:fixed;bottom:0;left:0;right:0;height:80px;padding:8px 12px;background:rgba(10,4,8,.96);border-top:1px solid rgba(248,113,113,.2);font-size:10px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .btn{font:inherit;padding:6px 12px;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.35);color:#fecaca;cursor:pointer}
+    .btn:hover{background:rgba(248,113,113,.25)}#score{margin-left:auto;font-size:12px;color:#fbbf24}
+    #end-screen{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:50;gap:16px}
+    #end-screen.show{display:flex}
+  </style>
+</head>
+<body>
+  <div id="hud">THE BREACH · RED TEAM SIM · <span id="scenario-name">Scenario 1/5</span></div>
+  <div id="canvas-wrap"><canvas id="breach-canvas"></canvas></div>
+  <div id="panel">
+    <button class="btn" id="btn-isolate">Isolate Node</button>
+    <button class="btn" id="btn-ids">Deploy IDS</button>
+    <button class="btn" id="btn-flush">Flush Sessions</button>
+    <button class="btn" id="btn-next">Next Scenario</button>
+    <span id="score">Score: 0</span>
+  </div>
+  <div id="end-screen"><h2>CONTAINMENT ACHIEVED</h2><p id="end-msg"></p><button class="btn" onclick="location.reload()">Replay</button><button class="btn" id="btn-share">Share Score</button></div>
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/palette.js"></script>
+  <script>
+  (function(){
+    SiemCore.bootPage('breach'); SiemCore.AchievementSystem.check('visit_breach');
+    var SCENARIOS=['Phishing Drop','Lateral Move','Ransomware','Data Exfil','Supply Chain'];
+    var nodes=[],edges=[],scenario=0,score=0,selected=null,traffic=[];
+    if (typeof Tone !== 'undefined') { /* audio starts on user action only */ }
+    document.getElementById('btn-share').onclick=function(){ if(window.SiemShareCard) SiemShareCard.capture({title:'The Breach',subtitle:'Containment score',score:score,filename:'breach-score.png'}); };
+    var canvas=document.getElementById('breach-canvas'),ctx=canvas.getContext('2d');
+    var zones=['DMZ','INTERNAL','OT'];
+    function resize(){canvas.width=canvas.clientWidth;canvas.height=canvas.clientHeight} resize(); addEventListener('resize',resize);
+    function initTopology(){
+      nodes=[]; var cx=canvas.width/2,cy=canvas.height/2;
+      zones.forEach(function(z,zi){for(var i=0;i<4;i++){nodes.push({id:nodes.length,x:cx+Math.cos(i+zi*2)*180,y:cy+Math.sin(i+zi*2)*120,z:z,compromised:false,isolated:false});}});
+      edges=[]; for(var a=0;a<nodes.length;a++) for(var b=a+1;b<nodes.length;b++) if(Math.random()<0.15) edges.push({a:a,b:b,active:true});
+    }
+    initTopology();
+    function spawnTraffic(){
+      if(!edges.length)return;
+      var e=edges[Math.floor(Math.random()*edges.length)];
+      if(!e||!e.active)return;
+      var na=nodes[e.a],nb=nodes[e.b];
+      traffic.push({x:na.x,y:na.y,tx:nb.x,ty:nb.y,t:0});
+    }
+    setInterval(spawnTraffic,400);
+    canvas.addEventListener('click',function(e){
+      var r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+      selected=null; nodes.forEach(function(n){if(Math.hypot(n.x-x,n.y-y)<18){selected=n;}});
+    });
+    document.getElementById('btn-isolate').onclick=function(){if(selected){selected.isolated=true;score+=50;}};
+    document.getElementById('btn-ids').onclick=function(){score+=30;edges.forEach(function(ed){if(Math.random()<0.3)ed.active=false;});};
+    document.getElementById('btn-flush').onclick=function(){nodes.forEach(function(n){n.compromised=false;});score+=20;};
+    document.getElementById('btn-next').onclick=function(){
+      scenario++; document.getElementById('scenario-name').textContent='Scenario '+(scenario+1)+'/5';
+      if(scenario>=5){document.getElementById('end-screen').classList.add('show');document.getElementById('end-msg').textContent='Final score: '+score;SiemCore.AchievementSystem.check('breach_win');return;}
+      initTopology(); nodes[0].compromised=true;
+    };
+    nodes[0].compromised=true;
+    SiemCore.CanvasLoop.create(canvas,function(){
+      ctx.fillStyle='#0a0408';ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.strokeStyle='rgba(248,113,113,0.25)';edges.forEach(function(ed){if(!ed.active)return;var na=nodes[ed.a],nb=nodes[ed.b];ctx.beginPath();ctx.moveTo(na.x,na.y);ctx.lineTo(nb.x,nb.y);ctx.stroke();});
+      nodes.forEach(function(n){
+        ctx.beginPath();ctx.arc(n.x,n.y,14,0,Math.PI*2);
+        ctx.fillStyle=n.isolated?'#64748b':n.compromised?'#ef4444':'#22c55e';ctx.fill();
+        if(selected===n){ctx.strokeStyle='#fbbf24';ctx.lineWidth=2;ctx.stroke();ctx.lineWidth=1;}
+        ctx.fillStyle='#94a3b8';ctx.font='8px monospace';ctx.fillText(n.z,n.x-12,n.y+24);
+      });
+      traffic.forEach(function(p,i){
+        p.t+=0.02;
+        var x=p.x+(p.tx-p.x)*p.t,y=p.y+(p.ty-p.y)*p.t;
+        ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fillStyle='rgba(56,189,248,0.7)';ctx.fill();
+        if(p.t>=1)traffic.splice(i,1);
+      });
+      if(Math.random()<0.02){var e=edges[Math.floor(Math.random()*edges.length)];if(e&&e.active){var na=nodes[e.a],nb=nodes[e.b];if(na.compromised&&!nb.compromised&&!nb.isolated)nb.compromised=true;}}
+      document.getElementById('score').textContent='Score: '+score;
+    },{targetFps:30}).start();
+  })();
+  </script>
+  <div id="deck-nav-root"></div>
+  <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
+</body>
+</html>

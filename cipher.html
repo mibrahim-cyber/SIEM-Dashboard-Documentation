@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" data-deck-page="cipher">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="Cryptographic puzzle room — decode signals and unlock classified briefs." />
+  <meta property="og:title" content="The Cipher — HABIBI-SIEM" />
+  <meta property="og:description" content="Cryptographic puzzle room — decode signals and unlock classified briefs." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/cipher-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Cipher — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Cryptographic puzzle room — decode signals and unlock classified briefs." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/cipher-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Cipher — Meridian-7</title>
+  <link rel="stylesheet" href="assets/palette.css" />
+  <link rel="stylesheet" href="assets/deck-nav.css" />
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/TextPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}html,body{min-height:100%;background:#0a0618;color:#c4b5fd;font-family:Consolas,monospace}
+    #hdr{padding:16px;text-align:center;font-size:11px;letter-spacing:3px;border-bottom:1px solid rgba(196,181,253,.2)}
+    #vault{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:900px;margin:32px auto;padding:16px}
+    .chamber{border:1px solid rgba(196,181,253,.3);border-radius:8px;padding:20px;background:rgba(15,10,30,.8);text-align:center}
+    .chamber.solved{border-color:#34d399;background:rgba(6,40,30,.4)}
+    .chamber h2{font-size:14px;letter-spacing:2px;margin-bottom:12px}
+    .chamber input{width:100%;padding:8px;background:#1e1b4b;border:1px solid #6366f1;color:#e2e8f0;font:inherit;margin-bottom:8px}
+    .chamber button{font:inherit;padding:8px 16px;background:rgba(99,102,241,.2);border:1px solid #6366f1;color:#c4b5fd;cursor:pointer;width:100%}
+    .chamber .status{font-size:10px;margin-top:8px;color:#64748b}
+  </style>
+</head>
+<body>
+  <div id="hdr">THE CIPHER · VAULT ACCESS · 6 CHAMBERS</div>
+  <div id="vault">
+    <div class="chamber" id="alpha"><h2>ALPHA</h2><p>Caesar shift +3</p><input id="alpha-in" placeholder="Decrypt: QHABLE → ?" /><button id="alpha-btn">Unlock</button><div class="status"></div></div>
+    <div class="chamber" id="beta"><h2>BETA</h2><p>Reverse string</p><input id="beta-in" placeholder="M7_REVERSE" /><button id="beta-btn">Unlock</button><div class="status"></div></div>
+    <div class="chamber" id="gamma"><h2>GAMMA</h2><p>Vigenère key: KEY</p><input id="gamma-in" placeholder="Decrypt ciphertext" /><button id="gamma-btn">Unlock</button><div class="status"></div></div>
+    <div class="chamber" id="delta"><h2>DELTA</h2><p>Base64 decode</p><input id="delta-in" placeholder="TV9SRUFO" /><button id="delta-btn">Unlock</button><div class="status"></div></div>
+    <div class="chamber" id="epsilon"><h2>EPSILON</h2><p>MD5 of MERIDIAN</p><input id="epsilon-in" placeholder="hash" /><button id="epsilon-btn">Unlock</button><div class="status"></div></div>
+    <div class="chamber" id="zeta"><h2>ZETA</h2><p>Combine keys</p><input id="zeta-in" placeholder="FINAL-KEY" /><button id="zeta-btn">Unlock</button><div class="status"></div></div>
+  </div>
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/palette.js"></script>
+  <script>
+  (function(){
+    SiemCore.bootPage('cipher'); SiemCore.AchievementSystem.check('visit_cipher');
+    if(typeof gsap!=='undefined'&&gsap.registerPlugin)gsap.registerPlugin(TextPlugin);
+    var unlockSound=typeof Howl!=='undefined'?new Howl({src:['data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAAA='],volume:0.3}):null;
+    function caesarDec(s,n){return s.replace(/[A-Z]/g,function(c){return String.fromCharCode((c.charCodeAt(0)-65-n+26)%26+65);});}
+    function solve(id,ok,statusEl,ch){
+      if(!ok){statusEl.textContent='Incorrect';return;}
+      ch.classList.add('solved');
+      if(typeof gsap!=='undefined')gsap.fromTo(ch,{scale:0.95},{scale:1,duration:0.4,ease:'back.out(1.7)'});
+      if(unlockSound)unlockSound.play();
+      if(typeof gsap!=='undefined'&&TextPlugin)gsap.to(statusEl,{duration:0.6,text:'UNLOCKED',ease:'none'});
+      else statusEl.textContent='UNLOCKED';
+    }
+    document.getElementById('alpha-btn').onclick=function(){
+      var v=document.getElementById('alpha-in').value.toUpperCase();
+      solve('alpha',caesarDec(v,3)==='MERIDIAN',document.querySelector('#alpha .status'),document.getElementById('alpha'));
+      if(caesarDec(v,3)==='MERIDIAN')SiemCore.AchievementSystem.check('cipher_alpha');
+    };
+    document.getElementById('beta-btn').onclick=function(){
+      var v=document.getElementById('beta-in').value;
+      solve('beta',v.split('').reverse().join('')==='ESREVER_7M',document.querySelector('#beta .status'),document.getElementById('beta'));
+    };
+    document.getElementById('gamma-btn').onclick=function(){
+      var v=document.getElementById('gamma-in').value.toUpperCase();
+      solve('gamma',v==='VAULT',document.querySelector('#gamma .status'),document.getElementById('gamma'));
+    };
+    document.getElementById('delta-btn').onclick=function(){
+      try{var v=atob(document.getElementById('delta-in').value.trim());solve('delta',v==='MOREAU',document.querySelector('#delta .status'),document.getElementById('delta'));}catch(e){document.querySelector('#delta .status').textContent='Invalid base64';}
+    };
+    document.getElementById('epsilon-btn').onclick=function(){
+      var v=document.getElementById('epsilon-in').value.toLowerCase();
+      solve('epsilon',v==='a1b2c3d4e5f6789012345678901234ab',document.querySelector('#epsilon .status'),document.getElementById('epsilon'));
+    };
+    document.getElementById('zeta-btn').onclick=function(){
+      var v=document.getElementById('zeta-in').value.toUpperCase();
+      solve('zeta',v==='MERIDIAN-VAULT-7',document.querySelector('#zeta .status'),document.getElementById('zeta'));
+      if(v==='MERIDIAN-VAULT-7')SiemCore.AchievementSystem.check('cipher_vault');
+    };
+  })();
+  </script>
+  <div id="deck-nav-root"></div>
+  <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
+</body>
+</html>

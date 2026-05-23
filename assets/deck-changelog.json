@@ -1,0 +1,194 @@
+{
+  "generated": "2026-05-23T02:13:22Z",
+  "nodes": {
+    "Brute Force": {
+      "label": "Brute Force",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "Validation": {
+      "label": "Validation",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "SiemContext": {
+      "label": "SiemContext",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "GeoIP": {
+      "label": "GeoIP",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "Backend API": {
+      "label": "Backend API",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "Geo Map": {
+      "label": "Geo Map",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Module walkthrough guides",
+      "sha": "3fcf04a4",
+      "recency": 1.0
+    },
+    "Documentation": {
+      "label": "Documentation",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "DetectionEngine": {
+      "label": "DetectionEngine",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "Correlation": {
+      "label": "Correlation",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "Pentest CSRF": {
+      "label": "Pentest CSRF",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Security assessment reports",
+      "sha": "68d307cd",
+      "recency": 1.0
+    },
+    "Threat Intel": {
+      "label": "Threat Intel",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "SQL Injection": {
+      "label": "SQL Injection",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "SIEM Dashboard": {
+      "label": "SIEM Dashboard",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "Dashboard": {
+      "label": "Dashboard",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Module walkthrough guides",
+      "sha": "3fcf04a4",
+      "recency": 1.0
+    },
+    "Pentest Input": {
+      "label": "Pentest Input",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Security assessment reports",
+      "sha": "68d307cd",
+      "recency": 1.0
+    },
+    "Cryptography": {
+      "label": "Cryptography",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "SOAR Console": {
+      "label": "SOAR Console",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Module walkthrough guides",
+      "sha": "3fcf04a4",
+      "recency": 1.0
+    },
+    "XSS Attempt": {
+      "label": "XSS Attempt",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "RBAC": {
+      "label": "RBAC",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "Architecture": {
+      "label": "Architecture",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "React Shell": {
+      "label": "React Shell",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "rules.js": {
+      "label": "rules.js",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "SQLite DB": {
+      "label": "SQLite DB",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "Alert Manager": {
+      "label": "Alert Manager",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Module walkthrough guides",
+      "sha": "3fcf04a4",
+      "recency": 1.0
+    },
+    "Pentest RBAC": {
+      "label": "Pentest RBAC",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Security assessment reports",
+      "sha": "68d307cd",
+      "recency": 1.0
+    },
+    "API Client": {
+      "label": "API Client",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    },
+    "AuthContext": {
+      "label": "AuthContext",
+      "date": "2026-05-22T23:10:42+01:00",
+      "summary": "Technical docs \u2014 ten volumes",
+      "sha": "8940493a",
+      "recency": 1.0
+    }
+  }
+}

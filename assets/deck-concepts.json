@@ -1,0 +1,76 @@
+{
+  "concepts": [
+    {
+      "id": "csrf",
+      "label": "CSRF",
+      "modules": ["AuthContext", "API Client", "Pentest CSRF"],
+      "desc": "Cross-site request forgery — mutating calls need a session-bound token."
+    },
+    {
+      "id": "sliding-window",
+      "label": "Sliding window",
+      "modules": ["Brute Force", "Correlation", "DetectionEngine"],
+      "desc": "Time-bounded counts — brute force and correlation both use short windows."
+    },
+    {
+      "id": "kill-chain",
+      "label": "Kill chain",
+      "modules": ["DetectionEngine", "Alert Manager", "SOAR Console", "Threat Intel"],
+      "desc": "From first signal through containment — deck path mirrors recon to action."
+    },
+    {
+      "id": "cvss",
+      "label": "CVSS",
+      "modules": ["Threat Intel", "Alert Manager", "Documentation"],
+      "desc": "Severity scoring context for vuln intel and alert priority."
+    },
+    {
+      "id": "lateral-movement",
+      "label": "Lateral movement",
+      "modules": ["Correlation", "Geo Map", "SOAR Console", "SiemContext"],
+      "desc": "Same actor hopping hosts — incidents cluster IPs; maps show spread."
+    },
+    {
+      "id": "impossible-travel",
+      "label": "Impossible travel",
+      "modules": ["Geo Map", "GeoIP", "Brute Force"],
+      "desc": "Same identity in distant cities too fast — geo map draws dashed links."
+    },
+    {
+      "id": "rbac",
+      "label": "RBAC",
+      "modules": ["RBAC", "AuthContext", "Pentest RBAC", "Backend API"],
+      "desc": "Role gates on write, admin, and export — server enforces, UI hints."
+    },
+    {
+      "id": "sql-injection",
+      "label": "SQL injection",
+      "modules": ["SQL Injection", "Validation", "Pentest Input"],
+      "desc": "Metacharacters in HTTP fields — rule plus server-side validation."
+    },
+    {
+      "id": "xss",
+      "label": "XSS",
+      "modules": ["XSS Attempt", "Validation", "DetectionEngine"],
+      "desc": "Script and sink patterns in request bodies."
+    },
+    {
+      "id": "wal",
+      "label": "WAL mode",
+      "modules": ["SQLite DB", "Backend API"],
+      "desc": "Write-ahead logging — concurrent reads during demo writes."
+    },
+    {
+      "id": "mitre",
+      "label": "MITRE ATT&CK",
+      "modules": ["Alert Manager", "DetectionEngine", "rules.js"],
+      "desc": "Technique tags on alerts for mapping detections to known TTPs."
+    },
+    {
+      "id": "soar",
+      "label": "SOAR playbooks",
+      "modules": ["SOAR Console", "Threat Intel", "Brute Force"],
+      "desc": "Block, watchlist, and audit after confirmed external abuse."
+    }
+  ]
+}

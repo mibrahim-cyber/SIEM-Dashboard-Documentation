@@ -1,0 +1,20 @@
+{
+  "APT-Nebula": {
+    "aliases": ["Nebula Crew", "Starfall"],
+    "motivation": "Credential theft on finance tenants",
+    "ttps": ["T1078", "T1110", "T1059"],
+    "modules": ["Brute Force", "AuthContext", "Alert Manager"]
+  },
+  "GlassWasp": {
+    "aliases": ["Wasp-7"],
+    "motivation": "Supply-chain probe against ingest paths",
+    "ttps": ["T1190", "T1055", "T1027"],
+    "modules": ["Validation", "log-ingestion", "DetectionEngine"]
+  },
+  "RustCartel": {
+    "aliases": ["Cartel-R"],
+    "motivation": "Lateral movement after initial XSS",
+    "ttps": ["T1189", "T1059", "T1048"],
+    "modules": ["XSS Attempt", "SOAR Console", "Geo Map"]
+  }
+}

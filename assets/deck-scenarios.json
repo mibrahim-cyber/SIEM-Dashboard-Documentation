@@ -1,0 +1,72 @@
+{
+  "threats": {
+    "ransomware": {
+      "label": "Ransomware",
+      "summary": "Encrypted shares after lateral movement — follow ingest through response.",
+      "path": ["Validation", "DetectionEngine", "Alert Manager", "Correlation", "SOAR Console", "Threat Intel"]
+    },
+    "phishing": {
+      "label": "Phishing",
+      "summary": "Credential harvest and session abuse — auth and triage chain.",
+      "path": ["AuthContext", "Brute Force", "Alert Manager", "Geo Map", "Threat Intel", "SOAR Console"]
+    },
+    "insider": {
+      "label": "Insider threat",
+      "summary": "Privileged misuse and off-hours access — RBAC and UEBA-style signals.",
+      "path": ["RBAC", "SiemContext", "DetectionEngine", "Alert Manager", "Correlation", "Backend API"]
+    },
+    "supply_chain": {
+      "label": "Supply chain",
+      "summary": "Tampered dependency or poisoned logs — validation and input abuse path.",
+      "path": ["Validation", "Pentest Input", "DetectionEngine", "SQL Injection", "Alert Manager", "Cryptography"]
+    },
+    "ddos": {
+      "label": "DDoS",
+      "summary": "Volume spike and geo scatter — monitor and map the flood.",
+      "path": ["Dashboard", "DetectionEngine", "Brute Force", "Geo Map", "Alert Manager", "Backend API"]
+    }
+  },
+  "challenges": [
+    {
+      "id": "brute-russia",
+      "prompt": "200 failed logins per minute from Russia on one account. Pick three modules in triage order.",
+      "answer": ["Brute Force", "Geo Map", "SOAR Console"],
+      "explain": "Start at the rule that fired (Brute Force), confirm origin on Geo Map, then contain via SOAR."
+    },
+    {
+      "id": "sql-web",
+      "prompt": "WAF logs show encoded quotes in POST bodies to /api/search. Which three nodes matter first?",
+      "answer": ["Validation", "SQL Injection", "Alert Manager"],
+      "explain": "Validation shows what reached the server, SQL Injection is the detection, Alert Manager is where you ack and assign."
+    },
+    {
+      "id": "csrf-admin",
+      "prompt": "Audit shows POST /settings from a foreign referer while an admin was logged in. Order three nodes.",
+      "answer": ["Pentest CSRF", "AuthContext", "API Client"],
+      "explain": "CSRF report explains the class of bug, AuthContext owns session, API Client shows how tokens attach to writes."
+    }
+  ],
+  "tabletop": [
+    {
+      "id": "3am-brute",
+      "title": "3am brute force from foreign IP",
+      "brief": "Pager fires: five hundred failed SSH attempts from Romania against vpn-gateway. You have ten minutes to walk the deck path before shift lead calls.",
+      "path": ["Brute Force", "Geo Map", "Threat Intel", "Alert Manager", "SOAR Console"],
+      "timerSec": 600
+    },
+    {
+      "id": "ransom-note",
+      "title": "Ransom note on file server",
+      "brief": "Help desk reports .locked extensions on finance shares. Trace ingest, detection, and response nodes in order.",
+      "path": ["Validation", "DetectionEngine", "Correlation", "Alert Manager", "SOAR Console"],
+      "timerSec": 900
+    },
+    {
+      "id": "insider-export",
+      "title": "Auditor flags bulk export",
+      "brief": "After hours, tier-one account exported ten thousand alert rows. Walk RBAC through audit response.",
+      "path": ["RBAC", "Backend API", "Alert Manager", "SiemContext", "Pentest RBAC"],
+      "timerSec": 480
+    }
+  ]
+}

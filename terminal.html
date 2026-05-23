@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" data-deck-page="terminal">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="Boot the SOC shell — command-line triage, log grep, and virtual filesystem lab." />
+  <meta property="og:title" content="The Terminal — HABIBI-SIEM" />
+  <meta property="og:description" content="Boot the SOC shell — command-line triage, log grep, and virtual filesystem lab." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/terminal-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Terminal — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Boot the SOC shell — command-line triage, log grep, and virtual filesystem lab." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/terminal-og.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Terminal — Meridian-7 SIEM</title>  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+  <link rel="stylesheet" href="assets/palette.css" />
+  <link rel="stylesheet" href="assets/deck-nav.css" />
+  <style>
+    :root {
+      --phosphor: #39ff14;
+      --phosphor-dim: #1a8f0a;
+      --crt-bg: #030a04;
+      --header-h: 36px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: var(--crt-bg);
+      font-family: "IBM Plex Mono", Consolas, monospace;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 50;
+      background: linear-gradient(180deg, rgba(57,255,20,0.03) 0%, transparent 40%, rgba(0,0,0,0.4) 100%);
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 51;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px);
+    }
+    #term-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+      height: var(--header-h);
+      display: flex; align-items: center; gap: 12px;
+      padding: 0 12px;
+      background: rgba(3, 10, 4, 0.96);
+      border-bottom: 1px solid rgba(57, 255, 20, 0.25);
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--phosphor);
+    }
+    #term-led {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--phosphor);
+      box-shadow: 0 0 8px var(--phosphor);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+    #term-utc { margin-left: auto; color: #64748b; letter-spacing: 1px; }
+    #term-version { color: var(--phosphor-dim); }
+    #term-wrap {
+      position: fixed;
+      top: var(--header-h);
+      left: 0; right: 0; bottom: 0;
+      padding: 8px;
+      z-index: 10;
+    }
+    #terminal {
+      width: 100%; height: 100%;
+      text-shadow: 1px 0 rgba(255,0,80,0.08), -1px 0 rgba(0,180,255,0.08);
+    }
+    #term-boot {
+      position: fixed; inset: 0; z-index: 100;
+      background: #000;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: var(--phosphor);
+      font-size: 11px; letter-spacing: 2px;
+      cursor: pointer;
+    }
+    #term-boot.hidden { display: none; }
+    #term-boot-bar {
+      width: min(320px, 80vw); height: 4px;
+      background: rgba(57,255,20,0.15);
+      margin-top: 24px; overflow: hidden;
+    }
+    #term-boot-fill {
+      height: 100%; width: 0;
+      background: var(--phosphor);
+      box-shadow: 0 0 12px var(--phosphor);
+      transition: width 0.08s linear;
+    }
+    #term-boot-hint {
+      margin-top: 16px; font-size: 9px;
+      color: var(--phosphor-dim); letter-spacing: 3px;
+    }
+    .xterm { padding: 4px; }
+    .xterm-viewport { background: transparent !important; }
+    @media (max-width: 900px) {
+      #term-header { font-size: 8px; gap: 6px; }
+      #term-wrap { padding: 4px; }
+    }
+    @media print {
+      #term-boot, #term-header { display: none; }
+      body::before, body::after { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="term-boot" role="button" tabindex="0" aria-label="Click to boot terminal">
+    <div>MERIDIAN-7 // ANALYST TERMINAL</div>
+    <div id="term-boot-bar"><div id="term-boot-fill"></div></div>
+    <div id="term-boot-hint">BOOTING ANALYST SHELL · v15.2</div>
+  </div>
+  <header id="term-header">
+    <span id="term-led" aria-hidden="true"></span>
+    <span>M7-TERM</span>
+    <span id="term-version">v15.2.0</span>
+    <span id="term-utc">--:--:-- UTC</span>
+  </header>
+  <div id="term-wrap">
+    <div id="terminal" aria-label="Terminal emulator"></div>
+  </div>
+  <div id="deck-nav-root"></div>
+
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/palette.js"></script>
+  <script src="assets/terminal-shell.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.min.js"></script>
+  <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
+  <script>
+  (function () {
+    'use strict';
+    SiemCore.bootPage('terminal');
+    SiemCore.AchievementSystem.check('visit_terminal');
+    SiemCore.AchievementSystem.check('first_boot');
+
+    var bootEl = document.getElementById('term-boot');
+    var bootFill = document.getElementById('term-boot-fill');
+    var utcEl = document.getElementById('term-utc');
+    var term, fitAddon, lineBuf = '', booted = false;
+
+    function tickUtc() {
+      utcEl.textContent = new Date().toISOString().slice(11, 19) + ' UTC';
+    }
+    tickUtc();
+    setInterval(tickUtc, 1000);
+
+    function runBoot(cb) {
+      var p = 0;
+      var iv = setInterval(function () {
+        p += 4 + Math.random() * 8;
+        if (p >= 100) {
+          p = 100;
+          clearInterval(iv);
+          setTimeout(cb, 200);
+        }
+        bootFill.style.width = p + '%';
+      }, 60);
+    }
+
+    function initTerm() {
+      if (typeof Terminal === 'undefined') {
+        booted = false;
+        bootEl.classList.remove('hidden');
+        document.getElementById('term-boot-hint').textContent = 'XTERM FAILED TO LOAD — REFRESH OR CHECK NETWORK';
+        return;
+      }
+      term = new Terminal({
+        cursorBlink: true,
+        fontFamily: '"IBM Plex Mono", Consolas, monospace',
+        fontSize: 14,
+        lineHeight: 1.2,
+        theme: {
+          background: '#030a04',
+          foreground: '#39ff14',
+          cursor: '#39ff14',
+          selectionBackground: 'rgba(57,255,20,0.25)',
+          black: '#0a140a',
+          green: '#39ff14',
+          yellow: '#fbbf24',
+          blue: '#38bdf8',
+          red: '#f87171',
+          brightBlack: '#64748b',
+        },
+        scrollback: 5000,
+      });
+      fitAddon = typeof FitAddon !== 'undefined' ? new FitAddon.FitAddon() : null;
+      if (fitAddon) term.loadAddon(fitAddon);
+      if (typeof WebLinksAddon !== 'undefined') {
+        term.loadAddon(new WebLinksAddon());
+      }
+      term.open(document.getElementById('terminal'));
+      if (fitAddon) fitAddon.fit();
+
+      term.writeln('\x1b[32m' + TerminalShell.getMotd().replace(/\n/g, '\r\n') + '\x1b[0m');
+      term.write(TerminalShell.prompt());
+
+      term.onData(function (data) {
+        if (data === '\u0003') {
+          TerminalShell.stopTailF();
+          term.write('^C\r\n' + TerminalShell.prompt());
+          lineBuf = '';
+          return;
+        }
+        if (data === '\r') {
+          term.write('\r\n');
+          var pending = TerminalShell.runCommand(lineBuf, term, function (s) { term.write(s); });
+          if (pending !== 'SUDO_PENDING') {
+            term.write(TerminalShell.prompt());
+          }
+          lineBuf = '';
+          return;
+        }
+        if (data === '\u007f') {
+          if (lineBuf.length) {
+            lineBuf = lineBuf.slice(0, -1);
+            term.write('\b \b');
+          }
+          return;
+        }
+        if (data >= ' ') {
+          lineBuf += data;
+          term.write(data);
+        }
+      });
+
+      addEventListener('resize', function () {
+        try { if (fitAddon) fitAddon.fit(); } catch (_) { /* */ }
+      });
+      term.focus();
+    }
+
+    function startSession() {
+      if (booted) return;
+      booted = true;
+      runBoot(function () {
+        bootEl.classList.add('hidden');
+        initTerm();
+      });
+    }
+
+    bootEl.addEventListener('click', startSession);
+    bootEl.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') startSession();
+    });
+    setTimeout(startSession, 320);
+  })();
+  </script>
+</body>
+</html>

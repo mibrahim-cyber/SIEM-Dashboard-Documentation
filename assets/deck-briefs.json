@@ -1,0 +1,218 @@
+{
+  "SIEM Dashboard": {
+    "href": "../docs/02-architecture/00-system-overview.md",
+    "dir": "docs/02-architecture/",
+    "category": "Platform",
+    "pages": 9,
+    "related": ["Architecture", "Dashboard", "Alert Manager"],
+    "body": "HABIBI-SIEM is a browser SOC console backed by a small API and a local database. Analysts sign in, ingest logs, watch alerts form, triage in Alert Manager, correlate incidents, and run playbooks from SOAR. The observation deck shows how those pieces orbit the same data core: one session, one alert pipeline, many views. Nothing here is a separate product; every module reads the same live state. Use this node as your anchor when you get lost in the map."
+  },
+  "Documentation": {
+    "href": "../docs/01-getting-started/02-tools-i-used.md",
+    "dir": "docs/",
+    "category": "Docs",
+    "pages": 136,
+    "related": ["Architecture", "Backend API", "DetectionEngine"],
+    "body": "Ten technical volumes sit under docs/: getting started, architecture, backend, frontend, detection, ingestion, UI modules, security, operations, and appendix material. They explain how the platform behaves without walking you through a code tree. Pair them with the module guides when you need screen-by-screen walkthroughs. Start at architecture if you want the big picture, or jump straight to detection if you are tuning rules."
+  },
+  "Architecture": {
+    "href": "../docs/02-architecture/00-system-overview.md",
+    "dir": "docs/02-architecture/",
+    "category": "Platform",
+    "pages": 9,
+    "related": ["Backend API", "React Shell", "DetectionEngine"],
+    "body": "The split is simple: the browser renders and filters; the API holds secrets, sessions, and the database. Logs arrive through validation, rules fire on the client pipeline, alerts dedupe, incidents cluster by IP within a short window. CSRF tokens protect writes. RBAC gates admin actions. Threat lookups and geo enrichment call out from the server so keys never sit in the browser. Read this volume when you need to know which layer owns a failure."
+  },
+  "Backend API": {
+    "href": "../docs/03-backend/01-server-index.md",
+    "dir": "docs/03-backend/",
+    "category": "Backend",
+    "pages": 17,
+    "related": ["SQLite DB", "RBAC", "Validation"],
+    "body": "The API exposes login, log validation, alert CRUD, threat checks, settings, audit, and export routes. Middleware stacks authentication, role checks, rate limits, and CSRF on mutating calls. Most analyst work still happens in React state, but anything that must survive a refresh or stay secret lives here. When a button returns 403 or 401, the answer is usually in this layer, not the widget you clicked."
+  },
+  "SQLite DB": {
+    "href": "../docs/03-backend/02-server-db.md",
+    "dir": "docs/03-backend/",
+    "category": "Backend",
+    "pages": 17,
+    "related": ["Backend API", "RBAC", "SiemContext"],
+    "body": "Alerts, users, audit rows, and settings persist in SQLite with WAL mode for concurrent reads during demos. The dashboard still keeps a hot copy of alerts in memory for speed; the database is the durable record for the semester lab. Back up the file before schema experiments. Empty tables after a bad restore look like a broken SIEM even when the UI loads fine."
+  },
+  "RBAC": {
+    "href": "../docs/08-security/02-rbac-deep-dive.md",
+    "dir": "docs/08-security/",
+    "category": "Security",
+    "pages": 15,
+    "related": ["AuthContext", "Pentest RBAC", "Backend API"],
+    "body": "Five roles from read-only auditor through SOC manager control write, admin, and export flags. Tier one can export but not acknowledge. Tier two triages alerts. Managers clear queues and configure threat keys. The UI hides some buttons, but the server enforces the real boundary. Pentest reports in this repo document cases where client checks and server checks diverged and how they were fixed."
+  },
+  "Cryptography": {
+    "href": "../docs/03-backend/04-server-crypto.md",
+    "dir": "docs/03-backend/",
+    "category": "Backend",
+    "pages": 17,
+    "related": ["Backend API", "Threat Intel", "Validation"],
+    "body": "Sensitive values at rest use AES-256-GCM through the server crypto layer. Session identifiers and API key storage depend on this module behaving correctly. Operators never paste keys into browser local storage for AbuseIPDB or VirusTotal; those fields round-trip to the server masked. If threat tests fail after a host migration, verify environment secrets before blaming the feed. This is coursework-grade crypto, not an HSM, but the pattern matches production SIEM key handling."
+  },
+  "Validation": {
+    "href": "../docs/03-backend/05-server-validate.md",
+    "dir": "docs/03-backend/",
+    "category": "Backend",
+    "pages": 17,
+    "related": ["Backend API", "DetectionEngine", "Pentest Input"],
+    "body": "Every ingest batch passes server-side validation after client parsing. Unknown fields strip, severity from untrusted clients drops, oversized batches cap at five thousand events. Failed validation returns empty to the browser so bad data never poisons detections. Log Ingestion preview can look perfect while the server rejects the batch; always check network status and audit entries tagged LOGS_VALIDATED."
+  },
+  "Threat Intel": {
+    "href": "../docs/03-backend/06-server-threat.md",
+    "dir": "docs/03-backend/",
+    "category": "Backend",
+    "pages": 17,
+    "related": ["GeoIP", "SOAR Console", "Backend API"],
+    "body": "AbuseIPDB and VirusTotal lookups run server-side with quota caching and a daily limit. SOAR auto-check calls the same path when external IPs appear in alerts. Settings stores keys; SOAR and Threat Intel screens consume scores. Internal RFC1918 addresses skip lookup by design. Stale cache for sixty seconds can make repeat clicks look frozen; that is normal, not a broken integration."
+  },
+  "GeoIP": {
+    "href": "../docs/03-backend/07-server-geo.md",
+    "dir": "docs/03-backend/",
+    "category": "Backend",
+    "pages": 17,
+    "related": ["Geo Map", "Threat Intel", "Validation"],
+    "body": "Geo enrichment attaches country and city when a MaxMind GeoLite2 database is present on the server host. Without it, Geo Map and impossible-travel lines simply lack coordinates. Operations docs describe where to place the file and how to confirm status. Geo is additive: ingestion continues, but maps stay empty. Do not treat a blank map as proof that no foreign traffic exists."
+  },
+  "React Shell": {
+    "href": "../docs/04-frontend/02-app-shell.md",
+    "dir": "docs/04-frontend/",
+    "category": "Frontend",
+    "pages": 9,
+    "related": ["AuthContext", "SiemContext", "Dashboard"],
+    "body": "The app shell is the frame around every module: sidebar groups Monitor, Investigate, Respond, Intelligence, Infrastructure, Configure, Reporting, and Ingest. Role flags hide entries you cannot use. The header shows live risk posture and blocked IP counts. Command palette jumps modules quickly. If a view fails to mount, the shell still renders; check browser console and session expiry before reinstalling anything."
+  },
+  "AuthContext": {
+    "href": "../docs/04-frontend/03-auth-context.md",
+    "dir": "docs/04-frontend/",
+    "category": "Frontend",
+    "pages": 9,
+    "related": ["RBAC", "API Client", "Pentest CSRF"],
+    "body": "Login establishes a session cookie and populates canWrite, canAdmin, and canExport for the signed-in user. Logout clears client state and returns to the login screen. Stale tabs after password rotation can show mixed permissions until refresh. CSRF token fetch happens after auth; mutating calls without it fail with 403. Session fixation mitigations are documented under security session notes."
+  },
+  "SiemContext": {
+    "href": "../docs/04-frontend/04-siem-context.md",
+    "dir": "docs/04-frontend/",
+    "category": "Frontend",
+    "pages": 9,
+    "related": ["DetectionEngine", "Dashboard", "Alert Manager"],
+    "body": "Shared dashboard state owns alerts, incidents, raw logs, blocked IPs, SOAR log, risk score, and pipeline counters. Ingest, Simulate Campaign, rule evaluation, and deduplication all write here. Every module subscribes to the same objects, which is why acknowledging an alert in one view updates KPIs elsewhere. Full page reload resets ephemeral UI state such as incident notes unless you extended persistence yourself."
+  },
+  "API Client": {
+    "href": "../docs/04-frontend/05-api-client.md",
+    "dir": "docs/04-frontend/",
+    "category": "Frontend",
+    "pages": 9,
+    "related": ["Backend API", "AuthContext", "Validation"],
+    "body": "The browser client wraps fetch with credentials, JSON helpers, and CSRF header injection on POST, PUT, and DELETE. Export and admin routes check permissions server-side even if a button renders. Network errors surface in console with a consistent prefix for grep during labs. Mixed localhost and 127.0.0.1 origins break cookies and CSRF; pick one hostname per semester."
+  },
+  "DetectionEngine": {
+    "href": "../docs/05-detection-engine/01-rules-overview.md",
+    "dir": "docs/05-detection-engine/",
+    "category": "Detection",
+    "pages": 22,
+    "related": ["rules.js", "Correlation", "SQL Injection"],
+    "body": "Rules evaluate normalized events against STRIDE and MITRE-tagged patterns. Matches create alert objects with severity, rule name, and timestamps. The engine runs client-side on the hot log buffer for demo responsiveness. Tuning false positives means editing rule thresholds and windows, not muting the whole pipeline. Correlation and deduplication sit downstream; rules only answer whether a single event or window looks suspicious."
+  },
+  "rules.js": {
+    "href": "../docs/05-detection-engine/01-rules-overview.md",
+    "dir": "docs/05-detection-engine/",
+    "category": "Detection",
+    "pages": 22,
+    "related": ["DetectionEngine", "SQL Injection", "Brute Force"],
+    "body": "Ten bundled rules cover injection, XSS, brute force, rapid requests, unusual ports, sensitive paths, tampering, exfil markers, privilege escalation, and off-hours activity. Each maps to STRIDE categories for coursework alignment. Disabled rules stop firing immediately without restart. Importing Sigma is documented in the Configure guides; the bundled set is the default lab baseline."
+  },
+  "Correlation": {
+    "href": "../docs/05-detection-engine/15-correlation-engine.md",
+    "dir": "docs/05-detection-engine/",
+    "category": "Detection",
+    "pages": 22,
+    "related": ["DetectionEngine", "Alert Manager", "SiemContext"],
+    "body": "Alerts sharing a source IP within sixty seconds roll into one incident with combined severity and rule names. Active versus contained status depends on how recently the cluster saw traffic. IP clustering is what Respond → Incidents lists; category clustering across IPs is described but not shipped in the demo loop. Analysts override status locally; that does not rewrite underlying alerts."
+  },
+  "SQL Injection": {
+    "href": "../docs/05-detection-engine/04-rule-sql-injection.md",
+    "dir": "docs/05-detection-engine/",
+    "category": "Detection",
+    "pages": 22,
+    "related": ["DetectionEngine", "Alert Manager", "Validation"],
+    "body": "Critical-severity rule matching classic SQL metacharacters and comment sequences in HTTP parameters and bodies. Simulate Campaign and sample Apache logs both trigger it for labs. Pair with Event Graph when teaching injection chains. False positives appear on URLs that legitimately contain encoded quotes; tune if your org runs developer tools that echo SQL-like strings."
+  },
+  "XSS Attempt": {
+    "href": "../docs/05-detection-engine/05-rule-xss.md",
+    "dir": "docs/05-detection-engine/",
+    "category": "Detection",
+    "pages": 22,
+    "related": ["DetectionEngine", "Alert Manager", "Validation"],
+    "body": "High-severity rule flagging script tags, javascript: URLs, and common DOM sink patterns in request fields. Useful for web-app red-team weeks. Often fires alongside sensitive-path probes during scripted attacks. Validate in Alert Manager before escalating; marketing sites with rich text can look like XSS to naive patterns."
+  },
+  "Brute Force": {
+    "href": "../docs/05-detection-engine/06-rule-brute-force.md",
+    "dir": "docs/05-detection-engine/",
+    "category": "Detection",
+    "pages": 22,
+    "related": ["DetectionEngine", "SOAR Console", "Alert Manager"],
+    "body": "High-severity rule counting failed authentication events from one IP inside a sixty-second sliding window, default threshold five failures. UEBA and Geo Map complement it for account-level story telling. SOAR playbooks can auto-watchlist or block external IPs after confirmation. Internal IPs may need manual handling because threat lookup skips them."
+  },
+  "Dashboard": {
+    "href": "../guides/monitor/overview/INDEX.md",
+    "dir": "guides/monitor/overview/",
+    "category": "Monitor",
+    "pages": 8,
+    "related": ["Alert Manager", "SiemContext", "SIEM Dashboard"],
+    "body": "Monitor → Overview is the shift-start screen: KPI tiles, severity breakdown, recent alerts, Simulate Campaign, and auto-refresh heartbeat. Risk posture in the header mirrors Intelligence → Risk Scoring. Use it to answer whether the SOC is busy or quiet before opening heavy investigative views. Every metric pulls from shared session state, not a separate cache."
+  },
+  "Alert Manager": {
+    "href": "../guides/monitor/alert-manager/INDEX.md",
+    "dir": "guides/monitor/alert-manager/",
+    "category": "Monitor",
+    "pages": 9,
+    "related": ["SOAR Console", "Correlation", "Dashboard"],
+    "body": "Alert Manager is triage queue work: filter by severity, bulk acknowledge, MITRE tags, SLA timers, and suppression toggles. Status transitions here do not automatically resolve incidents in Respond; align both during exercises. Tier-two roles need write permission or buttons fail silently with 403. Export packages for auditors when canExport is true."
+  },
+  "SOAR Console": {
+    "href": "../guides/respond/soar-console/INDEX.md",
+    "dir": "guides/respond/soar-console/",
+    "category": "Respond",
+    "pages": 10,
+    "related": ["Alert Manager", "Threat Intel", "Brute Force"],
+    "body": "SOAR Console shows playbook descriptions, manual block and watchlist actions, and an audit log of automation. Demo playbooks illustrate IP block after threat score thresholds; they do not replace Incident Response notes. Every action appends to SOAR log for lab evidence. Viewer roles can read but not block."
+  },
+  "Geo Map": {
+    "href": "../guides/investigate/geo-map/INDEX.md",
+    "dir": "guides/investigate/geo-map/",
+    "category": "Investigate",
+    "pages": 8,
+    "related": ["GeoIP", "Dashboard", "Threat Intel"],
+    "body": "Investigate → Geo Map plots source IPs with country labels, ISP column, and impossible-travel dashed lines when the same user appears in distant cities within unrealistic time. Requires geo enrichment at ingest. DDoS weeks show dense origin clouds; drill to Live Feed for raw lines. Toggle travel detection off when teaching baseline map reading only."
+  },
+  "Pentest RBAC": {
+    "href": "../pentests/pentest-01-broken-access-control.md",
+    "dir": "pentests/",
+    "category": "Security",
+    "pages": 3,
+    "related": ["RBAC", "AuthContext", "Backend API"],
+    "body": "Broken access control assessment documented tier escalation attempts against SOAR and admin routes. Findings drove requirePermission on write paths and validation whitelists. Retest steps live at the bottom of the report. Use this when explaining why the demo ships separate analyst accounts instead of one shared admin login."
+  },
+  "Pentest CSRF": {
+    "href": "../pentests/pentest-02-session-and-csrf.md",
+    "dir": "pentests/",
+    "category": "Security",
+    "pages": 3,
+    "related": ["AuthContext", "API Client", "RBAC"],
+    "body": "Session and CSRF testing covered login fixation, token rotation, and mutating calls without X-CSRF-Token. Fixes appear in security design docs. Labs should show 403 on POST after cookie theft attempts from another origin. Pair with Settings audit log review after suspicious activity."
+  },
+  "Pentest Input": {
+    "href": "../pentests/pentest-03-log-poisoning-and-input-abuse.md",
+    "dir": "pentests/",
+    "category": "Security",
+    "pages": 3,
+    "related": ["Validation", "DetectionEngine", "Backend API"],
+    "body": "Log poisoning and input abuse tests pushed crafted severity and oversized batches through ingest. Server validation and parameterized queries address the reported issues. Students should reproduce one failing case from the report, then apply the fix path and confirm clean ingest. Keeps the story grounded in defensive validation, not fear."
+  }
+}

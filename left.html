@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en" data-deck-page="left">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="Live threat matrix, analyst comms, and pipeline gauges for tier-two SOC operations." />
+  <meta property="og:title" content="The War Room — HABIBI-SIEM" />
+  <meta property="og:description" content="Live threat matrix, analyst comms, and pipeline gauges for tier-two SOC operations." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/war-room-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The War Room — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Live threat matrix, analyst comms, and pipeline gauges for tier-two SOC operations." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/war-room-og.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The War Room — Meridian-7</title>
+  <link rel="stylesheet" href="assets/deck-nav.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #120608;
+      color: #fecaca;
+      font-family: Consolas, 'Courier New', monospace;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 1;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.12) 2px,
+        rgba(0,0,0,0.12) 4px
+      );
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 2;
+      background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.75) 100%);
+    }
+    #war-sim-label {
+      position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 20;
+      font-size: 9px; letter-spacing: 3px; color: #f87171;
+      background: rgba(18,6,8,0.9); border: 1px solid #7f1d1d;
+      padding: 6px 14px; text-transform: uppercase;
+    }
+    #war-mobile-block {
+      display: none; position: fixed; inset: 0; z-index: 300;
+      background: #0c0406; align-items: center; justify-content: center;
+      text-align: center; padding: 24px; font-size: 13px; color: #fca5a5;
+    }
+    @media (max-width: 900px) {
+      #war-mobile-block { display: flex; }
+      #war-grid, #war-header, #deck-nav-root { display: none !important; }
+    }
+    #war-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 15;
+      display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+      background: linear-gradient(180deg, rgba(24,8,10,0.95), transparent);
+      border-bottom: 1px solid rgba(127,29,29,0.5);
+    }
+    #war-header h1 { font-size: 11px; letter-spacing: 4px; color: #fca5a5; text-transform: uppercase; }
+    #war-audio-toggle {
+      margin-left: auto; pointer-events: auto;
+      background: rgba(30,10,12,0.9); border: 1px solid #991b1b;
+      color: #fecaca; padding: 6px 12px; font: 10px Consolas, monospace; cursor: pointer;
+    }
+    #war-grid {
+      position: fixed; inset: 48px 16px 16px; z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 1.4fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 10px;
+    }
+    .war-station {
+      background: rgba(20,8,10,0.88);
+      border: 1px solid rgba(153,27,27,0.45);
+      border-radius: 4px;
+      padding: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: box-shadow 0.2s, border-color 0.2s;
+      position: relative;
+    }
+    .war-station:hover { border-color: #f87171; }
+    .war-station.expanded {
+      position: fixed; inset: 56px 24px 24px; z-index: 50;
+      grid-column: unset !important; grid-row: unset !important;
+      box-shadow: 0 0 48px rgba(248,113,113,0.25);
+    }
+    .war-station h2 {
+      font-size: 9px; letter-spacing: 2px; color: #f87171;
+      text-transform: uppercase; margin-bottom: 8px;
+    }
+    #war-map-wrap {
+      grid-column: 2; grid-row: 1 / span 2;
+      padding: 0;
+      cursor: default;
+    }
+    #war-map { width: 100%; height: 100%; display: block; }
+    #war-feed { font-size: 9px; line-height: 1.5; max-height: 100%; overflow: auto; }
+    #war-matrix {
+      display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px;
+    }
+    .war-mitre-cell {
+      aspect-ratio: 1; background: rgba(40,12,14,0.8);
+      border: 1px solid rgba(127,29,29,0.4);
+      font-size: 7px; display: flex; align-items: center; justify-content: center;
+      color: #7f1d1d;
+    }
+    .war-mitre-cell.hot { background: #7f1d1d; color: #fecaca; animation: war-blink 0.8s infinite; }
+    @keyframes war-blink { 50% { opacity: 0.5; } }
+    #war-clock { font-size: 28px; color: #fef2f2; text-align: center; padding-top: 20px; }
+    #war-comms { font-size: 9px; }
+    #war-gauges .war-gauge-row {
+      display: flex; justify-content: space-between; font-size: 9px;
+      padding: 4px 0; border-bottom: 1px solid rgba(127,29,29,0.25);
+    }
+    #war-ioc-panel {
+      position: fixed; right: 20px; bottom: 20px; z-index: 60;
+      width: 260px; max-height: 40vh; overflow: auto;
+      background: rgba(12,4,6,0.97); border: 1px solid #b91c1c;
+      padding: 12px; font-size: 10px; display: none;
+    }
+    #war-ioc-panel.on { display: block; }
+    #war-debrief {
+      position: fixed; inset: 0; z-index: 80; display: none;
+      background: rgba(0,0,0,0.92); align-items: center; justify-content: center;
+      padding: 32px;
+    }
+    #war-debrief.on { display: flex; }
+    #war-debrief-panel {
+      max-width: 640px; background: rgba(24,8,10,0.98);
+      border: 1px solid #991b1b; padding: 24px; line-height: 1.6; font-size: 12px;
+    }
+    .war-arc-label { font-size: 8px; fill: #fca5a5; }
+  </style>
+</head>
+<body>
+  <div id="war-mobile-block">War Room runs on desktop width only. Widen the window or use a larger display.</div>
+  <div id="war-sim-label">SIMULATION — DEMO DATA ONLY</div>
+  <header id="war-header">
+    <h1>The War Room</h1>
+    <button id="war-audio-toggle" type="button" aria-pressed="false">Audio off</button>
+  </header>
+  <div id="war-grid">
+    <section class="war-station" id="station-signal" data-station="signal">
+      <h2>Signal Feed</h2>
+      <div id="war-feed"></div>
+    </section>
+    <section class="war-station" id="station-matrix" data-station="matrix">
+      <h2>Threat Matrix</h2>
+      <div id="war-matrix" aria-label="MITRE 8x8 matrix"></div>
+    </section>
+    <section class="war-station" id="war-map-wrap" data-station="map">
+      <svg id="war-map" viewBox="0 0 400 300" aria-label="Attack map">
+        <defs>
+          <filter id="war-glow"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <rect width="400" height="300" fill="#18080a"/>
+        <g id="war-map-nodes"></g>
+        <g id="war-map-arcs" filter="url(#war-glow)"></g>
+      </svg>
+    </section>
+    <section class="war-station" id="station-clock" data-station="clock">
+      <h2>Incident Clock</h2>
+      <div id="war-clock">00:00:00</div>
+    </section>
+    <section class="war-station" id="station-comms" data-station="comms">
+      <h2>Analyst Comms</h2>
+      <div id="war-comms"></div>
+    </section>
+    <section class="war-station" id="station-gauges" data-station="gauges">
+      <h2>Pipeline Gauges</h2>
+      <div id="war-gauges"></div>
+    </section>
+  </div>
+  <aside id="war-ioc-panel" aria-label="Arc IOC panel">
+    <strong style="color:#f87171">Arc IOC</strong>
+    <div id="war-ioc-body"></div>
+  </aside>
+  <div id="war-debrief" role="dialog" aria-modal="true" aria-labelledby="war-debrief-title">
+    <div id="war-debrief-panel">
+      <h2 id="war-debrief-title">Shift debrief</h2>
+      <p id="war-debrief-text"></p>
+      <p style="margin-top:16px;font-size:10px;color:#991b1b">Press D to close</p>
+    </div>
+  </div>
+  <div id="deck-nav-root"></div>
+  <link rel="stylesheet" href="assets/palette.css" />
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/palette.js"></script>
+  <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
+  <script>SiemCore.bootPage('left'); SiemCore.AchievementSystem.check('visit_warroom');</script>
+  <script>
+  (function () {
+    'use strict';
+    const FEED_LINES = [
+      'AUTH fail 10.4.2.18 — 5/min threshold',
+      'WAF rule 4421 — union select pattern',
+      'DNS tunnel score 0.71 — staging host',
+      'EDR isolate request queued — host FIN-23',
+      'Mailbox rule added — user svc-backup',
+    ];
+    const COMMS = [
+      'Tier-2: holding bridge for finance queue',
+      'IR: snapshotting ingest partition 3',
+      'Lead: customer comms draft in channel #inc-441',
+    ];
+    const GAUGE_ROWS = [
+      ['Ingest EPS', '12.4k'],
+      ['Rule latency', '38ms'],
+      ['Hot buffer', '94%'],
+      ['DLQ depth', '3'],
+      ['Parser errors', '0.02%'],
+    ];
+    const MAP_NODES = [
+      { id: 'n1', x: 80, y: 140, label: 'DMZ' },
+      { id: 'n2', x: 200, y: 80, label: 'API' },
+      { id: 'n3', x: 320, y: 150, label: 'DB' },
+      { id: 'n4', x: 180, y: 220, label: 'SOC' },
+    ];
+    let clockSec = 0;
+    let audioOn = false;
+    let debriefOn = false;
+    let criticalTimer = null;
+
+    const feedEl = document.getElementById('war-feed');
+    const matrixEl = document.getElementById('war-matrix');
+    const commsEl = document.getElementById('war-comms');
+    const gaugesEl = document.getElementById('war-gauges');
+    const clockEl = document.getElementById('war-clock');
+    const mapNodes = document.getElementById('war-map-nodes');
+    const mapArcs = document.getElementById('war-map-arcs');
+    const iocPanel = document.getElementById('war-ioc-panel');
+    const iocBody = document.getElementById('war-ioc-body');
+    const debrief = document.getElementById('war-debrief');
+    const debriefText = document.getElementById('war-debrief-text');
+
+    for (let i = 0; i < 64; i++) {
+      const c = document.createElement('div');
+      c.className = 'war-mitre-cell';
+      c.textContent = 'T' + (1000 + i);
+      c.dataset.idx = String(i);
+      matrixEl.appendChild(c);
+    }
+
+    GAUGE_ROWS.forEach(function (row) {
+      const d = document.createElement('div');
+      d.className = 'war-gauge-row';
+      d.innerHTML = '<span>' + row[0] + '</span><span>' + row[1] + '</span>';
+      gaugesEl.appendChild(d);
+    });
+
+    MAP_NODES.forEach(function (n) {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.innerHTML =
+        '<circle cx="' + n.x + '" cy="' + n.y + '" r="14" fill="#450a0a" stroke="#f87171"/>' +
+        '<text class="war-arc-label" x="' + n.x + '" y="' + (n.y + 28) + '" text-anchor="middle">' + n.label + '</text>';
+      g.dataset.id = n.id;
+      mapNodes.appendChild(g);
+    });
+
+    function drawArc(from, to, hot) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const mx = (from.x + to.x) / 2;
+      const my = Math.min(from.y, to.y) - 40;
+      line.setAttribute(
+        'd',
+        'M' + from.x + ',' + from.y + ' Q' + mx + ',' + my + ' ' + to.x + ',' + to.y
+      );
+      line.setAttribute('fill', 'none');
+      line.setAttribute('stroke', hot ? '#ef4444' : '#7f1d1d');
+      line.setAttribute('stroke-width', hot ? '2.5' : '1.2');
+      line.dataset.from = from.id;
+      line.dataset.to = to.id;
+      line.style.cursor = 'pointer';
+      line.addEventListener('click', function () {
+        iocBody.innerHTML =
+          '<p>Source: ' + from.label + ' → ' + to.label + '</p>' +
+          '<p>IOC hash: demo-' + Math.random().toString(16).slice(2, 10) + '</p>' +
+          '<p>Port sweep · 14 hosts · 6 min window</p>';
+        iocPanel.classList.add('on');
+      });
+      mapArcs.appendChild(line);
+    }
+
+    drawArc(MAP_NODES[0], MAP_NODES[1], false);
+    drawArc(MAP_NODES[1], MAP_NODES[2], true);
+    drawArc(MAP_NODES[2], MAP_NODES[3], false);
+
+    function pushFeed() {
+      const line = FEED_LINES[(Math.random() * FEED_LINES.length) | 0];
+      const p = document.createElement('p');
+      p.textContent = new Date().toISOString().slice(11, 19) + ' · ' + line;
+      feedEl.insertBefore(p, feedEl.firstChild);
+      while (feedEl.children.length > 12) feedEl.removeChild(feedEl.lastChild);
+    }
+
+    function pulseMatrix() {
+      const cells = matrixEl.querySelectorAll('.war-mitre-cell');
+      cells.forEach(function (c) { c.classList.remove('hot'); });
+      const n = 3 + ((Math.random() * 5) | 0);
+      for (let i = 0; i < n; i++) {
+        cells[(Math.random() * cells.length) | 0].classList.add('hot');
+      }
+    }
+
+    function scheduleCritical() {
+      const delay = 45000 + Math.random() * 45000;
+      criticalTimer = setTimeout(function () {
+        pushFeed();
+        FEED_LINES.unshift('CRITICAL — coordinated auth burst across 3 regions');
+        pulseMatrix();
+        commsEl.innerHTML = '<p style="color:#f87171">CRITICAL incident declared — bridge open</p>' + commsEl.innerHTML;
+        scheduleCritical();
+      }, delay);
+    }
+
+    document.querySelectorAll('.war-station').forEach(function (st) {
+      if (st.id === 'war-map-wrap') return;
+      st.addEventListener('click', function () {
+        document.querySelectorAll('.war-station.expanded').forEach(function (x) {
+          if (x !== st) x.classList.remove('expanded');
+        });
+        st.classList.toggle('expanded');
+      });
+    });
+
+    document.getElementById('war-audio-toggle').addEventListener('click', function () {
+      audioOn = !audioOn;
+      this.textContent = audioOn ? 'Audio on' : 'Audio off';
+      this.setAttribute('aria-pressed', String(audioOn));
+    });
+
+    addEventListener('keydown', function (e) {
+      if (e.key === 'd' || e.key === 'D') {
+        debriefOn = !debriefOn;
+        debrief.classList.toggle('on', debriefOn);
+        if (debriefOn) {
+          debriefText.textContent =
+            'Demo shift closed with two contained bursts. Ingest held steady; rule latency stayed under 50ms. ' +
+            'Handoff note: finance queue watch extended one hour.';
+        }
+      }
+    });
+
+    setInterval(function () {
+      clockSec++;
+      const h = String((clockSec / 3600) | 0).padStart(2, '0');
+      const m = String(((clockSec % 3600) / 60) | 0).padStart(2, '0');
+      const s = String(clockSec % 60).padStart(2, '0');
+      clockEl.textContent = h + ':' + m + ':' + s;
+    }, 1000);
+
+    setInterval(pushFeed, 3200);
+    setInterval(pulseMatrix, 5000);
+    setInterval(function () {
+      const c = COMMS[(Math.random() * COMMS.length) | 0];
+      const p = document.createElement('p');
+      p.textContent = c;
+      commsEl.insertBefore(p, commsEl.firstChild);
+      while (commsEl.children.length > 8) commsEl.removeChild(commsEl.lastChild);
+    }, 6000);
+
+    pushFeed();
+    pulseMatrix();
+    scheduleCritical();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" data-deck-page="resonance">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="Six-channel alert sonification — mix ingest, rules, and threat feeds as sound." />
+  <meta property="og:title" content="The Resonance — HABIBI-SIEM" />
+  <meta property="og:description" content="Six-channel alert sonification — mix ingest, rules, and threat feeds as sound." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/resonance-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Resonance — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Six-channel alert sonification — mix ingest, rules, and threat feeds as sound." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/resonance-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Resonance — Meridian-7</title>
+  <link rel="stylesheet" href="assets/palette.css" />
+  <link rel="stylesheet" href="assets/deck-nav.css" />
+  <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#0a0618;color:#c4b5fd;font-family:Consolas,monospace;overflow:hidden}
+    #hdr{height:36px;display:flex;align-items:center;padding:0 12px;font-size:10px;letter-spacing:2px;border-bottom:1px solid rgba(196,181,253,.2)}
+    #board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;max-width:720px}
+    .channel{border:1px solid rgba(196,181,253,.25);border-radius:6px;padding:10px;background:rgba(15,10,30,.8)}
+    .channel label{font-size:9px;letter-spacing:1px;display:block;margin-bottom:6px}
+    .channel input[type=range]{width:100%}
+    #wave{position:fixed;left:0;right:0;bottom:0;height:160px}
+    #start-btn{position:fixed;bottom:180px;left:50%;transform:translateX(-50%);padding:10px 20px;font:inherit;background:rgba(99,102,241,.2);border:1px solid #6366f1;color:#c4b5fd;cursor:pointer;z-index:5}
+  </style>
+</head>
+<body>
+  <div id="hdr">RESONANCE · 6-CHANNEL MIX · Tone.js</div>
+  <button id="start-btn">Enable Audio</button>
+  <div id="board"></div>
+  <div id="wave"></div>
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/palette.js"></script>
+  <script>
+  (function(){
+    SiemCore.bootPage('resonance'); SiemCore.AchievementSystem.check('visit_resonance');
+    var CHANNELS=['Alerts','Ingest','Rules','Network','Threat','Ambient'];
+    var synths=[],started=false;
+    var board=document.getElementById('board');
+    CHANNELS.forEach(function(name,i){
+      var el=document.createElement('div');el.className='channel';
+      el.innerHTML='<label>'+name+'</label><input type="range" min="-40" max="0" value="-20" data-ch="'+i+'" />';
+      board.appendChild(el);
+    });
+    document.getElementById('start-btn').onclick=function(){
+      if(started)return;
+      Tone.start();
+      started=true;
+      this.textContent='Audio Active';
+      CHANNELS.forEach(function(name,i){
+        var synth=new Tone.Synth({oscillator:{type:['sine','triangle','square','sawtooth','sine','triangle'][i]}}).toDestination();
+        synth.volume.value=-20;
+        synths.push(synth);
+        synth.triggerAttackRelease(220+i*40,'8n',Tone.now()+i*0.1);
+      });
+    };
+    board.addEventListener('input',function(e){
+      if(e.target.dataset.ch&&synths[e.target.dataset.ch]) synths[e.target.dataset.ch].volume.value=+e.target.value;
+    });
+    var scene=new THREE.Scene();var cam=new THREE.PerspectiveCamera(60,innerWidth/160,0.1,100);cam.position.z=3;
+    var renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,160);
+    document.getElementById('wave').appendChild(renderer.domElement);
+    var geo=new THREE.BufferGeometry();var pos=new Float32Array(300);
+    for(var i=0;i<100;i++){pos[i*3]=i/20-2.5;pos[i*3+1]=Math.sin(i*0.2)*0.5;pos[i*3+2]=0;}
+    geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    var line=new THREE.Line(geo,new THREE.LineBasicMaterial({color:0xc4b5fd}));scene.add(line);
+    function anim(){
+      requestAnimationFrame(anim);
+      if(started){var arr=line.geometry.attributes.position.array;for(var j=0;j<100;j++)arr[j*3+1]=Math.sin(j*0.2+performance.now()*0.002)*0.5;line.geometry.attributes.position.needsUpdate=true;}
+      renderer.render(scene,cam);
+    } anim();
+  })();
+  </script>
+  <div id="deck-nav-root"></div>
+  <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
+</body>
+</html>

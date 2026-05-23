@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" data-deck-page="sim">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="Incident timeline replay — scrub through detections and analyst actions." />
+  <meta property="og:title" content="The Simulation — HABIBI-SIEM" />
+  <meta property="og:description" content="Incident timeline replay — scrub through detections and analyst actions." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/sim-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Simulation — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Incident timeline replay — scrub through detections and analyst actions." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/sim-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Simulation — Meridian-7</title>
+  <link rel="stylesheet" href="assets/palette.css" />
+  <link rel="stylesheet" href="assets/deck-nav.css" />
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/MotionPathPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#020617;color:#e2e8f0;font-family:system-ui,sans-serif}
+    #hdr{padding:12px 16px;font:600 10px/1 monospace;letter-spacing:2px;border-bottom:1px solid rgba(56,189,248,.2)}
+    #grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px;max-width:720px}
+    .mission{padding:16px;border:1px solid rgba(148,163,184,.2);border-radius:8px;cursor:pointer;background:rgba(15,23,42,.6)}
+    .mission:hover{border-color:#38bdf8}.mission.active{border-color:#fbbf24;background:rgba(56,189,248,.08)}
+    #stage{margin:0 16px;height:240px;border:1px solid rgba(56,189,248,.15);border-radius:8px;position:relative;overflow:hidden;background:#0f172a}
+    #path-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+    #actor{width:12px;height:12px;background:#fbbf24;border-radius:50%;position:absolute;left:20px;top:50%;transform:translateY(-50%);box-shadow:0 0 12px #fbbf24}
+    #narrator{padding:12px 16px;font-size:13px;color:#94a3b8;min-height:48px}
+    #scrub{margin:0 16px 16px;display:flex;align-items:center;gap:12px;font-size:11px}
+    #scrub input{flex:1}
+  </style>
+</head>
+<body>
+  <div id="hdr">THE SIMULATION · MISSION SELECT</div>
+  <div id="grid"></div>
+  <div id="stage"><svg id="path-svg"></svg><div id="actor"></div></div>
+  <div id="narrator">Select a mission to begin phase animation.</div>
+  <div id="scrub"><span id="time-label">T+0s</span><input type="range" id="scrubber" min="0" max="100" value="0" /><button id="play-btn">Play</button></div>
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/palette.js"></script>
+  <script>
+  (function(){
+    SiemCore.bootPage('sim'); SiemCore.AchievementSystem.check('visit_sim');
+    if(typeof gsap!=='undefined'&&gsap.registerPlugin)gsap.registerPlugin(MotionPathPlugin);
+    var MISSIONS=['Initial Access','Persistence','Lateral Move','Exfiltration','Impact','Recovery'];
+    var PHASES=['Recon','Exploit','Establish','Escalate','Extract','Contain'];
+    var grid=document.getElementById('grid'),actor=document.getElementById('actor'),active=0,t=0,playing=false;
+    var pathData='M 20 120 Q 180 40 360 120 T 680 120';
+    d3.select('#path-svg').append('path').attr('d',pathData).attr('fill','none').attr('stroke','rgba(56,189,248,0.25)').attr('stroke-width',2);
+    MISSIONS.forEach(function(m,i){
+      var el=document.createElement('div');el.className='mission'+(i===0?' active':'');el.textContent=m;
+      el.onclick=function(){document.querySelectorAll('.mission').forEach(function(x){x.classList.remove('active');});el.classList.add('active');active=i;runAnim();};
+      grid.appendChild(el);
+    });
+    function runAnim(){
+      var phase=Math.min(5,Math.floor(t/17));
+      document.getElementById('narrator').textContent='Mission: '+MISSIONS[active]+' — Phase: '+PHASES[phase];
+      document.getElementById('time-label').textContent='T+'+Math.floor(t*0.8)+'s';
+      document.getElementById('scrubber').value=t;
+      if(typeof gsap!=='undefined'&&MotionPathPlugin){
+        gsap.set(actor,{motionPath:{path:pathData,alignOrigin:[0.5,0.5],autoRotate:false},offset: t/100});
+      } else actor.style.left=(20+t*6)+'px';
+    }
+    document.getElementById('play-btn').onclick=function(){
+      playing=!playing;
+      document.getElementById('play-btn').textContent=playing?'Pause':'Play';
+      if(playing&&typeof Tone!=='undefined')Tone.start().catch(function(){});
+    };
+    document.getElementById('scrubber').oninput=function(){t=+this.value;runAnim();};
+    setInterval(function(){
+      if(!playing)return;
+      t=Math.min(100,t+1);runAnim();
+      if(t>=100){playing=false;document.getElementById('play-btn').textContent='Play';}
+    },80);
+    runAnim();
+  })();
+  </script>
+  <div id="deck-nav-root"></div>
+  <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
+</body>
+</html>

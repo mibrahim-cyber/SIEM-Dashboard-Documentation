@@ -1,0 +1,32 @@
+{
+  "start": ["SIEM Dashboard", "Documentation", "Architecture"],
+  "nodes": {
+    "SIEM Dashboard": { "requires": [] },
+    "Documentation": { "requires": [] },
+    "Architecture": { "requires": ["SIEM Dashboard"] },
+    "Dashboard": { "requires": ["Architecture"] },
+    "React Shell": { "requires": ["Architecture"] },
+    "SiemContext": { "requires": ["React Shell"] },
+    "DetectionEngine": { "requires": ["SiemContext"] },
+    "rules.js": { "requires": ["DetectionEngine"] },
+    "Brute Force": { "requires": ["rules.js"] },
+    "SQL Injection": { "requires": ["rules.js"] },
+    "XSS Attempt": { "requires": ["rules.js"] },
+    "Alert Manager": { "requires": ["Dashboard", "DetectionEngine"] },
+    "Correlation": { "requires": ["Alert Manager"] },
+    "Geo Map": { "requires": ["Alert Manager"] },
+    "Backend API": { "requires": ["Architecture"] },
+    "Validation": { "requires": ["Backend API"] },
+    "RBAC": { "requires": ["Backend API"] },
+    "AuthContext": { "requires": ["RBAC"] },
+    "SOAR Console": { "requires": ["Alert Manager", "Correlation"] },
+    "Threat Intel": { "requires": ["Backend API"] },
+    "GeoIP": { "requires": ["Threat Intel"] },
+    "SQLite DB": { "requires": ["Backend API"] },
+    "Cryptography": { "requires": ["Backend API"] },
+    "API Client": { "requires": ["AuthContext"] },
+    "Pentest RBAC": { "requires": ["RBAC"] },
+    "Pentest CSRF": { "requires": ["AuthContext"] },
+    "Pentest Input": { "requires": ["Validation"] }
+  }
+}
