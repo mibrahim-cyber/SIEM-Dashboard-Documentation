@@ -7,6 +7,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <meta name="description" content="Detection rule crafting workshop — build and test STRIDE-aligned rules." />
   <meta property="og:title" content="The Forge — HABIBI-SIEM" />
   <meta property="og:description" content="Detection rule crafting workshop — build and test STRIDE-aligned rules." />
@@ -15,7 +16,8 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="The Forge — HABIBI-SIEM" />
   <meta name="twitter:description" content="Detection rule crafting workshop — build and test STRIDE-aligned rules." />
-  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/forge-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/forge-og.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Forge — Meridian-7</title>
   <link rel="stylesheet" href="assets/palette.css" />
   <link rel="stylesheet" href="assets/deck-nav.css" />
@@ -24,93 +26,934 @@
   <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#020617;color:#e2e8f0;font-family:Consolas,monospace;overflow:hidden}
-    #hdr{height:36px;display:flex;align-items:center;gap:12px;padding:0 12px;font-size:10px;letter-spacing:2px;border-bottom:1px solid rgba(56,189,248,.2)}
-    #search{flex:1;max-width:200px;padding:4px 8px;font:inherit;background:#1e293b;border:1px solid #475569;color:#e2e8f0}
-    #layout{display:grid;grid-template-columns:200px 1fr 240px;height:calc(100% - 36px)}
-    #lib{border-right:1px solid rgba(148,163,184,.15);padding:8px;font-size:10px;overflow:auto}
-    .comp{padding:8px;margin-bottom:4px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);cursor:grab;border-radius:4px;touch-action:none}
-    #canvas-wrap{position:relative;background:#0f172a}
-    #forge-canvas{width:100%;height:100%;display:block}
-    #props{padding:8px;border-left:1px solid rgba(148,163,184,.15);font-size:10px;display:flex;flex-direction:column}
-    #console{margin-top:12px;padding:8px;background:#000;border:1px solid #334155;height:80px;overflow:auto;font-size:9px;color:#34d399}
-    #monaco{height:120px;border:1px solid #334155;margin-top:8px}
-    #export{margin-top:8px;width:100%;padding:6px;cursor:pointer;font:inherit;background:rgba(56,189,248,.15);border:1px solid #38bdf8;color:#e2e8f0}
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #020617; color: #e2e8f0; font-family: "IBM Plex Mono", Consolas, monospace; overflow: hidden; }
+    #hdr {
+      height: 36px; display: flex; align-items: center; gap: 12px; padding: 0 14px;
+      font-size: 10px; letter-spacing: 2px; border-bottom: 1px solid rgba(56,189,248,.22);
+      background: rgba(2,6,23,.96); z-index: 20; position: relative;
+    }
+    #hdr .dot { width: 7px; height: 7px; border-radius: 50%; background: #39ff14; box-shadow: 0 0 8px #39ff14; animation: pulse 2s ease infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
+    #hdr .stat { margin-left: auto; color: #64748b; font-size: 9px; letter-spacing: 1px; }
+    #search-wrap { position: relative; }
+    #search {
+      width: 200px; padding: 5px 8px; font: inherit; font-size: 10px;
+      background: rgba(15,23,42,.9); border: 1px solid rgba(71,85,105,.6); color: #e2e8f0;
+      border-radius: 3px; transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    #search:focus { outline: none; border-color: rgba(56,189,248,.55); box-shadow: 0 0 10px rgba(56,189,248,.18); }
+    #layout {
+      display: grid; grid-template-columns: 228px 1fr 292px;
+      grid-template-rows: 1fr 168px; height: calc(100% - 36px);
+    }
+    #lib {
+      grid-row: 1 / 3; border-right: 1px solid rgba(148,163,184,.14);
+      overflow: hidden; display: flex; flex-direction: column; background: rgba(10,6,24,.55);
+    }
+    #lib-scroll { flex: 1; overflow-y: auto; padding: 10px 8px 16px; }
+    #lib-scroll::-webkit-scrollbar { width: 5px; }
+    #lib-scroll::-webkit-scrollbar-thumb { background: rgba(99,102,241,.35); border-radius: 3px; }
+    .lib-section { margin-bottom: 14px; }
+    .lib-section h4 {
+      font-size: 8px; letter-spacing: 2.5px; color: #64748b; margin-bottom: 6px;
+      padding-bottom: 4px; border-bottom: 1px solid rgba(148,163,184,.1);
+    }
+    .comp {
+      padding: 7px 8px; margin-bottom: 4px; font-size: 9px; line-height: 1.35;
+      border-radius: 4px; cursor: grab; touch-action: none; user-select: none;
+      border: 1px solid transparent; transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .comp:active { cursor: grabbing; }
+    .comp.trigger { background: rgba(56,189,248,.1); border-color: rgba(56,189,248,.28); color: #bae6fd; }
+    .comp.filter { background: rgba(99,102,241,.1); border-color: rgba(99,102,241,.28); color: #c4b5fd; }
+    .comp.enrichment { background: rgba(52,211,153,.08); border-color: rgba(52,211,153,.25); color: #6ee7b7; }
+    .comp.action { background: rgba(251,191,36,.08); border-color: rgba(251,191,36,.28); color: #fde68a; }
+    .comp:hover { box-shadow: 0 0 12px rgba(56,189,248,.12); transform: translateX(2px); }
+    #canvas-wrap { position: relative; overflow: hidden; background: #0a0618; }
+    #forge-canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
+    #canvas-hud {
+      position: absolute; top: 8px; left: 10px; font-size: 8px; letter-spacing: 1.5px;
+      color: rgba(148,163,184,.75); pointer-events: none; line-height: 1.7;
+    }
+    #zoom-label {
+      position: absolute; bottom: 8px; right: 10px; font-size: 9px; color: #64748b;
+      background: rgba(2,6,23,.7); padding: 3px 8px; border: 1px solid rgba(148,163,184,.15); border-radius: 3px;
+    }
+    #config {
+      border-left: 1px solid rgba(148,163,184,.14); padding: 12px 10px;
+      overflow-y: auto; background: rgba(10,6,24,.45); display: flex; flex-direction: column; gap: 8px;
+    }
+    #config h3 { font-size: 9px; letter-spacing: 2px; color: #38bdf8; }
+    #config-empty { font-size: 10px; color: #64748b; line-height: 1.6; }
+    .field { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
+    .field label { font-size: 8px; letter-spacing: 1px; color: #94a3b8; text-transform: uppercase; }
+    .field input, .field select, .field textarea {
+      font: inherit; font-size: 10px; padding: 5px 7px;
+      background: rgba(15,23,42,.85); border: 1px solid rgba(71,85,105,.55); color: #e2e8f0;
+      border-radius: 3px; transition: border-color .2s ease;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none; border-color: rgba(56,189,248,.5); box-shadow: 0 0 8px rgba(56,189,248,.12);
+    }
+    .field textarea { min-height: 52px; resize: vertical; }
+    #node-meta { font-size: 9px; color: #64748b; padding: 6px 0; border-top: 1px solid rgba(148,163,184,.1); }
+    #test-panel {
+      border-top: 1px solid rgba(148,163,184,.14); padding: 10px 12px;
+      background: rgba(3,10,4,.65); display: flex; flex-direction: column; gap: 8px;
+    }
+    #test-panel h3 { font-size: 9px; letter-spacing: 2px; color: #39ff14; }
+    #test-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .btn {
+      font: inherit; font-size: 9px; letter-spacing: 1px; padding: 6px 12px; cursor: pointer;
+      border-radius: 3px; border: 1px solid transparent; transition: all .2s ease;
+    }
+    .btn-primary { background: rgba(56,189,248,.14); border-color: rgba(56,189,248,.4); color: #e2e8f0; }
+    .btn-primary:hover { box-shadow: 0 0 14px rgba(56,189,248,.22); }
+    .btn-export { background: rgba(99,102,241,.12); border-color: rgba(99,102,241,.35); color: #c4b5fd; }
+    .btn-export:hover { box-shadow: 0 0 14px rgba(99,102,241,.2); }
+    #test-table-wrap { flex: 1; overflow: auto; max-height: 90px; }
+    #test-table { width: 100%; border-collapse: collapse; font-size: 9px; }
+    #test-table th, #test-table td { padding: 4px 6px; text-align: left; border-bottom: 1px solid rgba(148,163,184,.08); }
+    #test-table th { color: #64748b; letter-spacing: 1px; font-weight: 500; }
+    .match-yes { color: #34d399; }
+    .match-no { color: #64748b; }
+    #monaco-wrap {
+      grid-column: 3; border-left: 1px solid rgba(148,163,184,.14);
+      border-top: 1px solid rgba(148,163,184,.14); display: flex; flex-direction: column;
+      background: #030a04;
+    }
+    #monaco-hdr {
+      height: 24px; display: flex; align-items: center; padding: 0 10px;
+      font-size: 8px; letter-spacing: 2px; color: #64748b;
+      border-bottom: 1px solid rgba(148,163,184,.1);
+    }
+    #monaco { flex: 1; min-height: 0; }
+    #toast {
+      position: fixed; bottom: 48px; left: 50%; transform: translateX(-50%) translateY(20px);
+      padding: 10px 18px; font-size: 10px; letter-spacing: 1px;
+      background: rgba(15,23,42,.96); border: 1px solid rgba(52,211,153,.45); color: #6ee7b7;
+      border-radius: 4px; opacity: 0; pointer-events: none; z-index: 100;
+      transition: opacity .25s ease, transform .25s ease; box-shadow: 0 0 20px rgba(52,211,153,.15);
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .port-hint { font-size: 8px; color: #475569; margin-top: 4px; line-height: 1.5; }
   </style>
 </head>
 <body>
-  <div id="hdr">THE FORGE · RULE BUILDER <input id="search" placeholder="Search components (Fuse)" /></div>
-  <div id="layout">
-    <div id="lib"><div class="comp" draggable="true" data-type="Trigger: Failed Login">Trigger: Failed Login</div><div class="comp" draggable="true" data-type="Filter: src_ip">Filter: src_ip</div><div class="comp" draggable="true" data-type="Action: Alert CRIT">Action: Alert CRIT</div><div class="comp" draggable="true" data-type="Enrich: GeoIP">Enrich: GeoIP</div></div>
-    <div id="canvas-wrap"><canvas id="forge-canvas"></canvas></div>
-    <div id="props"><h3 style="font-size:9px;letter-spacing:2px;margin-bottom:8px">PROPERTIES</h3><p id="sel-name" class="muted">Drop components</p><div id="console">&gt; ready</div><div id="monaco"></div><button id="export">Export JSON</button></div>
+  <div id="hdr">
+    <span class="dot"></span>
+    THE FORGE · DETECTION RULE BUILDER
+    <div id="search-wrap"><input id="search" type="search" placeholder="Search components…" autocomplete="off" /></div>
+    <span class="stat" id="rule-stat">0 nodes · 0 edges</span>
   </div>
+  <div id="layout">
+    <aside id="lib">
+      <div id="lib-scroll"></div>
+    </aside>
+    <div id="canvas-wrap">
+      <canvas id="forge-canvas"></canvas>
+      <div id="canvas-hud">SPACE+DRAG · pan · SCROLL · zoom · DEL · remove node<br>DRAG port · connect nodes · DROP library item onto canvas</div>
+      <div id="zoom-label">100%</div>
+    </div>
+    <div id="config">
+      <h3>CONFIGURATION</h3>
+      <div id="config-empty">Select a node on the canvas to edit its properties. Drag components from the library to begin building a rule chain.</div>
+      <div id="config-fields" style="display:none"></div>
+      <div id="node-meta"></div>
+      <p class="port-hint">Output ports (right) connect to input ports (left) on downstream nodes. Triggers have no input port.</p>
+    </div>
+    <div id="test-panel">
+      <h3>LIVE RULE TEST</h3>
+      <div id="test-toolbar">
+        <button class="btn btn-primary" id="btn-test" type="button">Test Rule</button>
+        <button class="btn btn-export" id="btn-export-json" type="button">Export JSON</button>
+        <button class="btn btn-export" id="btn-export-yaml" type="button">Export YAML</button>
+      </div>
+      <div id="test-table-wrap">
+        <table id="test-table">
+          <thead><tr><th>Event</th><th>Source</th><th>Type</th><th>Match</th></tr></thead>
+          <tbody id="test-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="monaco-wrap">
+      <div id="monaco-hdr">LIVE YAML · READ ONLY</div>
+      <div id="monaco"></div>
+    </div>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
   <script src="assets/siem-core.js"></script>
   <script src="assets/palette.js"></script>
   <script>
-  (function(){
-    SiemCore.bootPage('forge'); SiemCore.AchievementSystem.check('visit_forge');
-    var blocks=[],canvas=document.getElementById('forge-canvas'),ctx=canvas.getContext('2d'),sel=null,editor=null;
-    function resize(){canvas.width=canvas.clientWidth;canvas.height=canvas.clientHeight} resize(); addEventListener('resize',resize);
-    var comps=[].slice.call(document.querySelectorAll('.comp'));
-    var fuse=typeof Fuse!=='undefined'?new Fuse(comps.map(function(c){return{type:c.dataset.type,el:c};}),{keys:['type'],threshold:0.4}):null;
-    document.getElementById('search').oninput=function(){
-      var q=this.value.trim();comps.forEach(function(c){c.style.display='';});
-      if(!q||!fuse)return;
-      var hits=fuse.search(q).map(function(r){return r.item.el;});
-      comps.forEach(function(c){c.style.display=hits.indexOf(c)>=0?'':'none';});
-    };
-    document.querySelectorAll('.comp').forEach(function(el){
-      el.addEventListener('dragstart',function(e){e.dataTransfer.setData('type',el.dataset.type);});
-    });
-    canvas.addEventListener('dragover',function(e){e.preventDefault();});
-    canvas.addEventListener('drop',function(e){
-      e.preventDefault();var r=canvas.getBoundingClientRect();
-      blocks.push({type:e.dataTransfer.getData('type'),x:e.clientX-r.left,y:e.clientY-r.top,w:120,h:40});
-      log('Added '+e.dataTransfer.getData('type'));
-      syncMonaco();
-    });
-    if(typeof interact!=='undefined'){
-      interact('.comp').draggable({listeners:{move:function(e){var t=e.target;t.style.transform='translate('+e.clientX+'px,'+e.clientY+'px)';}}});
-    }
-    canvas.addEventListener('click',function(e){
-      var r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
-      sel=null; blocks.forEach(function(b){if(x>b.x&&x<b.x+b.w&&y>b.y&&y<b.y+b.h)sel=b;});
-      document.getElementById('sel-name').textContent=sel?sel.type:'Drop components';
-    });
-    function log(m){document.getElementById('console').innerHTML+='<br>&gt; '+m;}
-    function syncMonaco(){
-      var json=JSON.stringify({rule:'custom',blocks:blocks},null,2);
-      if(editor)editor.setValue(json);
-    }
-    if(typeof require!=='undefined'){
-      require.config({paths:{vs:'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs'}});
-      require(['vs/editor/editor.main'],function(){
-        editor=monaco.editor.create(document.getElementById('monaco'),{value:'{\n  "rule": "custom",\n  "blocks": []\n}',language:'json',theme:'vs-dark',minimap:{enabled:false},fontSize:10,automaticLayout:true});
+  (function () {
+    SiemCore.bootPage('forge');
+    SiemCore.AchievementSystem.check('visit_forge');
+
+    var NODE_W = 148;
+    var NODE_H = 52;
+    var PORT_R = 7;
+    var uid = 0;
+
+    function nextId() { return 'n' + (++uid); }
+
+    var COMPONENT_DEFS = [
+      { cat: 'trigger', key: 'failed_login', label: 'Failed Login', color: '#38bdf8', defaults: { event_type: 'auth.failure', source: 'windows_security', time_window: '60s' } },
+      { cat: 'trigger', key: 'login_after_failures', label: 'Successful Login After Failures', color: '#38bdf8', defaults: { event_type: 'auth.success', source: 'identity_provider', time_window: '300s', prior_failures: 5 } },
+      { cat: 'trigger', key: 'new_process', label: 'New Process', color: '#38bdf8', defaults: { event_type: 'process.create', source: 'edr_sensor', time_window: '30s' } },
+      { cat: 'trigger', key: 'network_connection', label: 'Network Connection', color: '#38bdf8', defaults: { event_type: 'network.flow', source: 'firewall', time_window: '120s' } },
+      { cat: 'trigger', key: 'file_write', label: 'File Write', color: '#38bdf8', defaults: { event_type: 'file.write', source: 'fim_agent', time_window: '60s' } },
+      { cat: 'trigger', key: 'registry_change', label: 'Registry Change', color: '#38bdf8', defaults: { event_type: 'registry.set', source: 'edr_sensor', time_window: '45s' } },
+      { cat: 'trigger', key: 'dns_query', label: 'DNS Query', color: '#38bdf8', defaults: { event_type: 'dns.query', source: 'dns_resolver', time_window: '90s' } },
+      { cat: 'trigger', key: 'beaconing', label: 'Beaconing Pattern', color: '#38bdf8', defaults: { event_type: 'network.beacon', source: 'ndr', time_window: '600s', interval_tolerance: '15%' } },
+      { cat: 'filter', key: 'src_ip', label: 'src_ip', color: '#6366f1', defaults: { field: 'src_ip', operator: 'not_in', value: '10.0.0.0/8,172.16.0.0/12' } },
+      { cat: 'filter', key: 'dst_port', label: 'dst_port', color: '#6366f1', defaults: { field: 'dst_port', operator: 'in', value: '443,8443,4444' } },
+      { cat: 'filter', key: 'user_agent', label: 'user_agent', color: '#6366f1', defaults: { field: 'user_agent', operator: 'contains', value: 'curl|wget|python-requests' } },
+      { cat: 'filter', key: 'hostname', label: 'hostname', color: '#6366f1', defaults: { field: 'hostname', operator: 'matches', value: '^(?!.*-prod).*' } },
+      { cat: 'filter', key: 'severity_threshold', label: 'severity threshold', color: '#6366f1', defaults: { field: 'severity', operator: 'gte', value: 'HIGH' } },
+      { cat: 'filter', key: 'time_window', label: 'time window', color: '#6366f1', defaults: { field: 'count', operator: 'gte', value: '5', window: '300s' } },
+      { cat: 'filter', key: 'geolocation', label: 'geolocation', color: '#6366f1', defaults: { field: 'geo.country', operator: 'not_in', value: 'US,CA,GB,DE' } },
+      { cat: 'filter', key: 'protocol', label: 'protocol', color: '#6366f1', defaults: { field: 'protocol', operator: 'eq', value: 'TCP' } },
+      { cat: 'enrichment', key: 'geoip', label: 'GeoIP', color: '#34d399', defaults: { provider: 'maxmind', fields: 'country,city,asn', cache_ttl: '3600s' } },
+      { cat: 'enrichment', key: 'threat_intel', label: 'Threat Intel', color: '#34d399', defaults: { feeds: 'misp,otx,meridian-ioc', match_fields: 'src_ip,dst_ip,domain', confidence_min: 0.7 } },
+      { cat: 'enrichment', key: 'ueba_score', label: 'UEBA score', color: '#34d399', defaults: { model: 'meridian-ueba-v3', threshold: 75, baseline_window: '14d' } },
+      { cat: 'enrichment', key: 'asset_criticality', label: 'Asset criticality', color: '#34d399', defaults: { cmdb_source: 'meridian-assets', min_criticality: 'HIGH', tag_override: 'crown-jewel' } },
+      { cat: 'action', key: 'alert_low', label: 'Alert LOW', color: '#fbbf24', defaults: { severity: 'LOW', message_template: 'Meridian-7: low-confidence match on {{hostname}}' } },
+      { cat: 'action', key: 'alert_med', label: 'Alert MED', color: '#fbbf24', defaults: { severity: 'MED', message_template: 'Meridian-7: medium alert — review {{src_ip}} activity' } },
+      { cat: 'action', key: 'alert_high', label: 'Alert HIGH', color: '#fbbf24', defaults: { severity: 'HIGH', message_template: 'Meridian-7: high-severity detection on {{hostname}}' } },
+      { cat: 'action', key: 'alert_crit', label: 'Alert CRIT', color: '#f87171', defaults: { severity: 'CRIT', message_template: 'Meridian-7: CRITICAL — immediate SOC escalation for {{src_ip}}' } },
+      { cat: 'action', key: 'create_case', label: 'Create Case', color: '#fbbf24', defaults: { queue: 'tier2-soc', priority: 'P2', assignee: 'auto-triage' } },
+      { cat: 'action', key: 'block_ip', label: 'Block IP', color: '#f87171', defaults: { target: '{{src_ip}}', duration: '3600s', integration: 'palo-alto-panorama' } },
+      { cat: 'action', key: 'notify_soc', label: 'Notify SOC', color: '#fbbf24', defaults: { channel: 'pagerduty+slack', oncall: 'meridian-primary', dedupe: '300s' } },
+      { cat: 'action', key: 'suppress', label: 'Suppress', color: '#64748b', defaults: { duration: '900s', reason: 'maintenance_window', ticket: 'CHG-44821' } }
+    ];
+
+    var SAMPLE_LOGS = [
+      { id: 'EVT-001', src_ip: '203.0.113.44', dst_port: 443, event_type: 'auth.failure', hostname: 'ws-finance-07', severity: 'MED', user_agent: 'Mozilla/5.0', geo: { country: 'RU' }, count: 12 },
+      { id: 'EVT-002', src_ip: '10.0.4.12', dst_port: 3389, event_type: 'auth.success', hostname: 'ws-eng-03', severity: 'LOW', user_agent: 'Microsoft-WMI', geo: { country: 'US' }, count: 1 },
+      { id: 'EVT-003', src_ip: '198.51.100.88', dst_port: 4444, event_type: 'network.flow', hostname: 'srv-dc-01', severity: 'HIGH', user_agent: 'curl/7.81.0', geo: { country: 'CN' }, count: 8 },
+      { id: 'EVT-004', src_ip: '10.0.8.55', dst_port: 53, event_type: 'dns.query', hostname: 'ws-hr-11', severity: 'LOW', user_agent: 'Chrome/120', geo: { country: 'US' }, count: 847 },
+      { id: 'EVT-005', src_ip: '172.16.44.9', dst_port: 22, event_type: 'process.create', hostname: 'dev-staging-02', severity: 'MED', user_agent: 'python-requests/2.28', geo: { country: 'DE' }, count: 3 }
+    ];
+
+    var nodes = [];
+    var edges = [];
+    var selectedNode = null;
+    var connectingFrom = null;
+    var panX = 0;
+    var panY = 0;
+    var zoom = 1;
+    var spaceDown = false;
+    var panning = false;
+    var panStart = { x: 0, y: 0, px: 0, py: 0 };
+    var editor = null;
+    var toastTimer = null;
+
+    var canvas = document.getElementById('forge-canvas');
+    var ctx = canvas.getContext('2d');
+    var libScroll = document.getElementById('lib-scroll');
+
+    function buildLibrary() {
+      var sections = { trigger: 'TRIGGERS', filter: 'FILTERS', enrichment: 'ENRICHMENTS', action: 'ACTIONS' };
+      var grouped = {};
+      COMPONENT_DEFS.forEach(function (d) {
+        if (!grouped[d.cat]) grouped[d.cat] = [];
+        grouped[d.cat].push(d);
+      });
+      Object.keys(sections).forEach(function (cat) {
+        var sec = document.createElement('div');
+        sec.className = 'lib-section';
+        sec.dataset.category = cat;
+        var h = document.createElement('h4');
+        h.textContent = sections[cat];
+        sec.appendChild(h);
+        grouped[cat].forEach(function (def) {
+          var el = document.createElement('div');
+          el.className = 'comp ' + cat;
+          el.dataset.cat = def.cat;
+          el.dataset.key = def.key;
+          el.dataset.label = def.label;
+          el.textContent = def.label;
+          sec.appendChild(el);
+        });
+        libScroll.appendChild(sec);
       });
     }
-    document.getElementById('export').onclick=function(){
-      var json=JSON.stringify({rule:'custom',blocks:blocks},null,2);
-      log('Exported '+blocks.length+' blocks');
-      syncMonaco();
-      navigator.clipboard&&navigator.clipboard.writeText(json);
-    };
-    function bezier(p0,p1,p2,t){var u=1-t;return u*u*p0+2*u*t*p1+t*t*p2;}
-    function draw(){
-      ctx.fillStyle='#0f172a';ctx.fillRect(0,0,canvas.width,canvas.height);
-      blocks.forEach(function(b,i){
-        ctx.fillStyle=sel===b?'rgba(251,191,36,.3)':'rgba(56,189,248,.15)';
-        ctx.strokeStyle='#38bdf8';ctx.fillRect(b.x,b.y,b.w,b.h);ctx.strokeRect(b.x,b.y,b.w,b.h);
-        ctx.fillStyle='#e2e8f0';ctx.font='10px monospace';ctx.fillText(b.type,b.x+6,b.y+24);
-        if(i>0){
-          var p=blocks[i-1],x0=p.x+p.w/2,y0=p.y+p.h,x1=b.x+b.w/2,y1=b.y,cx=(x0+x1)/2,cy=(y0+y1)/2-30;
-          ctx.beginPath();ctx.moveTo(x0,y0);
-          for(var t=0;t<=1;t+=0.05){ctx.lineTo(bezier(x0,cx,x1,t),bezier(y0,cy,y1,t));}
-          ctx.strokeStyle='rgba(148,163,184,.55)';ctx.stroke();
+    buildLibrary();
+
+    var compEls = [].slice.call(document.querySelectorAll('.comp'));
+    var fuse = typeof Fuse !== 'undefined'
+      ? new Fuse(compEls.map(function (el) { return { label: el.dataset.label, cat: el.dataset.cat, el: el }; }), { keys: ['label', 'cat'], threshold: 0.38 })
+      : null;
+
+    document.getElementById('search').addEventListener('input', function () {
+      var q = this.value.trim();
+      compEls.forEach(function (c) { c.style.display = ''; });
+      if (!q || !fuse) return;
+      var hits = fuse.search(q).map(function (r) { return r.item.el; });
+      compEls.forEach(function (c) { c.style.display = hits.indexOf(c) >= 0 ? '' : 'none'; });
+    });
+
+    function getDef(cat, key) {
+      for (var i = 0; i < COMPONENT_DEFS.length; i++) {
+        if (COMPONENT_DEFS[i].cat === cat && COMPONENT_DEFS[i].key === key) return COMPONENT_DEFS[i];
+      }
+      return null;
+    }
+
+    function createNode(cat, key, label, x, y) {
+      var def = getDef(cat, key);
+      if (!def) return null;
+      var node = {
+        id: nextId(),
+        cat: cat,
+        key: key,
+        label: label || def.label,
+        color: def.color,
+        x: x,
+        y: y,
+        w: NODE_W,
+        h: NODE_H,
+        config: JSON.parse(JSON.stringify(def.defaults))
+      };
+      nodes.push(node);
+      bindNodeDrag(node);
+      updateStats();
+      syncOutput();
+      renderConfig();
+      return node;
+    }
+
+    compEls.forEach(function (el) {
+      el.addEventListener('dragstart', function (e) {
+        e.dataTransfer.setData('application/forge', JSON.stringify({
+          cat: el.dataset.cat,
+          key: el.dataset.key,
+          label: el.dataset.label
+        }));
+        e.dataTransfer.effectAllowed = 'copy';
+      });
+    });
+
+    if (typeof interact !== 'undefined') {
+      interact('.comp').draggable({
+        inertia: false,
+        listeners: {
+          start: function (e) { e.target.style.opacity = '0.65'; },
+          move: function (e) {
+            var t = e.target;
+            var x = (parseFloat(t.getAttribute('data-x')) || 0) + e.dx;
+            var y = (parseFloat(t.getAttribute('data-y')) || 0) + e.dy;
+            t.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+            t.setAttribute('data-x', x);
+            t.setAttribute('data-y', y);
+          },
+          end: function (e) {
+            e.target.style.opacity = '';
+            e.target.style.transform = '';
+            e.target.removeAttribute('data-x');
+            e.target.removeAttribute('data-y');
+          }
         }
       });
     }
-    SiemCore.CanvasLoop.create(canvas,draw,{targetFps:30}).start();
+
+    canvas.addEventListener('dragover', function (e) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+    canvas.addEventListener('drop', function (e) {
+      e.preventDefault();
+      var raw = e.dataTransfer.getData('application/forge');
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      var rect = canvas.getBoundingClientRect();
+      var wx = (e.clientX - rect.left - panX) / zoom;
+      var wy = (e.clientY - rect.top - panY) / zoom;
+      createNode(data.cat, data.key, data.label, wx - NODE_W / 2, wy - NODE_H / 2);
+      showToast('Added ' + data.label + ' to canvas');
+    });
+
+    function screenToWorld(sx, sy) {
+      return { x: (sx - panX) / zoom, y: (sy - panY) / zoom };
+    }
+
+    function getPortPos(node, port) {
+      if (port === 'in') return { x: node.x, y: node.y + node.h / 2 };
+      return { x: node.x + node.w, y: node.y + node.h / 2 };
+    }
+
+    function hitPort(wx, wy) {
+      for (var i = nodes.length - 1; i >= 0; i--) {
+        var n = nodes[i];
+        if (n.cat !== 'trigger') {
+          var inp = getPortPos(n, 'in');
+          if (Math.hypot(wx - inp.x, wy - inp.y) <= PORT_R + 4) return { node: n, port: 'in' };
+        }
+        var outp = getPortPos(n, 'out');
+        if (Math.hypot(wx - outp.x, wy - outp.y) <= PORT_R + 4) return { node: n, port: 'out' };
+      }
+      return null;
+    }
+
+    function hitNode(wx, wy) {
+      for (var i = nodes.length - 1; i >= 0; i--) {
+        var n = nodes[i];
+        if (wx >= n.x && wx <= n.x + n.w && wy >= n.y && wy <= n.y + n.h) return n;
+      }
+      return null;
+    }
+
+    function bindNodeDrag(node) {
+      if (typeof interact === 'undefined') return;
+      var dragging = false;
+      interact(canvas).draggable({
+        listeners: {
+          start: function (e) {
+            if (spaceDown || e.button === 1) return;
+            var rect = canvas.getBoundingClientRect();
+            var w = screenToWorld(e.clientX - rect.left, e.clientY - rect.top);
+            var hit = hitNode(w.x, w.y);
+            if (hit !== node) return;
+            dragging = true;
+            selectedNode = node;
+            renderConfig();
+          },
+          move: function (e) {
+            if (!dragging) return;
+            node.x += e.dx / zoom;
+            node.y += e.dy / zoom;
+            syncOutput();
+          },
+          end: function () { dragging = false; }
+        }
+      });
+    }
+
+    var mouseWorld = { x: 0, y: 0 };
+    var mouseScreen = { x: 0, y: 0 };
+
+    canvas.addEventListener('mousemove', function (e) {
+      var rect = canvas.getBoundingClientRect();
+      mouseScreen.x = e.clientX - rect.left;
+      mouseScreen.y = e.clientY - rect.top;
+      var w = screenToWorld(mouseScreen.x, mouseScreen.y);
+      mouseWorld.x = w.x;
+      mouseWorld.y = w.y;
+      if (panning) {
+        panX = panStart.px + (mouseScreen.x - panStart.x);
+        panY = panStart.py + (mouseScreen.y - panStart.y);
+      }
+    });
+
+    canvas.addEventListener('mousedown', function (e) {
+      var rect = canvas.getBoundingClientRect();
+      var sx = e.clientX - rect.left;
+      var sy = e.clientY - rect.top;
+      var w = screenToWorld(sx, sy);
+
+      if (e.button === 1 || (e.button === 0 && spaceDown)) {
+        panning = true;
+        panStart = { x: sx, y: sy, px: panX, py: panY };
+        e.preventDefault();
+        return;
+      }
+
+      if (e.button !== 0) return;
+
+      var portHit = hitPort(w.x, w.y);
+      if (portHit) {
+        if (portHit.port === 'out') {
+          connectingFrom = { nodeId: portHit.node.id, port: 'out' };
+        } else if (connectingFrom) {
+          addEdge(connectingFrom.nodeId, portHit.node.id);
+          connectingFrom = null;
+        }
+        return;
+      }
+
+      var n = hitNode(w.x, w.y);
+      selectedNode = n;
+      renderConfig();
+
+      if (n && typeof interact !== 'undefined') {
+        var dragNode = n;
+        var active = true;
+        function onMove(ev) {
+          if (!active) return;
+          dragNode.x += ev.movementX / zoom;
+          dragNode.y += ev.movementY / zoom;
+          syncOutput();
+        }
+        function onUp() {
+          active = false;
+          window.removeEventListener('mousemove', onMove);
+          window.removeEventListener('mouseup', onUp);
+        }
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+      }
+    });
+
+    canvas.addEventListener('mouseup', function () {
+      panning = false;
+      if (connectingFrom) {
+        var portHit = hitPort(mouseWorld.x, mouseWorld.y);
+        if (portHit && portHit.port === 'in' && portHit.node.id !== connectingFrom.nodeId) {
+          addEdge(connectingFrom.nodeId, portHit.node.id);
+        }
+        connectingFrom = null;
+      }
+    });
+
+    canvas.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      var rect = canvas.getBoundingClientRect();
+      var sx = e.clientX - rect.left;
+      var sy = e.clientY - rect.top;
+      var before = screenToWorld(sx, sy);
+      var factor = e.deltaY > 0 ? 0.92 : 1.08;
+      zoom = Math.max(0.35, Math.min(2.5, zoom * factor));
+      panX = sx - before.x * zoom;
+      panY = sy - before.y * zoom;
+      document.getElementById('zoom-label').textContent = Math.round(zoom * 100) + '%';
+    }, { passive: false });
+
+    window.addEventListener('keydown', function (e) {
+      if (e.code === 'Space') { spaceDown = true; e.preventDefault(); }
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (document.activeElement && /input|textarea|select/i.test(document.activeElement.tagName)) return;
+        if (selectedNode) {
+          removeNode(selectedNode.id);
+          selectedNode = null;
+          renderConfig();
+          syncOutput();
+        }
+      }
+    });
+    window.addEventListener('keyup', function (e) { if (e.code === 'Space') spaceDown = false; });
+
+    function addEdge(fromId, toId) {
+      if (fromId === toId) return;
+      for (var i = 0; i < edges.length; i++) {
+        if (edges[i].from === fromId && edges[i].to === toId) return;
+      }
+      edges.push({ from: fromId, to: toId });
+      updateStats();
+      syncOutput();
+      showToast('Connected nodes');
+    }
+
+    function removeNode(id) {
+      nodes = nodes.filter(function (n) { return n.id !== id; });
+      edges = edges.filter(function (e) { return e.from !== id && e.to !== id; });
+      updateStats();
+    }
+
+    function updateStats() {
+      document.getElementById('rule-stat').textContent = nodes.length + ' nodes · ' + edges.length + ' edges';
+    }
+
+    function renderConfig() {
+      var empty = document.getElementById('config-empty');
+      var fields = document.getElementById('config-fields');
+      var meta = document.getElementById('node-meta');
+      if (!selectedNode) {
+        empty.style.display = '';
+        fields.style.display = 'none';
+        fields.innerHTML = '';
+        meta.textContent = '';
+        return;
+      }
+      empty.style.display = 'none';
+      fields.style.display = '';
+      fields.innerHTML = '';
+      meta.textContent = selectedNode.cat.toUpperCase() + ' · ' + selectedNode.id;
+
+      var schema = getConfigSchema(selectedNode);
+      schema.forEach(function (f) {
+        var wrap = document.createElement('div');
+        wrap.className = 'field';
+        var lab = document.createElement('label');
+        lab.textContent = f.label;
+        wrap.appendChild(lab);
+        var val = selectedNode.config[f.key] != null ? selectedNode.config[f.key] : '';
+        var input;
+        if (f.type === 'select') {
+          input = document.createElement('select');
+          f.options.forEach(function (opt) {
+            var o = document.createElement('option');
+            o.value = opt;
+            o.textContent = opt;
+            if (opt === val) o.selected = true;
+            input.appendChild(o);
+          });
+        } else if (f.type === 'textarea') {
+          input = document.createElement('textarea');
+          input.value = val;
+        } else {
+          input = document.createElement('input');
+          input.type = 'text';
+          input.value = val;
+        }
+        input.addEventListener('input', function () {
+          selectedNode.config[f.key] = input.value;
+          syncOutput();
+        });
+        wrap.appendChild(input);
+        fields.appendChild(wrap);
+      });
+    }
+
+    function getConfigSchema(node) {
+      if (node.cat === 'trigger') {
+        return [
+          { key: 'event_type', label: 'Event Type', type: 'text' },
+          { key: 'source', label: 'Source', type: 'text' },
+          { key: 'time_window', label: 'Time Window', type: 'text' }
+        ];
+      }
+      if (node.cat === 'filter') {
+        return [
+          { key: 'field', label: 'Field', type: 'text' },
+          { key: 'operator', label: 'Operator', type: 'select', options: ['eq', 'neq', 'in', 'not_in', 'contains', 'matches', 'gte', 'lte'] },
+          { key: 'value', label: 'Value', type: 'text' }
+        ];
+      }
+      if (node.cat === 'enrichment') {
+        return Object.keys(node.config).map(function (k) {
+          return { key: k, label: k.replace(/_/g, ' '), type: 'text' };
+        });
+      }
+      return [
+        { key: 'severity', label: 'Severity', type: 'select', options: ['LOW', 'MED', 'HIGH', 'CRIT'] },
+        { key: 'message_template', label: 'Message Template', type: 'textarea' }
+      ];
+    }
+
+    function buildRuleObject() {
+      return {
+        rule_id: 'meridian-forge-' + Date.now().toString(36),
+        name: 'custom-detection-rule',
+        version: '1.0',
+        author: 'meridian-analyst',
+        nodes: nodes.map(function (n) {
+          return { id: n.id, type: n.cat, component: n.key, label: n.label, config: n.config, position: { x: Math.round(n.x), y: Math.round(n.y) } };
+        }),
+        edges: edges.map(function (e) { return { from: e.from, to: e.to }; }),
+        metadata: { created: new Date().toISOString(), engine: 'meridian-7-rules-v15' }
+      };
+    }
+
+    function toYaml(obj, indent) {
+      indent = indent || 0;
+      var sp = '  '.repeat(indent);
+      var lines = [];
+      if (Array.isArray(obj)) {
+        obj.forEach(function (item) {
+          if (item !== null && typeof item === 'object') {
+            lines.push(sp + '- ' + toYaml(item, indent + 1).trim());
+          } else {
+            lines.push(sp + '- ' + yamlScalar(item));
+          }
+        });
+        return lines.join('\n');
+      }
+      Object.keys(obj).forEach(function (key) {
+        var val = obj[key];
+        if (val !== null && typeof val === 'object' && !Array.isArray(val)) {
+          lines.push(sp + key + ':');
+          lines.push(toYaml(val, indent + 1));
+        } else if (Array.isArray(val)) {
+          lines.push(sp + key + ':');
+          lines.push(toYaml(val, indent + 1));
+        } else {
+          lines.push(sp + key + ': ' + yamlScalar(val));
+        }
+      });
+      return lines.join('\n');
+    }
+
+    function yamlScalar(v) {
+      if (v === null || v === undefined) return 'null';
+      if (typeof v === 'boolean') return v ? 'true' : 'false';
+      if (typeof v === 'number') return String(v);
+      var s = String(v);
+      if (/[:#\[\]{}|>&*!%@`]/.test(s) || s.indexOf(' ') >= 0) return '"' + s.replace(/"/g, '\\"') + '"';
+      return s;
+    }
+
+    function syncOutput() {
+      var yaml = toYaml(buildRuleObject());
+      if (editor) editor.setValue(yaml);
+    }
+
+    function evaluateRule(log) {
+      var triggers = nodes.filter(function (n) { return n.cat === 'trigger'; });
+      if (!triggers.length) return false;
+      var matchedTrigger = false;
+      triggers.forEach(function (t) {
+        if (log.event_type === t.config.event_type) matchedTrigger = true;
+      });
+      if (!matchedTrigger) return false;
+      var filters = nodes.filter(function (n) { return n.cat === 'filter'; });
+      for (var i = 0; i < filters.length; i++) {
+        var f = filters[i];
+        var field = f.config.field;
+        var op = f.config.operator;
+        var val = f.config.value || '';
+        var actual = log[field];
+        if (field === 'geo.country') actual = log.geo && log.geo.country;
+        if (field === 'count') actual = log.count;
+        if (!passFilter(actual, op, val)) return false;
+      }
+      return true;
+    }
+
+    function passFilter(actual, op, val) {
+      if (actual === undefined || actual === null) return op === 'neq';
+      var s = String(actual);
+      if (op === 'eq') return s === val;
+      if (op === 'neq') return s !== val;
+      if (op === 'contains') {
+        var parts = val.split('|');
+        return parts.some(function (p) { return s.toLowerCase().indexOf(p.toLowerCase()) >= 0; });
+      }
+      if (op === 'in') {
+        var list = val.split(',').map(function (x) { return x.trim(); });
+        return list.indexOf(s) >= 0 || list.indexOf(String(actual)) >= 0;
+      }
+      if (op === 'not_in') {
+        var nl = val.split(',').map(function (x) { return x.trim(); });
+        if (val.indexOf('/') >= 0 && s.indexOf('10.') === 0) return false;
+        return nl.indexOf(s) < 0;
+      }
+      if (op === 'gte') {
+        var sev = { LOW: 1, MED: 2, HIGH: 3, CRIT: 4 };
+        if (sev[s] && sev[val]) return sev[s] >= sev[val];
+        return Number(actual) >= Number(val);
+      }
+      if (op === 'matches') return true;
+      return true;
+    }
+
+    function runTest() {
+      var tbody = document.getElementById('test-body');
+      tbody.innerHTML = '';
+      SAMPLE_LOGS.forEach(function (log) {
+        var match = evaluateRule(log);
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + log.id + '</td><td>' + log.src_ip + '</td><td>' + log.event_type + '</td><td class="' + (match ? 'match-yes' : 'match-no') + '">' + (match ? '✓ TRIGGER' : '— pass') + '</td>';
+        tbody.appendChild(tr);
+      });
+      var hits = SAMPLE_LOGS.filter(function (l) { return evaluateRule(l); }).length;
+      showToast('Test complete: ' + hits + '/' + SAMPLE_LOGS.length + ' events matched');
+      if (hits > 0) SiemCore.AchievementSystem.check('forge_rule_match');
+    }
+
+    document.getElementById('btn-test').addEventListener('click', runTest);
+
+    function showToast(msg) {
+      var t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2600);
+    }
+
+    function copyExport(text, label) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { showToast(label + ' copied to clipboard'); });
+      } else {
+        showToast(label + ' ready (clipboard unavailable)');
+      }
+    }
+
+    document.getElementById('btn-export-json').addEventListener('click', function () {
+      copyExport(JSON.stringify(buildRuleObject(), null, 2), 'JSON rule');
+      SiemCore.AchievementSystem.check('forge_export');
+    });
+
+    document.getElementById('btn-export-yaml').addEventListener('click', function () {
+      copyExport(toYaml(buildRuleObject()), 'YAML rule');
+      SiemCore.AchievementSystem.check('forge_export');
+    });
+
+    function drawGrid() {
+      var step = 24 * zoom;
+      var offX = panX % step;
+      var offY = panY % step;
+      ctx.strokeStyle = 'rgba(99,102,241,.08)';
+      ctx.lineWidth = 1;
+      for (var x = offX; x < canvas.width; x += step) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+      }
+      for (var y = offY; y < canvas.height; y += step) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+      }
+    }
+
+    function drawArrow(x1, y1, x2, y2, color, highlight) {
+      var mx = (x1 + x2) / 2;
+      var my = (y1 + y2) / 2 - 40 * zoom;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.quadraticCurveTo(mx, my, x2, y2);
+      ctx.strokeStyle = highlight ? 'rgba(251,191,36,.85)' : color;
+      ctx.lineWidth = highlight ? 2.5 : 1.8;
+      ctx.stroke();
+      var angle = Math.atan2(y2 - my, x2 - mx);
+      var al = 10 * zoom;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - al * Math.cos(angle - 0.4), y2 - al * Math.sin(angle - 0.4));
+      ctx.lineTo(x2 - al * Math.cos(angle + 0.4), y2 - al * Math.sin(angle + 0.4));
+      ctx.closePath();
+      ctx.fillStyle = highlight ? 'rgba(251,191,36,.9)' : color;
+      ctx.fill();
+    }
+
+    function drawNode(n) {
+      var sx = n.x * zoom + panX;
+      var sy = n.y * zoom + panY;
+      var sw = n.w * zoom;
+      var sh = n.h * zoom;
+      var sel = selectedNode && selectedNode.id === n.id;
+      ctx.fillStyle = sel ? 'rgba(251,191,36,.18)' : hexToRgba(n.color, 0.12);
+      ctx.strokeStyle = sel ? '#fbbf24' : n.color;
+      ctx.lineWidth = sel ? 2 : 1;
+      roundRect(ctx, sx, sy, sw, sh, 6 * zoom);
+      ctx.fill();
+      ctx.stroke();
+      if (sel) {
+        ctx.shadowColor = n.color;
+        ctx.shadowBlur = 14;
+      }
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = (9 * zoom) + 'px "IBM Plex Mono", monospace';
+      var catLabel = n.cat.charAt(0).toUpperCase() + n.cat.slice(1);
+      ctx.fillStyle = n.color;
+      ctx.font = (7 * zoom) + 'px "IBM Plex Mono", monospace';
+      ctx.fillText(catLabel, sx + 8 * zoom, sy + 14 * zoom);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = (9 * zoom) + 'px "IBM Plex Mono", monospace';
+      var label = n.label.length > 18 ? n.label.slice(0, 16) + '…' : n.label;
+      ctx.fillText(label, sx + 8 * zoom, sy + 30 * zoom);
+
+      if (n.cat !== 'trigger') {
+        var inp = getPortPos(n, 'in');
+        drawPort(inp.x * zoom + panX, inp.y * zoom + panY, '#6366f1');
+      }
+      var outp = getPortPos(n, 'out');
+      drawPort(outp.x * zoom + panX, outp.y * zoom + panY, '#38bdf8');
+    }
+
+    function drawPort(px, py, color) {
+      ctx.beginPath();
+      ctx.arc(px, py, PORT_R * zoom * 0.85, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(2,6,23,.9)';
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    function hexToRgba(hex, a) {
+      var r = parseInt(hex.slice(1, 3), 16);
+      var g = parseInt(hex.slice(3, 5), 16);
+      var b = parseInt(hex.slice(5, 7), 16);
+      return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+    }
+
+    function roundRect(c, x, y, w, h, r) {
+      c.beginPath();
+      c.moveTo(x + r, y);
+      c.lineTo(x + w - r, y);
+      c.quadraticCurveTo(x + w, y, x + w, y + r);
+      c.lineTo(x + w, y + h - r);
+      c.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      c.lineTo(x + r, y + h);
+      c.quadraticCurveTo(x, y + h, x, y + h - r);
+      c.lineTo(x, y + r);
+      c.quadraticCurveTo(x, y, x + r, y);
+      c.closePath();
+    }
+
+    function draw() {
+      ctx.fillStyle = '#0a0618';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      drawGrid();
+      edges.forEach(function (e) {
+        var from = nodes.find(function (n) { return n.id === e.from; });
+        var to = nodes.find(function (n) { return n.id === e.to; });
+        if (!from || !to) return;
+        var p0 = getPortPos(from, 'out');
+        var p1 = getPortPos(to, 'in');
+        drawArrow(
+          p0.x * zoom + panX, p0.y * zoom + panY,
+          p1.x * zoom + panX, p1.y * zoom + panY,
+          'rgba(56,189,248,.55)', false
+        );
+      });
+      if (connectingFrom) {
+        var fn = nodes.find(function (n) { return n.id === connectingFrom.nodeId; });
+        if (fn) {
+          var fp = getPortPos(fn, 'out');
+          drawArrow(
+            fp.x * zoom + panX, fp.y * zoom + panY,
+            mouseScreen.x, mouseScreen.y,
+            'rgba(251,191,36,.7)', true
+          );
+        }
+      }
+      nodes.forEach(drawNode);
+    }
+
+    if (!Array.prototype.find) {
+      Array.prototype.find = function (fn) {
+        for (var i = 0; i < this.length; i++) if (fn(this[i], i, this)) return this[i];
+        return undefined;
+      };
+    }
+
+    function resize() {
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    if (typeof require !== 'undefined') {
+      require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
+      require(['vs/editor/editor.main'], function () {
+        editor = monaco.editor.create(document.getElementById('monaco'), {
+          value: toYaml(buildRuleObject()),
+          language: 'yaml',
+          theme: 'vs-dark',
+          readOnly: true,
+          minimap: { enabled: false },
+          fontSize: 10,
+          fontFamily: '"IBM Plex Mono", Consolas, monospace',
+          lineNumbers: 'on',
+          scrollBeyondLastLine: false,
+          automaticLayout: true,
+          padding: { top: 8 }
+        });
+      });
+    }
+
+    if (SiemCore.CanvasLoop) {
+      SiemCore.CanvasLoop.create(canvas, draw, { targetFps: 30 }).start();
+    } else {
+      (function loop() { draw(); requestAnimationFrame(loop); })();
+    }
+
+    createNode('trigger', 'failed_login', 'Failed Login', 80, 80);
+    createNode('filter', 'src_ip', 'src_ip', 280, 80);
+    createNode('action', 'alert_high', 'Alert HIGH', 480, 80);
+    addEdge(nodes[0].id, nodes[1].id);
+    addEdge(nodes[1].id, nodes[2].id);
+    selectedNode = null;
+    renderConfig();
+    runTest();
   })();
   </script>
   <div id="deck-nav-root"></div>

@@ -7,86 +7,975 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <meta name="description" content="Signal decode chamber — interrogate captured traffic and extract IOCs." />
+  <meta name="description" content="Intercepted C2 communications chamber — decrypt sessions, extract IOCs, unlock classified brief." />
   <meta property="og:title" content="The Interrogation Room — HABIBI-SIEM" />
-  <meta property="og:description" content="Signal decode chamber — interrogate captured traffic and extract IOCs." />
+  <meta property="og:description" content="Intercepted C2 communications chamber — decrypt sessions, extract IOCs, unlock classified brief." />
   <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/intercept-og.png" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="The Interrogation Room — HABIBI-SIEM" />
-  <meta name="twitter:description" content="Signal decode chamber — interrogate captured traffic and extract IOCs." />
-  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/intercept-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="twitter:description" content="Intercepted C2 communications chamber — decrypt sessions, extract IOCs, unlock classified brief." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/intercept-og.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Interrogation Room — Meridian-7</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/palette.css" />
   <link rel="stylesheet" href="assets/deck-nav.css" />
   <script src="https://cdn.jsdelivr.net/npm/typed.js@2.1.0/dist/typed.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/TextPlugin.min.js"></script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#0a0618;color:#e2e8f0;font-family:Georgia,serif;display:flex}
-    #sidebar{width:220px;background:rgba(15,10,30,.95);border-right:1px solid rgba(148,163,184,.15);padding:12px;font-family:Consolas,monospace;font-size:10px}
-    #sidebar h3{font-size:9px;letter-spacing:2px;color:#64748b;margin-bottom:8px}
-    .sess{padding:8px;margin-bottom:4px;border:1px solid transparent;cursor:pointer;border-radius:4px}
-    .sess:hover,.sess.active{border-color:rgba(167,139,250,.4);background:rgba(99,102,241,.1)}
-    .sess.locked{opacity:.4;cursor:not-allowed}
-    #main{flex:1;display:flex;flex-direction:column;padding:20px}
-    #transcript{flex:1;overflow:auto;font-size:15px;line-height:1.7;max-width:680px}
-    .line{margin-bottom:12px}.speaker{font-weight:700;color:#a78bfa;font-family:Consolas,monospace;font-size:11px}
-    #decrypt-bar{padding:12px 0;border-top:1px solid rgba(148,163,184,.15);display:flex;gap:8px;align-items:center;font-family:Consolas,monospace;font-size:11px}
-    #decrypt-bar input{flex:1;padding:8px;background:#1e1b4b;border:1px solid #6366f1;color:#e2e8f0;font:inherit}
-    #decrypt-bar button{padding:8px 16px;background:rgba(99,102,241,.2);border:1px solid #6366f1;color:#c4b5fd;cursor:pointer;font:inherit}
+    :root {
+      --bg-deep: #0a0618;
+      --bg-panel: rgba(15, 10, 30, 0.94);
+      --blue: #38bdf8;
+      --green: #39ff14;
+      --indigo: #6366f1;
+      --violet: #c4b5fd;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --emerald: #34d399;
+      --ink: #e2e8f0;
+      --muted: #94a3b8;
+      --line: rgba(148, 163, 184, 0.18);
+      --line-soft: rgba(99, 102, 241, 0.22);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at 80% 10%, rgba(99, 102, 241, 0.14), transparent 40%), var(--bg-deep);
+      color: var(--ink);
+      font-family: "IBM Plex Mono", Consolas, monospace;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.06) 0px,
+        rgba(0, 0, 0, 0.06) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      z-index: 9998;
+      opacity: 0.3;
+    }
+
+    #intercept-shell {
+      display: grid;
+      grid-template-columns: 220px 1fr 300px;
+      grid-template-rows: 48px 1fr 72px;
+      width: 100%;
+      height: 100%;
+      min-height: 640px;
+    }
+
+    #top-bar {
+      grid-column: 1 / span 3;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg-panel);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    #top-bar .title { color: var(--violet); font-weight: 700; }
+    #top-bar .stamp {
+      color: var(--red);
+      border: 1px solid rgba(248, 113, 113, 0.4);
+      padding: 4px 10px;
+      font-size: 9px;
+      letter-spacing: 3px;
+    }
+
+    #sidebar {
+      border-right: 1px solid var(--line);
+      background: rgba(10, 6, 24, 0.88);
+      overflow-y: auto;
+      padding: 12px 10px;
+    }
+
+    #sidebar h3 {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      padding: 0 4px;
+    }
+
+    .sess-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 8px;
+      margin-bottom: 4px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 10px;
+      transition: border-color 220ms ease, background 220ms ease;
+    }
+
+    .sess-item:hover {
+      border-color: var(--line-soft);
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    .sess-item.active {
+      border-color: rgba(196, 181, 253, 0.5);
+      background: rgba(99, 102, 241, 0.14);
+    }
+
+    .sess-item.locked {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+
+    .sess-item.partial .lock-icon { color: var(--amber); }
+
+    .lock-icon { font-size: 11px; color: var(--muted); width: 14px; text-align: center; }
+    .sess-name { flex: 1; letter-spacing: 0.5px; }
+    .sess-status { font-size: 8px; color: var(--muted); }
+
+    #main-area {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      border-right: 1px solid var(--line);
+    }
+
+    #transcript-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--line);
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      background: rgba(2, 6, 23, 0.5);
+    }
+
+    #transcript {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 15px;
+      line-height: 1.75;
+      max-width: 720px;
+    }
+
+    .line-block {
+      margin-bottom: 20px;
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    .line-block.visible {
+      opacity: 1;
+      transform: none;
+      transition: opacity 350ms ease, transform 350ms ease;
+    }
+
+    .speaker {
+      font-family: "IBM Plex Mono", Consolas, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--violet);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .speaker.system { color: var(--blue); }
+    .speaker.operator { color: var(--amber); }
+    .speaker.threat { color: var(--red); }
+
+    .line-text {
+      color: #d1d5db;
+    }
+
+    .line-text.encrypted {
+      color: var(--muted);
+      font-style: italic;
+      position: relative;
+    }
+
+    .line-text.encrypted::before {
+      content: "CLASSIFIED";
+      position: absolute;
+      right: 0;
+      top: -14px;
+      font-family: "IBM Plex Mono", Consolas, monospace;
+      font-size: 8px;
+      letter-spacing: 2px;
+      color: rgba(248, 113, 113, 0.55);
+      font-style: normal;
+    }
+
+    .line-text .typed-cursor {
+      color: var(--green);
+    }
+
+    #decrypt-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-top: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.92);
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+
+    #decrypt-bar label { color: var(--muted); white-space: nowrap; }
+
+    #decrypt-key {
+      flex: 1;
+      padding: 10px 12px;
+      background: rgba(30, 27, 75, 0.8);
+      border: 1px solid var(--line-soft);
+      border-radius: 4px;
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 11px;
+      outline: none;
+      transition: border-color 220ms ease, box-shadow 220ms ease;
+    }
+
+    #decrypt-key:focus {
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.15);
+    }
+
+    #decrypt-key.shake {
+      animation: keyShake 0.45s ease;
+      border-color: var(--red);
+      box-shadow: 0 0 12px rgba(248, 113, 113, 0.4);
+    }
+
+    @keyframes keyShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+
+    #decrypt-btn {
+      padding: 10px 18px;
+      border: 1px solid rgba(99, 102, 241, 0.5);
+      border-radius: 4px;
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--violet);
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: background 220ms ease, box-shadow 220ms ease;
+    }
+
+    #decrypt-btn:hover {
+      background: rgba(99, 102, 241, 0.28);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+    }
+
+    #ioc-panel {
+      display: flex;
+      flex-direction: column;
+      background: rgba(10, 6, 24, 0.72);
+      min-width: 0;
+    }
+
+    #ioc-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--blue);
+      text-transform: uppercase;
+    }
+
+    #ioc-stats {
+      display: flex;
+      gap: 8px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 9px;
+    }
+
+    .ioc-stat {
+      flex: 1;
+      text-align: center;
+      padding: 6px 4px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+    }
+
+    .ioc-stat .num { font-size: 14px; font-weight: 700; display: block; }
+    .ioc-stat.confirmed .num { color: var(--emerald); }
+    .ioc-stat.investigating .num { color: var(--amber); }
+    .ioc-stat.fp .num { color: var(--muted); }
+
+    #ioc-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .ioc-empty {
+      font-size: 10px;
+      color: var(--muted);
+      padding: 16px 8px;
+      line-height: 1.6;
+    }
+
+    .ioc-row {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      font-size: 10px;
+      background: rgba(2, 6, 23, 0.55);
+      transition: border-color 220ms ease, box-shadow 220ms ease;
+    }
+
+    .ioc-row:hover { border-color: rgba(56, 189, 248, 0.35); }
+
+    .ioc-row.confirmed { border-color: rgba(52, 211, 153, 0.45); box-shadow: 0 0 8px rgba(52, 211, 153, 0.12); }
+    .ioc-row.investigating { border-color: rgba(251, 191, 36, 0.45); }
+    .ioc-row.fp { border-color: rgba(148, 163, 184, 0.3); opacity: 0.65; }
+
+    .ioc-value {
+      word-break: break-all;
+      color: var(--ink);
+      margin-bottom: 6px;
+      font-size: 9px;
+    }
+
+    .ioc-type {
+      font-size: 8px;
+      letter-spacing: 1px;
+      color: var(--violet);
+      margin-bottom: 4px;
+    }
+
+    .ioc-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .ioc-btn {
+      flex: 1;
+      padding: 4px 2px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: transparent;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 7px;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 220ms ease;
+    }
+
+    .ioc-btn:hover { color: var(--ink); border-color: rgba(148, 163, 184, 0.4); }
+    .ioc-btn.active-confirmed { color: var(--emerald); border-color: rgba(52, 211, 153, 0.5); background: rgba(52, 211, 153, 0.1); }
+    .ioc-btn.active-fp { color: var(--muted); border-color: rgba(148, 163, 184, 0.4); background: rgba(148, 163, 184, 0.08); }
+    .ioc-btn.active-inv { color: var(--amber); border-color: rgba(251, 191, 36, 0.5); background: rgba(251, 191, 36, 0.1); }
+
+    #classified-brief {
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(2, 6, 23, 0.82);
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 350ms ease, visibility 350ms ease;
+    }
+
+    #classified-brief.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #brief-panel {
+      width: min(680px, 94vw);
+      max-height: 72vh;
+      overflow-y: auto;
+      background: rgba(10, 4, 8, 0.96);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      border-radius: 8px 8px 0 0;
+      padding: 28px 32px;
+      transform: translateY(100%);
+      transition: transform 450ms cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 -12px 60px rgba(248, 113, 113, 0.12);
+    }
+
+    #classified-brief.open #brief-panel { transform: translateY(0); }
+
+    #brief-panel h2 {
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: var(--red);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    #brief-panel .section {
+      margin-bottom: 16px;
+      font-family: Georgia, serif;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #cbd5e1;
+    }
+
+    #brief-panel .section-title {
+      font-family: "IBM Plex Mono", Consolas, monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--amber);
+      margin-bottom: 6px;
+    }
+
+    #brief-close {
+      margin-top: 20px;
+      padding: 10px 20px;
+      border: 1px solid rgba(248, 113, 113, 0.4);
+      background: rgba(248, 113, 113, 0.1);
+      color: var(--red);
+      font-family: inherit;
+      font-size: 10px;
+      cursor: pointer;
+      letter-spacing: 1px;
+    }
+
+    @media (max-width: 960px) {
+      #intercept-shell {
+        grid-template-columns: 1fr;
+        grid-template-rows: 48px auto 1fr 260px 72px;
+        overflow-y: auto;
+        height: auto;
+        min-height: 100%;
+      }
+      #sidebar { max-height: 200px; }
+      #ioc-panel { min-height: 260px; }
+      body { overflow: auto; }
+    }
   </style>
 </head>
 <body>
-  <aside id="sidebar"><h3>SESSIONS</h3><div id="sess-list"></div></aside>
-  <main id="main">
-    <div id="transcript"></div>
-    <div id="decrypt-bar">
-      <span>DECRYPT TRAFFIC:</span>
-      <input id="decrypt-key" placeholder="Enter session key" />
-      <button id="decrypt-btn">DECRYPT</button>
+  <div id="intercept-shell">
+    <header id="top-bar">
+      <span class="title">MERIDIAN-7 · INTERCEPTED C2 CHANNEL</span>
+      <span class="stamp">TOP SECRET // SI</span>
+    </header>
+
+    <aside id="sidebar">
+      <h3>CAPTURED SESSIONS</h3>
+      <div id="sess-list"></div>
+    </aside>
+
+    <main id="main-area">
+      <div id="transcript-header">TRANSCRIPT · <span id="session-title">—</span> · TIMESTAMP 2024-11-14T03:14:22Z</div>
+      <div id="transcript"></div>
+      <div id="decrypt-bar">
+        <label for="decrypt-key">DECRYPT KEY:</label>
+        <input type="text" id="decrypt-key" placeholder="Enter session decryption key" autocomplete="off" spellcheck="false" />
+        <button type="button" id="decrypt-btn">DECRYPT</button>
+      </div>
+    </main>
+
+    <aside id="ioc-panel">
+      <div id="ioc-header">IOC EXTRACTOR</div>
+      <div id="ioc-stats">
+        <div class="ioc-stat confirmed"><span class="num" id="stat-confirmed">0</span>CONFIRMED</div>
+        <div class="ioc-stat investigating"><span class="num" id="stat-inv">0</span>INVESTIGATING</div>
+        <div class="ioc-stat fp"><span class="num" id="stat-fp">0</span>FALSE POS</div>
+      </div>
+      <div id="ioc-list">
+        <div class="ioc-empty">IOCs detected in decrypted transcript text will appear here. Click to mark as Confirmed, False Positive, or Investigating.</div>
+      </div>
+    </aside>
+  </div>
+
+  <div id="classified-brief" aria-hidden="true">
+    <div id="brief-panel">
+      <h2>CLASSIFIED — MERIDIAN-7 THREAT INTELLIGENCE BRIEF</h2>
+      <div class="section">
+        <div class="section-title">ATTRIBUTION</div>
+        Threat actor designated <strong>SHADOW-MERIDIAN</strong> (tracked overlap with APT41 tooling). Campaign targeted Meridian-7 finance vertical via spear-phishing and supply-chain adjacent credentials. Primary C2: c2.meridian-shadow.net resolved to 203.0.113.44 with failover 198.51.100.44.
+      </div>
+      <div class="section">
+        <div class="section-title">TTPs OBSERVED</div>
+        Initial access via macro-enabled xlsm (T1566.001). Persistence through registry Run keys, scheduled tasks, and WMI subscriptions (T1547.001, T1053.005, T1546.003). Lateral movement via pass-the-hash and Admin$ writes (T1550.002, T1021.002). Exfiltration via DNS TXT tunneling — 847 queries in 4 minutes (T1048.003). Impact phase deployed ransomware with shadow copy deletion (T1486, T1490).
+      </div>
+      <div class="section">
+        <div class="section-title">IOC SUMMARY</div>
+        Domains: c2.meridian-shadow.net, meridian-payroll.net · IPs: 203.0.113.44, 198.51.100.44, 10.0.4.87, 10.0.4.12 · Hashes: a3f2c891e0b4d7e8f1a2b3c4d5e6f7890abcdef1234567890abcdef123456 · Files: update.exe, lockbit_meridian.exe, customer_pii.7z
+      </div>
+      <div class="section">
+        <div class="section-title">RECOMMENDED SIEM RULE CHANGES</div>
+        Deploy rule <strong>apt-lateral-move</strong> threshold=3 window=5m correlating pass-the-hash with admin share writes. Enable DNS tunnel entropy detection at threshold 4.0 bits. Scope impossible-travel rule to all legacy auth protocols. Block IOC feed auto-enforcement for tier-0 VLAN egress.
+      </div>
+      <div class="section">
+        <div class="section-title">STATUS</div>
+        CONTAINED — 847 hosts reimaged, credentials rotated, C2 sinkholed. Mean time to detect reduced from 72h to 4m post-incident tuning. Incident closed INC-M7-2024-1114.
+      </div>
+      <button type="button" id="brief-close">ACKNOWLEDGE &amp; CLOSE</button>
     </div>
-  </main>
+  </div>
+
   <script src="assets/siem-core.js"></script>
   <script src="assets/palette.js"></script>
   <script>
-  (function(){
-    SiemCore.bootPage('intercept'); SiemCore.AchievementSystem.check('visit_intercept');
-    var tick=typeof Howl!=='undefined'?new Howl({src:['data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAAA='],volume:0.15}):null;
-    var SESSIONS=[
-      {id:'A',title:'SESSION-ALPHA',key:'alpha-7',lines:[{s:'ANALYST',t:'What triggered the initial alert?'},{s:'SUBJECT',t:'Unauthorized SSH from 203.0.113.8 at 03:14 UTC.'}]},
-      {id:'B',title:'SESSION-BETA',key:'beta-7',lines:[{s:'ANALYST',t:'Describe the lateral movement path.'},{s:'SUBJECT',t:'Pivot through jump host 10.0.4.12 to domain controller.'}]},
-      {id:'C',title:'SESSION-GAMMA',key:'gamma-7',lines:[{s:'ANALYST',t:'What data left the network?'},{s:'SUBJECT',t:'Customer PII archive — 2.3 GB to 198.51.100.44.'}]},
-      {id:'D',title:'SESSION-DELTA',key:'delta-7',lines:[{s:'ANALYST',t:'Who authorized the service account?'},{s:'SUBJECT',t:'No one. It was provisioned via compromised CI pipeline.'}]},
-      {id:'O',title:'SESSION-OMEGA',key:null,locked:true,lines:[{s:'SYSTEM',t:'[ENCRYPTED — clearance required]'}]}
-    ];
-    var cur=0,decrypted={};
-    var list=document.getElementById('sess-list'),trans=document.getElementById('transcript');
-    SESSIONS.forEach(function(s,i){
-      var el=document.createElement('div');el.className='sess'+(s.locked?' locked':'')+(i===0?' active':'');
-      el.textContent=s.title;el.title=s.locked?'Locked':s.key||'';
-      el.onclick=function(){if(s.locked&&!decrypted.O)return;cur=i;render();document.querySelectorAll('.sess').forEach(function(x){x.classList.remove('active');});el.classList.add('active');};
-      list.appendChild(el);
-    });
-    function render(){
-      var s=SESSIONS[cur];trans.innerHTML='';
-      s.lines.forEach(function(ln,i){
-        var div=document.createElement('div');div.className='line';
-        div.innerHTML='<div class="speaker">'+ln.s+'</div><div class="typed-'+i+'"></div>';
-        trans.appendChild(div);
-        if(typeof Typed!=='undefined'){
-          new Typed('.typed-'+i,{strings:[ln.t],typeSpeed:28,showCursor:false});
-        } else div.querySelector('div:last-child').textContent=ln.t;
-      });
-      if(typeof gsap!=='undefined')gsap.from(trans.children,{opacity:0,y:8,stagger:0.1,duration:0.35});
-      if(tick)tick.play();
+  (function () {
+    'use strict';
+
+    SiemCore.bootPage('intercept');
+    SiemCore.AchievementSystem.check('visit_intercept');
+
+    if (typeof gsap !== 'undefined' && gsap.registerPlugin) {
+      gsap.registerPlugin(TextPlugin);
     }
-    document.getElementById('decrypt-btn').onclick=function(){
-      var k=document.getElementById('decrypt-key').value;
-      if(k===SESSIONS[cur].key){decrypted[SESSIONS[cur].id]=true;document.getElementById('decrypt-key').value='';render();}
-      if(k==='omega-master'){SESSIONS[4].locked=false;SESSIONS[4].lines=[{s:'OMEGA',t:'Full traffic dump decrypted. Exfil destination: 198.51.100.44'}];decrypted.O=true;document.querySelectorAll('.sess')[4].classList.remove('locked');render();}
+
+    var CLICK_WAV = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAAA=';
+    var tickSound = typeof Howl !== 'undefined' ? new Howl({ src: [CLICK_WAV], volume: 0.18 }) : null;
+    var decryptSound = typeof Howl !== 'undefined' ? new Howl({ src: [CLICK_WAV], volume: 0.28 }) : null;
+    var failSound = typeof Howl !== 'undefined' ? new Howl({ src: [CLICK_WAV], volume: 0.12, rate: 0.7 }) : null;
+
+    var SESSIONS = [
+      {
+        id: 'ALPHA',
+        title: 'SESSION-ALPHA',
+        key: 'alpha-7',
+        lines: [
+          { speaker: 'OPERATOR', speakerClass: 'operator', text: 'Intercept initiated on channel MERIDIAN-C2-004. What triggered the initial alert at 03:14 UTC?', encrypted: false },
+          { speaker: 'ANALYST', speakerClass: '', text: 'Unauthorized SSH attempt from external IP 203.0.113.44 targeting jump-server-01. Failed auth x12 then success with svc-backup credentials.', encrypted: false },
+          { speaker: 'OPERATOR', speakerClass: 'operator', text: 'Source of the credential compromise?', encrypted: false },
+          { speaker: 'THREAT', speakerClass: 'threat', text: '[ENCRYPTED — decrypt to read]', plain: 'Phishing drop delivered macro payload to WS-FIN-042. Harvested SSO token replayed within 11 minutes. First beacon to c2.meridian-shadow.net confirmed.', encrypted: true },
+          { speaker: 'ANALYST', speakerClass: '', text: 'Timeline correlates with mail-gateway alert on meridian-payroll.net domain — registered 48 hours prior.', encrypted: false },
+          { speaker: 'SYSTEM', speakerClass: 'system', text: 'Correlation engine linked events across mail, endpoint, and network sensors. Confidence: 0.94.', encrypted: false }
+        ]
+      },
+      {
+        id: 'BETA',
+        title: 'SESSION-BETA',
+        key: 'beta-7',
+        lines: [
+          { speaker: 'OPERATOR', speakerClass: 'operator', text: 'Describe lateral movement path from initial foothold.', encrypted: false },
+          { speaker: 'ANALYST', speakerClass: '', text: 'Pass-the-hash from WS-FIN-042 (10.0.4.87) to jump-server-01 (10.0.4.12). No Kerberos ticket issued — pure NTLM replay.', encrypted: false },
+          { speaker: 'THREAT', speakerClass: 'threat', text: '[ENCRYPTED — decrypt to read]', plain: 'Admin$ write to file-server-03 at 10.0.8.22. Deployed svchost.exe masquerade. DCOM exec on DC-01 followed within 20 minutes.', encrypted: true },
+          { speaker: 'ANALYST', speakerClass: '', text: 'DCSync attempt detected on 10.0.1.5 — tier-0 breach confirmed. Golden ticket path now viable.', encrypted: false },
+          { speaker: 'OPERATOR', speakerClass: 'operator', text: 'How many hosts touched in lateral phase?', encrypted: false },
+          { speaker: 'SYSTEM', speakerClass: 'system', text: 'Attack graph: 7 hosts compromised across 3 VLANs in 94-minute window.', encrypted: false },
+          { speaker: 'ANALYST', speakerClass: '', text: 'Recommend immediate KRBTGT reset and VLAN-Finance isolation per playbook M7-PB-04.', encrypted: false }
+        ]
+      },
+      {
+        id: 'GAMMA',
+        title: 'SESSION-GAMMA',
+        key: 'gamma-7',
+        lines: [
+          { speaker: 'OPERATOR', speakerClass: 'operator', text: 'What data left the network and via what channel?', encrypted: false },
+          { speaker: 'ANALYST', speakerClass: '', text: 'Customer PII archive customer_pii.7z staged on file-server-03. 2.3 GB total volume identified.', encrypted: false },
+          { speaker: 'THREAT', speakerClass: 'threat', text: '[ENCRYPTED — decrypt to read]', plain: 'Primary exfil via DNS TXT tunnel to 198.51.100.44 — 847 queries in under 4 minutes. Secondary HTTPS POST to c2.meridian-shadow.net/api/upload for remaining 1.8 GB.', encrypted: true },
+          { speaker: 'ANALYST', speakerClass: '', text: 'DLP policy triggered 8 minutes after exfil began — enforcement lag allowed partial transfer.', encrypted: false },
+          { speaker: 'OPERATOR', speakerClass: 'operator', text: 'Anti-forensics activity noted?', encrypted: false },
+          { speaker: 'ANALYST', speakerClass: '', text: 'cipher /w and sdelete on staging dirs. Event log clearing on 3 hosts — replicas preserved.', encrypted: false }
+        ]
+      },
+      {
+        id: 'DELTA',
+        title: 'SESSION-DELTA',
+        key: 'delta-7',
+        lines: [
+          { speaker: 'OPERATOR', speakerClass: 'operator', text: 'Who authorized the compromised service account?', encrypted: false },
+          { speaker: 'ANALYST', speakerClass: '', text: 'No legitimate authorization. svc-backup provisioned via compromised CI pipeline token 72 hours before incident.', encrypted: false },
+          { speaker: 'THREAT', speakerClass: 'threat', text: '[ENCRYPTED — decrypt to read]', plain: 'Pipeline webhook exposed in public GitHub repo. Token scoped to production deploy. Used to inject persistence script into build artifact.', encrypted: true },
+          { speaker: 'SYSTEM', speakerClass: 'system', text: 'Supply chain indicator: build-server-02 artifact hash mismatch vs source commit.', encrypted: false },
+          { speaker: 'ANALYST', speakerClass: '', text: 'Recommend rotating all CI/CD secrets and enabling signed commit enforcement.', encrypted: false },
+          { speaker: 'OPERATOR', speakerClass: 'operator', text: 'Persistence mechanisms identified?', encrypted: false },
+          { speaker: 'ANALYST', speakerClass: '', text: 'Registry Run key, scheduled task WindowsHealthCheck, WMI subscription — triple redundancy on WS-FIN-042.', encrypted: false }
+        ]
+      },
+      {
+        id: 'EPSILON',
+        title: 'SESSION-EPSILON',
+        key: 'epsilon-7',
+        lines: [
+          { speaker: 'OPERATOR', speakerClass: 'operator', text: 'Impact phase timeline — when did encryption begin?', encrypted: false },
+          { speaker: 'ANALYST', speakerClass: '', text: 'Ransomware lockbit_meridian.exe deployed via GPO at 04:08 UTC. Shadow copy deletion on 23 hosts within 94 seconds.', encrypted: false },
+          { speaker: 'THREAT', speakerClass: 'threat', text: '[ENCRYPTED — decrypt to read]', plain: 'Encryption spread to 47 workstations via SMB. Ransom note README_MERIDIAN.txt dropped. Bitcoin bc1qmeridian7shadow in payment portal.', encrypted: true },
+          { speaker: 'ANALYST', speakerClass: '', text: 'Tor bridge connection blocked at firewall — payment portal unreachable from internal network.', encrypted: false },
+          { speaker: 'SYSTEM', speakerClass: 'system', text: 'Destructive command shutdown /r /f issued on DC-01 — 4-minute auth outage during failover.', encrypted: false },
+          { speaker: 'OPERATOR', speakerClass: 'operator', text: 'Recovery status?', encrypted: false },
+          { speaker: 'ANALYST', speakerClass: '', text: '847 hosts reimaged. Backup restored from T-72h air-gapped snapshot. Purple team validation clean.', encrypted: false }
+        ]
+      },
+      {
+        id: 'ZETA',
+        title: 'SESSION-ZETA',
+        key: 'zeta-7',
+        lines: [
+          { speaker: 'OPERATOR', speakerClass: 'operator', text: 'Summarize threat actor infrastructure.', encrypted: false },
+          { speaker: 'ANALYST', speakerClass: '', text: 'Primary C2 c2.meridian-shadow.net → 203.0.113.44. Failover exfil 198.51.100.44. Phishing infra meridian-payroll.net.', encrypted: false },
+          { speaker: 'THREAT', speakerClass: 'threat', text: '[ENCRYPTED — decrypt to read]', plain: 'Infrastructure rotated every 6 hours via fast-flux. Backup C2 at 192.0.2.55 — sinkholed at 06:22 UTC.', encrypted: true },
+          { speaker: 'ANALYST', speakerClass: '', text: 'File hashes: update.exe a3f2c891e0b4d7e8… lockbit_meridian.exe 7f3e2a1b9c0d… — both in threat intel feed.', encrypted: false },
+          { speaker: 'SYSTEM', speakerClass: 'system', text: 'Auto-block rules deployed to edge firewall and DNS sinkhole.', encrypted: false },
+          { speaker: 'OPERATOR', speakerClass: 'operator', text: 'Attribution assessment?', encrypted: false },
+          { speaker: 'ANALYST', speakerClass: '', text: 'Tooling overlap with APT41. Campaign designation SHADOW-MERIDIAN. Full brief requires OMEGA clearance.', encrypted: false }
+        ]
+      },
+      {
+        id: 'OMEGA',
+        title: 'SESSION-OMEGA',
+        key: 'omega-master',
+        locked: true,
+        requiresAll: true,
+        lines: [
+          { speaker: 'SYSTEM', speakerClass: 'system', text: '[ENCRYPTED — OMEGA clearance required]', plain: 'OMEGA CHANNEL OPEN. Full traffic dump decrypted. Attacker group SHADOW-MERIDIAN confirmed APT41 overlap. Campaign spanned 72 hours blind spot before first SIEM correlation.', encrypted: true },
+          { speaker: 'OPERATOR', speakerClass: 'operator', text: 'Final exfil destination and volume?', encrypted: false },
+          { speaker: 'THREAT', speakerClass: 'threat', text: '[ENCRYPTED — decrypt to read]', plain: 'Total exfil 4.1 GB to 198.51.100.44 and c2.meridian-shadow.net. Includes customer PII, source code fragments, and KRBTGT backup metadata.', encrypted: true },
+          { speaker: 'ANALYST', speakerClass: '', text: 'Recommend deploying apt-lateral-move correlation rule and DNS tunnel entropy threshold at 4.0 bits.', encrypted: false },
+          { speaker: 'SYSTEM', speakerClass: 'system', text: 'CLASSIFIED brief available upon OMEGA key validation. Enter omega-master to unlock.', encrypted: false }
+        ]
+      },
+      {
+        id: 'CLASSIFIED',
+        title: 'SESSION-CLASSIFIED',
+        key: 'omega-master',
+        locked: true,
+        requiresAll: true,
+        classified: true,
+        lines: [
+          { speaker: 'SYSTEM', speakerClass: 'system', text: '[RESTRICTED — all sessions must be decrypted first]', plain: 'CLASSIFIED compartment unlocked. Full intelligence brief generated.', encrypted: true }
+        ]
+      }
+    ];
+
+    var state = {
+      curIdx: 0,
+      decrypted: {},
+      iocMarks: {},
+      typedInstances: [],
+      audioPrimed: false
     };
-    render();
+
+    var IOC_PATTERNS = [
+      { type: 'IP', regex: /\b(?:\d{1,3}\.){3}\d{1,3}\b/g },
+      { type: 'DOMAIN', regex: /\b[a-z0-9][a-z0-9.-]+\.(?:net|com|org|internal|io)\b/gi },
+      { type: 'HASH', regex: /\b[a-f0-9]{16,64}\b/gi },
+      { type: 'FILENAME', regex: /\b[\w.-]+\.(?:exe|7z|xlsm|txt|dll|php|dat)\b/gi },
+      { type: 'BTC', regex: /\bbc1[a-z0-9]{20,}\b/gi }
+    ];
+
+    function primeAudio() {
+      if (state.audioPrimed) return;
+      state.audioPrimed = true;
+      if (tickSound) tickSound.play();
+    }
+
+    function playTick() {
+      if (tickSound) tickSound.play();
+    }
+
+    function allStandardDecrypted() {
+      return SESSIONS.filter(function (s) {
+        return s.id !== 'OMEGA' && s.id !== 'CLASSIFIED';
+      }).every(function (s) {
+        return state.decrypted[s.id];
+      });
+    }
+
+    function getSessionStatus(sess) {
+      if (sess.locked && sess.requiresAll && !allStandardDecrypted()) return 'locked';
+      if (state.decrypted[sess.id]) return 'open';
+      var hasEnc = sess.lines.some(function (l) { return l.encrypted; });
+      if (hasEnc && !state.decrypted[sess.id]) return 'partial';
+      return 'open';
+    }
+
+    function buildSidebar() {
+      var list = document.getElementById('sess-list');
+      list.innerHTML = '';
+      SESSIONS.forEach(function (sess, i) {
+        var status = getSessionStatus(sess);
+        var item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'sess-item' + (i === state.curIdx ? ' active' : '') + (status === 'locked' ? ' locked' : '') + (status === 'partial' ? ' partial' : '');
+        var lockChar = status === 'locked' ? '🔒' : status === 'partial' ? '🔓' : '🔓';
+        if (status === 'open' && state.decrypted[sess.id]) lockChar = '✓';
+        item.innerHTML = '<span class="lock-icon">' + lockChar + '</span><span class="sess-name">' + sess.title + '</span><span class="sess-status">' + status.toUpperCase() + '</span>';
+        item.addEventListener('click', function () {
+          if (status === 'locked') return;
+          primeAudio();
+          state.curIdx = i;
+          buildSidebar();
+          renderTranscript();
+        });
+        list.appendChild(item);
+      });
+    }
+
+    function getVisibleText(line, sess) {
+      if (line.encrypted && !state.decrypted[sess.id]) {
+        return line.text;
+      }
+      if (line.encrypted && line.plain) return line.plain;
+      return line.text;
+    }
+
+    function extractIOCs(text) {
+      var found = [];
+      IOC_PATTERNS.forEach(function (pat) {
+        var matches = text.match(pat.regex);
+        if (matches) {
+          matches.forEach(function (m) {
+            var val = m.trim();
+            if (found.indexOf(val) === -1) found.push({ type: pat.type, value: val });
+          });
+        }
+      });
+      return found;
+    }
+
+    function collectAllIOCs() {
+      var all = [];
+      var seen = {};
+      SESSIONS.forEach(function (sess) {
+        if (!state.decrypted[sess.id] && sess.lines.some(function (l) { return l.encrypted; })) return;
+        sess.lines.forEach(function (line) {
+          var txt = getVisibleText(line, sess);
+          if (txt.indexOf('[ENCRYPTED') === 0) return;
+          extractIOCs(txt).forEach(function (ioc) {
+            var key = ioc.type + ':' + ioc.value;
+            if (!seen[key]) {
+              seen[key] = true;
+              all.push(ioc);
+            }
+          });
+        });
+      });
+      return all;
+    }
+
+    function updateIocStats() {
+      var confirmed = 0, inv = 0, fp = 0;
+      Object.keys(state.iocMarks).forEach(function (k) {
+        var m = state.iocMarks[k];
+        if (m === 'confirmed') confirmed++;
+        else if (m === 'investigating') inv++;
+        else if (m === 'fp') fp++;
+      });
+      document.getElementById('stat-confirmed').textContent = String(confirmed);
+      document.getElementById('stat-inv').textContent = String(inv);
+      document.getElementById('stat-fp').textContent = String(fp);
+    }
+
+    function renderIocPanel() {
+      var iocs = collectAllIOCs();
+      var list = document.getElementById('ioc-list');
+      if (iocs.length === 0) {
+        list.innerHTML = '<div class="ioc-empty">IOCs detected in decrypted transcript text will appear here. Click to mark as Confirmed, False Positive, or Investigating.</div>';
+        updateIocStats();
+        return;
+      }
+      list.innerHTML = '';
+      iocs.forEach(function (ioc) {
+        var key = ioc.type + ':' + ioc.value;
+        var mark = state.iocMarks[key] || '';
+        var row = document.createElement('div');
+        row.className = 'ioc-row' + (mark ? ' ' + mark : '');
+        row.innerHTML =
+          '<div class="ioc-type">' + ioc.type + '</div>' +
+          '<div class="ioc-value">' + ioc.value + '</div>' +
+          '<div class="ioc-actions">' +
+          '<button type="button" class="ioc-btn' + (mark === 'confirmed' ? ' active-confirmed' : '') + '" data-action="confirmed">CONFIRM</button>' +
+          '<button type="button" class="ioc-btn' + (mark === 'fp' ? ' active-fp' : '') + '" data-action="fp">FALSE POS</button>' +
+          '<button type="button" class="ioc-btn' + (mark === 'investigating' ? ' active-inv' : '') + '" data-action="investigating">INVESTIGATE</button>' +
+          '</div>';
+        row.querySelectorAll('.ioc-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            primeAudio();
+            playTick();
+            var action = btn.getAttribute('data-action');
+            if (state.iocMarks[key] === action) {
+              delete state.iocMarks[key];
+            } else {
+              state.iocMarks[key] = action;
+            }
+            renderIocPanel();
+          });
+        });
+        list.appendChild(row);
+      });
+      updateIocStats();
+    }
+
+    function destroyTyped() {
+      state.typedInstances.forEach(function (t) {
+        if (t && t.destroy) t.destroy();
+      });
+      state.typedInstances = [];
+    }
+
+    function renderTranscript() {
+      destroyTyped();
+      var sess = SESSIONS[state.curIdx];
+      document.getElementById('session-title').textContent = sess.title;
+      var trans = document.getElementById('transcript');
+      trans.innerHTML = '';
+
+      sess.lines.forEach(function (line, i) {
+        var block = document.createElement('div');
+        block.className = 'line-block';
+        var spk = document.createElement('div');
+        spk.className = 'speaker' + (line.speakerClass ? ' ' + line.speakerClass : '');
+        spk.textContent = line.speaker;
+        block.appendChild(spk);
+
+        var txt = document.createElement('div');
+        txt.className = 'line-text' + (line.encrypted && !state.decrypted[sess.id] ? ' encrypted' : '');
+        txt.id = 'line-' + state.curIdx + '-' + i;
+        block.appendChild(txt);
+        trans.appendChild(block);
+
+        var visible = getVisibleText(line, sess);
+        var isEncrypted = line.encrypted && !state.decrypted[sess.id];
+
+        setTimeout(function () {
+          block.classList.add('visible');
+          if (isEncrypted) {
+            txt.textContent = line.text;
+          } else if (typeof Typed !== 'undefined' && !line.encrypted) {
+            var typed = new Typed('#' + txt.id, {
+              strings: [visible],
+              typeSpeed: 26,
+              showCursor: true,
+              cursorChar: '▌',
+              onStringTyped: function () { playTick(); }
+            });
+            state.typedInstances.push(typed);
+          } else {
+            txt.textContent = visible;
+          }
+        }, i * 120);
+      });
+
+      renderIocPanel();
+    }
+
+    function scrambleReveal(el, finalText) {
+      if (typeof gsap !== 'undefined' && typeof TextPlugin !== 'undefined') {
+        gsap.to(el, {
+          duration: 1.2,
+          text: { value: finalText, scrambleText: 'X#@$%&*0123456789ABCDEF' },
+          ease: 'none',
+          onComplete: function () {
+            el.classList.remove('encrypted');
+          }
+        });
+      } else {
+        el.textContent = finalText;
+        el.classList.remove('encrypted');
+      }
+    }
+
+    function showBrief() {
+      var brief = document.getElementById('classified-brief');
+      brief.classList.add('open');
+      brief.setAttribute('aria-hidden', 'false');
+      if (typeof gsap !== 'undefined') {
+        gsap.fromTo('#brief-panel h2', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5, delay: 0.3 });
+      }
+      SiemCore.AchievementSystem.check('intercept_omega');
+    }
+
+    function attemptDecrypt(key) {
+      primeAudio();
+      var sess = SESSIONS[state.curIdx];
+      var input = document.getElementById('decrypt-key');
+
+      if (key === 'omega-master') {
+        if (!allStandardDecrypted()) {
+          input.classList.add('shake');
+          setTimeout(function () { input.classList.remove('shake'); }, 500);
+          if (failSound) failSound.play();
+          return;
+        }
+        state.decrypted.OMEGA = true;
+        state.decrypted.CLASSIFIED = true;
+        SESSIONS.forEach(function (s) {
+          if (s.id === 'OMEGA' || s.id === 'CLASSIFIED') s.locked = false;
+        });
+        if (decryptSound) decryptSound.play();
+        document.getElementById('decrypt-key').value = '';
+        buildSidebar();
+        state.curIdx = SESSIONS.findIndex(function (s) { return s.id === 'OMEGA'; });
+        renderTranscript();
+        showBrief();
+        return;
+      }
+
+      if (sess.key && key === sess.key) {
+        state.decrypted[sess.id] = true;
+        if (decryptSound) decryptSound.play();
+        document.getElementById('decrypt-key').value = '';
+
+        sess.lines.forEach(function (line, i) {
+          if (line.encrypted && line.plain) {
+            var el = document.getElementById('line-' + state.curIdx + '-' + i);
+            if (el) scrambleReveal(el, line.plain);
+          }
+        });
+
+        buildSidebar();
+        renderIocPanel();
+
+        if (allStandardDecrypted()) {
+          var omega = SESSIONS.find(function (s) { return s.id === 'OMEGA'; });
+          if (omega) omega.locked = false;
+          buildSidebar();
+        }
+        return;
+      }
+
+      input.classList.add('shake');
+      setTimeout(function () { input.classList.remove('shake'); }, 500);
+      if (failSound) failSound.play();
+    }
+
+    document.getElementById('decrypt-btn').addEventListener('click', function () {
+      attemptDecrypt(document.getElementById('decrypt-key').value.trim());
+    });
+
+    document.getElementById('decrypt-key').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') attemptDecrypt(e.target.value.trim());
+    });
+
+    document.getElementById('brief-close').addEventListener('click', function () {
+      var brief = document.getElementById('classified-brief');
+      brief.classList.remove('open');
+      brief.setAttribute('aria-hidden', 'true');
+    });
+
+    buildSidebar();
+    renderTranscript();
   })();
   </script>
   <div id="deck-nav-root"></div>

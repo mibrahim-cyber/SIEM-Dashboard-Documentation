@@ -15,49 +15,667 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="The Memorial — HABIBI-SIEM" />
   <meta name="twitter:description" content="Incident remembrance wall — honor major breaches and lessons learned." />
-  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/memorial-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/memorial-og.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Memorial — Meridian-7</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/palette.css" />
   <link rel="stylesheet" href="assets/deck-nav.css" />
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{background:#0a0408;color:#cbd5e1;font-family:Georgia,serif}
-    .chapter{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px 24px;border-bottom:1px solid rgba(148,163,184,.08)}
-    .chapter-inner{max-width:640px}
-    .chapter h2{font:600 11px/1 Consolas,monospace;letter-spacing:3px;color:#64748b;margin-bottom:16px}
-    .chapter h1{font-size:clamp(28px,5vw,42px);color:#fecaca;margin-bottom:20px;line-height:1.2}
-    .chapter p{font-size:17px;line-height:1.75;color:#94a3b8}
-    .chapter:nth-child(odd){background:linear-gradient(180deg,#0a0408,#120810)}
-    #progress{position:fixed;top:0;left:0;height:2px;background:#f87171;width:0;z-index:10}
+    :root {
+      --bg-deep: #020617;
+      --ink: #e2e8f0;
+      --muted: #94a3b8;
+      --line: rgba(148, 163, 184, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: auto;
+    }
+
+    body {
+      background: var(--bg-deep);
+      color: var(--ink);
+      font-family: "IBM Plex Mono", Consolas, monospace;
+      line-height: 1.75;
+      overflow-x: hidden;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.12) 0px,
+        rgba(0, 0, 0, 0.12) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      opacity: 0.35;
+    }
+
+    #progress-track {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: rgba(148, 163, 184, 0.12);
+      z-index: 10000;
+    }
+
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f87171, #fbbf24, #6366f1, #c4b5fd, #34d399, #38bdf8);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.55);
+      transition: width 120ms ease;
+    }
+
+    #memorial-header {
+      position: fixed;
+      top: 3px;
+      left: 0;
+      right: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      font-size: 10px;
+      letter-spacing: 2.4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: rgba(2, 6, 23, 0.82);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(6px);
+    }
+
+    #memorial-header span:last-child {
+      color: #f87171;
+      animation: ledPulse 2.4s ease infinite;
+    }
+
+    @keyframes ledPulse {
+      0%, 100% { opacity: 0.55; }
+      50% { opacity: 1; text-shadow: 0 0 8px rgba(248, 113, 113, 0.8); }
+    }
+
+    #scroll-root {
+      padding-top: 52px;
+    }
+
+    .chapter {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 72px 24px 96px;
+      border-bottom: 1px solid var(--line);
+      position: relative;
+    }
+
+    .chapter::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.08;
+      pointer-events: none;
+    }
+
+    .chapter-inner {
+      max-width: 760px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    .year-badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      opacity: 0.85;
+    }
+
+    .chapter-headline {
+      font-size: clamp(28px, 5vw, 52px);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 28px;
+      letter-spacing: -0.5px;
+    }
+
+    .narrative p {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .pull-quote {
+      margin: 32px 0;
+      padding: 20px 24px;
+      border-left: 4px solid currentColor;
+      font-style: italic;
+      font-size: 17px;
+      line-height: 1.65;
+      color: var(--ink);
+      background: rgba(2, 6, 23, 0.45);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .pull-quote cite {
+      display: block;
+      margin-top: 12px;
+      font-style: normal;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    .siem-block {
+      margin: 36px 0 24px;
+      padding: 20px 22px;
+      background: rgba(2, 6, 23, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .siem-block h3 {
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: #38bdf8;
+      margin-bottom: 14px;
+    }
+
+    .siem-block .rule-line {
+      display: block;
+      padding: 4px 0;
+      color: #cbd5e1;
+    }
+
+    .siem-block .rule-miss {
+      color: #f87171;
+    }
+
+    .siem-block .rule-hit {
+      color: #34d399;
+    }
+
+    .mitre-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .mitre-tag {
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(15, 23, 42, 0.65);
+      color: #cbd5e1;
+      transition: border-color 220ms ease, box-shadow 220ms ease;
+    }
+
+    .mitre-tag:hover {
+      border-color: rgba(56, 189, 248, 0.45);
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+    }
+
+    .chapter--supply {
+      background: linear-gradient(180deg, #0a0408 0%, #120810 50%, #0a0408 100%);
+      color: #fecaca;
+    }
+
+    .chapter--supply::before {
+      background: radial-gradient(circle at 20% 30%, #f87171, transparent 55%);
+    }
+
+    .chapter--supply .chapter-headline { color: #f87171; }
+    .chapter--supply .pull-quote { border-color: #f87171; color: #fecaca; }
+    .chapter--supply .year-badge { color: #f87171; }
+
+    .chapter--ransom {
+      background: linear-gradient(180deg, #0a0618 0%, #141008 50%, #0a0618 100%);
+      color: #fde68a;
+    }
+
+    .chapter--ransom::before {
+      background: radial-gradient(circle at 80% 20%, #fbbf24, transparent 50%);
+    }
+
+    .chapter--ransom .chapter-headline { color: #fbbf24; }
+    .chapter--ransom .pull-quote { border-color: #fbbf24; color: #fde68a; }
+    .chapter--ransom .year-badge { color: #fbbf24; }
+
+    .chapter--cloud {
+      background: linear-gradient(180deg, #020617 0%, #0c1028 50%, #020617 100%);
+      color: #c7d2fe;
+    }
+
+    .chapter--cloud::before {
+      background: radial-gradient(circle at 50% 0%, #6366f1, transparent 48%);
+    }
+
+    .chapter--cloud .chapter-headline { color: #818cf8; }
+    .chapter--cloud .pull-quote { border-color: #6366f1; color: #c7d2fe; }
+    .chapter--cloud .year-badge { color: #6366f1; }
+
+    .chapter--insider {
+      background: linear-gradient(180deg, #0a0618 0%, #12082a 50%, #0a0618 100%);
+      color: #ddd6fe;
+    }
+
+    .chapter--insider::before {
+      background: radial-gradient(circle at 15% 70%, #c4b5fd, transparent 52%);
+    }
+
+    .chapter--insider .chapter-headline { color: #c4b5fd; }
+    .chapter--insider .pull-quote { border-color: #c4b5fd; color: #ddd6fe; }
+    .chapter--insider .year-badge { color: #c4b5fd; }
+
+    .chapter--api {
+      background: linear-gradient(180deg, #030a04 0%, #061810 50%, #030a04 100%);
+      color: #a7f3d0;
+    }
+
+    .chapter--api::before {
+      background: radial-gradient(circle at 70% 60%, #34d399, transparent 50%);
+    }
+
+    .chapter--api .chapter-headline { color: #34d399; }
+    .chapter--api .pull-quote { border-color: #34d399; color: #a7f3d0; }
+    .chapter--api .year-badge { color: #34d399; }
+
+    .chapter--zeroday {
+      background: linear-gradient(180deg, #020617 0%, #041828 50%, #020617 100%);
+      color: #bae6fd;
+    }
+
+    .chapter--zeroday::before {
+      background: radial-gradient(circle at 40% 40%, #38bdf8, transparent 55%);
+    }
+
+    .chapter--zeroday .chapter-headline { color: #38bdf8; }
+    .chapter--zeroday .pull-quote { border-color: #38bdf8; color: #bae6fd; }
+    .chapter--zeroday .year-badge { color: #38bdf8; }
+
+    #memorial-footer {
+      min-height: 40vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 64px 24px 120px;
+      text-align: center;
+      border-top: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.95);
+    }
+
+    #memorial-footer p {
+      max-width: 520px;
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+
+    #memorial-footer strong {
+      display: block;
+      margin-bottom: 12px;
+      color: #38bdf8;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 640px) {
+      .chapter { padding: 56px 16px 72px; }
+      .pull-quote { font-size: 15px; padding: 16px 18px; }
+      .siem-block { font-size: 11px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #progress-bar { transition: none; }
+      #memorial-header span:last-child { animation: none; }
+    }
   </style>
 </head>
 <body>
-  <div id="progress"></div>
-  <section class="chapter"><div class="chapter-inner"><h2>BREACH 001 · 2019</h2><h1>The Supply Chain Night</h1><p>On a quiet Tuesday, a signed update package bypassed every perimeter control. The SIEM saw nothing for seventy-two hours — the publisher was trusted, the hash was valid, and the attackers had studied our blind spots.</p></div></section>
-  <section class="chapter"><div class="chapter-inner"><h2>BREACH 002 · 2020</h2><h1>The Ransomware Pivot</h1><p>One workstation. One macro. Within four hours, backup servers were encrypted and the SOC was drowning in noise from decoy alerts while the real exfil ran over DNS tunneling.</p></div></section>
-  <section class="chapter"><div class="chapter-inner"><h2>BREACH 003 · 2021</h2><h1>Cloud Misconfiguration</h1><p>An S3 bucket marked public by a Terraform typo sat undetected for eleven days. The SIEM rule existed — but it was scoped to on-prem only.</p></div></section>
-  <section class="chapter"><div class="chapter-inner"><h2>BREACH 004 · 2022</h2><h1>Insider Exfiltration</h1><p>Trusted credentials, normal hours, approved VPN. The anomaly was volume — not behavior — and we learned that baselines without context are just averages.</p></div></section>
-  <section class="chapter"><div class="chapter-inner"><h2>BREACH 005 · 2023</h2><h1>API Key Harvest</h1><p>Rotated keys lived in three places. Attackers found the fourth. Correlation finally fired when rate limits broke — twelve hours too late.</p></div></section>
-  <section class="chapter"><div class="chapter-inner"><h2>BREACH 006 · 2024</h2><h1>Zero-Day Tuesday</h1><p>No signature. No IOC. Only a pattern — lateral movement at machine speed. We contained it with isolation playbooks written after breach 001.</p><p style="margin-top:16px;font-family:Consolas,monospace;font-size:14px;color:#64748b">— Meridian-7 memorial archive</p></div></section>
+  <div id="progress-track"><div id="progress-bar"></div></div>
+  <header id="memorial-header">
+    <span>Meridian-7 · The Memorial</span>
+    <span>Six Breaches · Lessons Etched</span>
+  </header>
+
+  <main id="scroll-root">
+    <section class="chapter chapter--supply" id="breach-2019" data-chapter="1">
+      <div class="chapter-inner">
+        <div class="year-badge">BREACH 001 · 2019</div>
+        <h1 class="chapter-headline">The Supply Chain Night</h1>
+        <div class="narrative">
+          <p>On a quiet Tuesday in December, Meridian-7's nightly ingest pipeline processed update package SW-ORION-2019.4.2 exactly as it had for three prior quarters. The binary carried a valid Authenticode signature from a vendor we had whitelisted since 2017. Hash reputation services returned clean. The file landed in the trusted publisher lane, bypassing sandbox detonation entirely. Cobalt Strike beacons began phoning home forty-one hours later — not from workstations, but from the build server that compiled our internal tooling.</p>
+          <p>Our SIEM saw millions of benign DNS queries and routine HTTPS to CDN edges. Nothing tripped severity thresholds because the outbound sessions mirrored legitimate update traffic: same User-Agent family, same TLS fingerprint, same geographic endpoints we had classified as software distribution. The attackers understood our correlation model better than our junior analysts did. They staged payloads inside signed DLLs that only activated after a dormant window, evading our YARA sweeps on day zero.</p>
+          <p>When EDR finally flagged an anomalous reflective DLL load on srv-build-03, the incident was already in its second week. Crown-jewel credentials had transited the same pipe we used for ticket attachments. Forensics recovered SUNBURST-style callbacks masked as Orion telemetry. The seventy-two-hour blind spot was not a tooling failure — it was a policy failure. We trusted the publisher more than we verified the artifact.</p>
+          <p>The memorial lesson is blunt: trust without telemetry is just faith with a longer mean time to detect. Supply chain compromise rewrote our detection philosophy. Every signed binary now earns a behavioral baseline, not a free pass.</p>
+        </div>
+        <blockquote class="pull-quote">
+          "The hash was valid. The signature was valid. The trust was fatal."
+          <cite>— Lead IR Analyst, Night Shift 2019</cite>
+        </blockquote>
+        <div class="siem-block">
+          <h3>SIEM Detection Analysis</h3>
+          <span class="rule-line rule-miss">MISSED · rule=trusted-publisher-bypass — publisher on allowlist suppressed sandbox alerts</span>
+          <span class="rule-line rule-miss">MISSED · rule=dns-beacon-cadence — C2 used jitter within normal CDN variance</span>
+          <span class="rule-line rule-hit">CAUGHT · rule=reflective-dll-load — fired on srv-build-03 at T+71h (severity HIGH)</span>
+          <span class="rule-line">POST-INCIDENT · rule=signed-binary-baseline — deployed to compare update behavior deltas</span>
+        </div>
+        <div class="mitre-strip">
+          <span class="mitre-tag">T1195.002 · Supply Chain Compromise</span>
+          <span class="mitre-tag">T1071.001 · Web Protocols</span>
+          <span class="mitre-tag">T1055 · Process Injection</span>
+          <span class="mitre-tag">T1078 · Valid Accounts</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter chapter--ransom" id="breach-2020" data-chapter="2">
+      <div class="chapter-inner">
+        <div class="year-badge">BREACH 002 · 2020</div>
+        <h1 class="chapter-headline">The Ransomware Pivot</h1>
+        <div class="narrative">
+          <p>It started on ws-finance-17 with a single macro-enabled spreadsheet delivered through a thread hijack on a vendor invoice chain. The user clicked Enable Content at 09:14 UTC. Within eleven minutes, a PowerShell cradle downloaded a staged loader from a compromised WordPress host. Our endpoint agent logged the execution but classified it as LOW because the parent process was WINWORD.EXE — a pattern we had tuned down after a flood of false positives in Q3.</p>
+          <p>By 13:40, the attacker pivoted to backup-srv-02 using stolen service credentials harvested from LSASS. Ransomware deployment began at 14:02 while our SOC drowned in noise: four hundred decoy alerts from a parallel port-scan campaign flooded the queue, burying the real lateral movement events. Analysts spent forty minutes clearing junk before anyone noticed backup volumes mounting with suspicious VSS deletion commands.</p>
+          <p>The real exfiltration ran over DNS tunneling to 198.51.100.44, encoding 2.1 GB of finance archives in TXT queries that looked like telemetry heartbeats. Our DNS anomaly rule existed but was set to MED severity with a twelve-hour aggregation window — useless against a four-hour smash-and-grab. Encryption hit domain controllers at 15:18. Recovery took nine days.</p>
+          <p>We learned that alert volume is an adversary's cheapest weapon. Decoy floods are not distraction — they are denial of analyst attention. Ransomware is rarely the first move; it is the loudest move after quiet staging.</p>
+        </div>
+        <blockquote class="pull-quote">
+          "Four hundred false alarms bought them four hours. That was the real ransom."
+          <cite>— SOC Shift Lead, October 2020</cite>
+        </blockquote>
+        <div class="siem-block">
+          <h3>SIEM Detection Analysis</h3>
+          <span class="rule-line rule-miss">MISSED · rule=macro-powershell-chain — suppressed by parent-process whitelist</span>
+          <span class="rule-line rule-miss">MISSED · rule=lateral-smb-spike — buried under decoy scan flood (847 noise alerts)</span>
+          <span class="rule-line rule-hit">CAUGHT · rule=vss-deletion — fired T+3h47m but queued behind MED backlog</span>
+          <span class="rule-line rule-hit">CAUGHT · rule=dns-tunnel-txt — fired T+4h12m, exfil already 78% complete</span>
+        </div>
+        <div class="mitre-strip">
+          <span class="mitre-tag">T1566.001 · Spearphishing Attachment</span>
+          <span class="mitre-tag">T1059.001 · PowerShell</span>
+          <span class="mitre-tag">T1021.002 · SMB Lateral Movement</span>
+          <span class="mitre-tag">T1486 · Data Encrypted for Impact</span>
+          <span class="mitre-tag">T1071.004 · DNS Tunneling</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter chapter--cloud" id="breach-2021" data-chapter="3">
+      <div class="chapter-inner">
+        <div class="year-badge">BREACH 003 · 2021</div>
+        <h1 class="chapter-headline">The Cloud Misconfiguration</h1>
+        <div class="narrative">
+          <p>A Terraform apply on March 3 introduced a single character error in an S3 bucket policy template: PublicReadAccess where PrivateReadAccess was intended. The bucket meridian-cust-records-prod held 4.7 million customer metadata rows. CloudTrail logged the policy change within seconds. Our SIEM ingested the event. Nothing fired for eleven days.</p>
+          <p>The rule s3-public-exposure had been authored during our on-premises migration and scoped exclusively to agents tagged zone=on-prem. Cloud control plane logs routed to a separate index with no correlation to the rule pack. External scanners discovered the bucket on day four. A security researcher emailed our abuse alias on day nine. We confirmed unauthorized enumeration on day eleven when GuardDuty-equivalent telemetry finally crossed into the unified index after a manual pipeline fix.</p>
+          <p>Attackers did not exfiltrate the full corpus — they sampled records to validate resale value, then listed access on a broker forum. The breach was configuration, not exploitation. No malware, no phishing, no stolen credentials. Just a typo and an index boundary that made invisible what should have screamed.</p>
+          <p>Cloud misconfiguration taught us that hybrid SIEM without unified scope is half-blind. A rule that only watches half your estate protects none of it when the other half holds the crown jewels.</p>
+        </div>
+        <blockquote class="pull-quote">
+          "The bucket was public for eleven days. The rule was blind for eleven years of on-prem thinking."
+          <cite>— Cloud Security Architect, Post-Mortem 2021</cite>
+        </blockquote>
+        <div class="siem-block">
+          <h3>SIEM Detection Analysis</h3>
+          <span class="rule-line rule-miss">MISSED · rule=s3-public-exposure — scope filter zone=on-prem excluded cloud index</span>
+          <span class="rule-line rule-miss">MISSED · rule=terraform-drift-alert — not wired to production state backend</span>
+          <span class="rule-line rule-hit">CAUGHT · rule=external-enumeration-spike — researcher scan triggered INFO only</span>
+          <span class="rule-line">REMEDIATED · rule=cloud-unified-public-resource — cross-index, CRIT within 60s</span>
+        </div>
+        <div class="mitre-strip">
+          <span class="mitre-tag">T1530 · Data from Cloud Storage</span>
+          <span class="mitre-tag">T1580 · Cloud Infrastructure Discovery</span>
+          <span class="mitre-tag">T1078.004 · Cloud Accounts</span>
+          <span class="mitre-tag">T1190 · Exploit Public-Facing Application</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter chapter--insider" id="breach-2022" data-chapter="4">
+      <div class="chapter-inner">
+        <div class="year-badge">BREACH 004 · 2022</div>
+        <h1 class="chapter-headline">The Insider Exfiltration</h1>
+        <div class="narrative">
+          <p>Senior data engineer K.R. had held privileged access for four years. Credentials were MFA-protected. VPN sessions originated from approved residential IP ranges during normal working hours. UEBA scored the account at 12 — well inside green. Nothing about the behavior looked wrong because behavior was never the signal. Volume was.</p>
+          <p>Over nineteen nights, K.R. archived research datasets to an encrypted zip staging folder on a personal cloud sync directory mapped through a approved vendor tool. Each transfer stayed under the per-session threshold that triggered DLP review. The aggregate reached 890 GB before a storage quota alert from the sync vendor — not our SIEM — raised the first flag. Our data-volume rule existed but averaged over thirty-day windows, smoothing spikes into noise.</p>
+          <p>Investigation revealed departure plans submitted to HR six weeks after exfil began. The anomaly was not login time or geo-velocity — it was entropy: classified model weights leaving a segment that had never exported bulk data before. Baselines built on averages miss intentional slow leaks. Context — role, project lifecycle, departure timeline — was absent from our correlation engine.</p>
+          <p>Insider threat detection without baselines per data class is security theater. Trust is necessary; blind trust is negligent. We now baseline egress by asset criticality, not just by user history.</p>
+        </div>
+        <blockquote class="pull-quote">
+          "The credentials were legitimate. The hours were normal. The volume was the confession."
+          <cite>— Insider Threat Program Manager, 2022</cite>
+        </blockquote>
+        <div class="siem-block">
+          <h3>SIEM Detection Analysis</h3>
+          <span class="rule-line rule-miss">MISSED · rule=ueba-anomaly-score — 30-day average masked nightly 47 GB transfers</span>
+          <span class="rule-line rule-miss">MISSED · rule=off-hours-access — sessions matched approved flex schedule</span>
+          <span class="rule-line rule-hit">CAUGHT · rule=storage-quota-vendor-webhook — external sync alert at T+19d (late)</span>
+          <span class="rule-line">DEPLOYED · rule=asset-class-egress-baseline — per-segment volume with HR context feed</span>
+        </div>
+        <div class="mitre-strip">
+          <span class="mitre-tag">T1048 · Exfiltration Over Alternative Protocol</span>
+          <span class="mitre-tag">T1078 · Valid Accounts</span>
+          <span class="mitre-tag">T1567 · Exfiltration to Cloud Storage</span>
+          <span class="mitre-tag">T1074 · Data Staged</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter chapter--api" id="breach-2023" data-chapter="5">
+      <div class="chapter-inner">
+        <div class="year-badge">BREACH 005 · 2023</div>
+        <h1 class="chapter-headline">The API Key Harvest</h1>
+        <div class="narrative">
+          <p>Meridian-7 rotated API keys quarterly across three documented stores: HashiCorp Vault, GitHub Actions secrets, and the internal config service. A fourth location existed only in a deprecated Lambda environment variable set — missed during the 2022 migration audit. Attackers found it through a public gist containing a redacted stack trace that still leaked the env prefix MERIDIAN_PROD_.</p>
+          <p>With the stale key, they queried customer lookup endpoints at 120 requests per minute — just under the per-key rate limit of 150. Each response returned PII slices used to enrich a credential stuffing list sold downstream. Our rate-limit rule fired at request 151 on minute forty-seven of the campaign. Correlation to threat intel occurred twelve hours later when a partner bank shared matching fraud signatures.</p>
+          <p>Twelve hours is an eternity at API speed. Automated abuse scales horizontally; human triage scales linearly. The key was revoked at T+14h. Scope damage: 38,000 customer records touched, 2,100 confirmed fraudulent login attempts externally. No shell access, no malware — pure credential abstraction at machine velocity.</p>
+          <p>Key rotation without inventory is rotation theater. Rate limits are detection triggers, not prevention. We now map every secret to an owner, a TTL, and a SIEM heartbeat that screams when an unknown key speaks.</p>
+        </div>
+        <blockquote class="pull-quote">
+          "We rotated keys in four places. The attackers found the fifth. Rate limits told us twelve hours too late."
+          <cite>— API Security Lead, Q2 2023 Review</cite>
+        </blockquote>
+        <div class="siem-block">
+          <h3>SIEM Detection Analysis</h3>
+          <span class="rule-line rule-miss">MISSED · rule=secret-scan-repo — gist leak predated scanner deployment by 8 months</span>
+          <span class="rule-line rule-hit">CAUGHT · rule=api-rate-limit-exceeded — fired at 151 rpm, auto-throttled key</span>
+          <span class="rule-line rule-miss">MISSED · rule=threat-intel-correlation — 12h lag waiting for partner feed ingestion</span>
+          <span class="rule-line">DEPLOYED · rule=unknown-key-heartbeat — CRIT if key not in vault inventory</span>
+        </div>
+        <div class="mitre-strip">
+          <span class="mitre-tag">T1552.001 · Credentials in Files</span>
+          <span class="mitre-tag">T1110 · Brute Force</span>
+          <span class="mitre-tag">T1078.004 · Cloud Accounts</span>
+          <span class="mitre-tag">T1190 · Exploit Public-Facing Application</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter chapter--zeroday" id="breach-2024" data-chapter="6">
+      <div class="chapter-inner">
+        <div class="year-badge">BREACH 006 · 2024</div>
+        <h1 class="chapter-headline">The Zero-Day</h1>
+        <div class="narrative">
+          <p>On a Tuesday patch cycle, CVE-2024-XXXX hit our edge VPN concentrator before vendor advisories reached our threat feed. Exploitation required no authentication — only a malformed UDP handshake that crashed the IPS inspection path and opened a memory-corruption primitive. The first sign was not a signature match. It was lateral movement at machine speed: four hosts compromised in ninety seconds with identical parent-child process trees our EDR had never cataloged.</p>
+          <p>Zero IOCs existed for forty-eight hours. YARA returned nothing. Threat intel feeds showed green across the board. What saved us was not detection — it was response automation written after the 2019 supply chain memorial: isolation playbooks triggered on anomalous lateral velocity alone, severing segments when three or more hosts exhibited identical rare process spawn chains within a five-minute window.</p>
+          <p>Three segments isolated automatically at T+7m. Two were false positives on a legitimate deployment tool — acceptable collateral. One segment contained the live attacker pivot path. Manual IR joined at T+22m. Full containment at T+4h. No data exfil confirmed. The zero-day was patched at T+36h when the vendor dropped firmware.</p>
+          <p>Zero-day Tuesday proved that playbooks outlive signatures. When you cannot recognize the weapon, you must recognize the motion. Machine-speed lateral movement is its own IOC — if your automation is brave enough to act on pattern alone.</p>
+        </div>
+        <blockquote class="pull-quote">
+          "No signature. No IOC. Only velocity — and the playbooks we wrote when trust finally broke."
+          <cite>— Meridian-7 Memorial Archive · 2024</cite>
+        </blockquote>
+        <div class="siem-block">
+          <h3>SIEM Detection Analysis</h3>
+          <span class="rule-line rule-miss">MISSED · rule=cve-vpn-exploit — no signature available for 48h post-exploit</span>
+          <span class="rule-line rule-miss">MISSED · rule=threat-intel-ioc-match — zero feeds matched novel binary hash</span>
+          <span class="rule-line rule-hit">CAUGHT · rule=lateral-velocity-anomaly — 4 hosts / 90s triggered auto-isolate</span>
+          <span class="rule-line rule-hit">CAUGHT · rule=playbook-segment-isolate — contained pivot path at T+7m</span>
+        </div>
+        <div class="mitre-strip">
+          <span class="mitre-tag">T1190 · Exploit Public-Facing Application</span>
+          <span class="mitre-tag">T1210 · Exploitation of Remote Services</span>
+          <span class="mitre-tag">T1021 · Remote Services</span>
+          <span class="mitre-tag">T1485 · Data Destruction</span>
+          <span class="mitre-tag">T1059 · Command and Scripting Interpreter</span>
+        </div>
+      </div>
+    </section>
+
+    <footer id="memorial-footer">
+      <p>
+        <strong>Meridian-7 Memorial Archive</strong>
+        These six breaches shaped our detection philosophy, response automation, and the humility required to operate a SIEM in an adversarial world. Scroll complete. Carry the lessons forward.
+      </p>
+    </footer>
+  </main>
+
   <script src="assets/siem-core.js"></script>
   <script src="assets/palette.js"></script>
   <script>
-  (function(){
-    SiemCore.bootPage('memorial'); SiemCore.AchievementSystem.check('visit_memorial');
-    if(typeof gsap!=='undefined'&&gsap.registerPlugin)gsap.registerPlugin(ScrollTrigger);
-    if(typeof Lenis!=='undefined'){
-      var lenis=new Lenis({smoothWheel:true});
-      lenis.on('scroll',function(e){document.getElementById('progress').style.width=(e.progress*100)+'%';});
-      function raf(t){lenis.raf(t);requestAnimationFrame(raf);}requestAnimationFrame(raf);
-    } else {
-      addEventListener('scroll',function(){var p=scrollY/(document.body.scrollHeight-innerHeight)*100;document.getElementById('progress').style.width=Math.min(100,p)+'%';});
+  (function () {
+    SiemCore.bootPage("memorial");
+    SiemCore.AchievementSystem.check("visit_memorial");
+
+    var progressBar = document.getElementById("progress-bar");
+    var prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (typeof gsap !== "undefined" && gsap.registerPlugin) {
+      gsap.registerPlugin(ScrollTrigger);
     }
-    if(typeof gsap!=='undefined'&&ScrollTrigger){
-      gsap.utils.toArray('.chapter').forEach(function(ch){
-        gsap.from(ch.querySelector('.chapter-inner'),{scrollTrigger:{trigger:ch,start:'top 80%'},opacity:0,y:40,duration:0.8});
+
+    var lenis = null;
+
+    if (typeof Lenis !== "undefined" && !prefersReduced) {
+      lenis = new Lenis({
+        smoothWheel: true,
+        duration: 1.1,
+        easing: function (t) {
+          return Math.min(1, 1.001 - Math.pow(2, -10 * t));
+        }
       });
+
+      lenis.on("scroll", function (e) {
+        progressBar.style.width = (e.progress * 100) + "%";
+      });
+
+      if (typeof gsap !== "undefined" && ScrollTrigger) {
+        lenis.on("scroll", ScrollTrigger.update);
+        gsap.ticker.add(function (time) {
+          lenis.raf(time * 1000);
+        });
+        gsap.ticker.lagSmoothing(0);
+      } else {
+        function lenisRaf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(lenisRaf);
+        }
+        requestAnimationFrame(lenisRaf);
+      }
+    } else {
+      window.addEventListener("scroll", function () {
+        var scrollTop = window.scrollY || document.documentElement.scrollTop;
+        var scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+        var pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+        progressBar.style.width = Math.min(100, Math.max(0, pct)) + "%";
+      }, { passive: true });
+    }
+
+    if (typeof gsap !== "undefined" && ScrollTrigger) {
+      gsap.utils.toArray(".chapter-inner").forEach(function (inner) {
+        gsap.from(inner, {
+          scrollTrigger: {
+            trigger: inner.closest(".chapter"),
+            start: "top 75%",
+            toggleActions: "play none none reverse"
+          },
+          opacity: 0,
+          y: 60,
+          duration: 0.9,
+          ease: "power2.out"
+        });
+      });
+
+      gsap.utils.toArray(".pull-quote").forEach(function (quote, i) {
+        gsap.from(quote, {
+          scrollTrigger: {
+            trigger: quote,
+            start: "top 82%"
+          },
+          opacity: 0,
+          x: -40,
+          duration: 0.75,
+          delay: i * 0.04,
+          ease: "power2.out"
+        });
+      });
+
+      gsap.utils.toArray(".siem-block").forEach(function (block) {
+        gsap.from(block, {
+          scrollTrigger: {
+            trigger: block,
+            start: "top 85%"
+          },
+          opacity: 0,
+          scale: 0.97,
+          duration: 0.65,
+          ease: "back.out(1.4)"
+        });
+      });
+
+      gsap.utils.toArray(".mitre-tag").forEach(function (tag, idx) {
+        gsap.from(tag, {
+          scrollTrigger: {
+            trigger: tag.closest(".mitre-strip"),
+            start: "top 88%"
+          },
+          opacity: 0,
+          y: 12,
+          duration: 0.4,
+          delay: idx * 0.05,
+          ease: "power1.out"
+        });
+      });
+    }
+
+    if (window.location.hash) {
+      var target = document.querySelector(window.location.hash);
+      if (target) {
+        setTimeout(function () {
+          if (lenis) {
+            lenis.scrollTo(target, { offset: -48 });
+          } else {
+            target.scrollIntoView({ behavior: prefersReduced ? "auto" : "smooth" });
+          }
+        }, 320);
+      }
     }
   })();
   </script>

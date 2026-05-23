@@ -7,7 +7,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <meta name="description" content="WebGL threat globe — plot actor arcs and geographic attack paths." />
+  <meta name="description" content="WebGL threat globe — plot actor arcs, filter by tactic and severity, inspect SIEM attribution data." />
   <meta property="og:title" content="The Cartography — HABIBI-SIEM" />
   <meta property="og:description" content="WebGL threat globe — plot actor arcs and geographic attack paths." />
   <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/cartography-og.png" />
@@ -15,53 +15,914 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="The Cartography — HABIBI-SIEM" />
   <meta name="twitter:description" content="WebGL threat globe — plot actor arcs and geographic attack paths." />
-  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/cartography-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/cartography-og.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Cartography — Meridian-7</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/palette.css" />
   <link rel="stylesheet" href="assets/deck-nav.css" />
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.27.0/dist/globe.gl.min.js"></script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#020617;overflow:hidden;color:#e2e8f0;font-family:Consolas,monospace}
-    #hdr{position:fixed;top:0;left:0;right:0;height:36px;display:flex;align-items:center;gap:12px;padding:0 12px;font-size:10px;letter-spacing:2px;z-index:10;background:rgba(15,23,42,.92);border-bottom:1px solid rgba(56,189,248,.2)}
-    #globe{position:fixed;inset:36px 280px 0 0}#drawer{position:fixed;top:36px;right:0;width:280px;bottom:0;padding:12px;background:rgba(15,23,42,.96);border-left:1px solid rgba(56,189,248,.15);font-size:11px;overflow:auto}
-    .layer{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:10px}
-    .layer input{cursor:pointer}
+    :root {
+      --bg-deep: #020617;
+      --bg-violet: #0a0618;
+      --blue: #38bdf8;
+      --green: #39ff14;
+      --indigo: #6366f1;
+      --violet: #c4b5fd;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --emerald: #34d399;
+      --ink: #e2e8f0;
+      --muted: #64748b;
+      --panel: rgba(15, 23, 42, 0.94);
+      --line: rgba(56, 189, 248, 0.22);
+      --line-soft: rgba(148, 163, 184, 0.16);
+      --hdr-h: 44px;
+      --sidebar-w: 268px;
+      --detail-w: 320px;
+      --stats-h: 52px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at 18% 12%, rgba(99, 102, 241, 0.14), transparent 38%), var(--bg-deep);
+      color: var(--ink);
+      font-family: "IBM Plex Mono", Consolas, monospace;
+    }
+
+    #hdr {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--hdr-h);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 14px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      z-index: 20;
+      backdrop-filter: blur(4px);
+    }
+
+    #hdr-led {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.75);
+      animation: ledPulse 2.4s ease infinite;
+    }
+
+    #hdr-title {
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    #hdr-meta {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: 1px;
+    }
+
+    #hdr-clock {
+      color: var(--emerald);
+      min-width: 72px;
+      text-align: right;
+    }
+
+    @keyframes ledPulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 10px rgba(56, 189, 248, 0.75); }
+      50% { opacity: 0.55; box-shadow: 0 0 4px rgba(56, 189, 248, 0.35); }
+    }
+
+    #starfield {
+      position: fixed;
+      top: var(--hdr-h);
+      left: var(--sidebar-w);
+      right: var(--detail-w);
+      bottom: var(--stats-h);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #globe-mount {
+      position: fixed;
+      top: var(--hdr-h);
+      left: var(--sidebar-w);
+      right: var(--detail-w);
+      bottom: var(--stats-h);
+      z-index: 1;
+    }
+
+    #sidebar {
+      position: fixed;
+      top: var(--hdr-h);
+      left: 0;
+      width: var(--sidebar-w);
+      bottom: var(--stats-h);
+      background: var(--panel);
+      border-right: 1px solid var(--line-soft);
+      padding: 14px 12px;
+      overflow-y: auto;
+      z-index: 10;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(56, 189, 248, 0.35) transparent;
+    }
+
+    .panel-title {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .panel-block {
+      margin-bottom: 18px;
+    }
+
+    .layer-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px;
+      font-size: 10px;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 3px;
+      transition: background 220ms ease, color 220ms ease;
+    }
+
+    .layer-row:hover {
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .layer-row input {
+      accent-color: var(--blue);
+      cursor: pointer;
+    }
+
+    .layer-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .filter-label {
+      display: block;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .filter-select {
+      width: 100%;
+      padding: 7px 8px;
+      background: rgba(2, 6, 23, 0.85);
+      border: 1px solid var(--line-soft);
+      color: var(--ink);
+      font: inherit;
+      font-size: 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: border-color 220ms ease, box-shadow 220ms ease;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: rgba(56, 189, 248, 0.55);
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+    }
+
+    .severity-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .severity-option {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 10px;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 3px;
+      transition: background 220ms ease;
+    }
+
+    .severity-option:hover {
+      background: rgba(56, 189, 248, 0.06);
+    }
+
+    .severity-option input {
+      accent-color: var(--amber);
+    }
+
+    #layer-summary {
+      font-size: 9px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 8px;
+      padding: 8px;
+      background: rgba(2, 6, 23, 0.55);
+      border: 1px solid var(--line-soft);
+      border-radius: 3px;
+    }
+
+    #detail-panel {
+      position: fixed;
+      top: var(--hdr-h);
+      right: 0;
+      width: var(--detail-w);
+      bottom: var(--stats-h);
+      background: var(--panel);
+      border-left: 1px solid var(--line-soft);
+      padding: 14px 14px 18px;
+      overflow-y: auto;
+      z-index: 10;
+      transition: box-shadow 220ms ease;
+    }
+
+    #detail-panel.has-selection {
+      box-shadow: inset 4px 0 18px rgba(56, 189, 248, 0.08);
+    }
+
+    #detail-empty {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+      margin-top: 24px;
+    }
+
+    #detail-content {
+      display: none;
+    }
+
+    #detail-content.visible {
+      display: block;
+      animation: detailIn 280ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes detailIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .detail-actor {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--violet);
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-route {
+      font-size: 11px;
+      color: var(--blue);
+      margin-bottom: 12px;
+    }
+
+    .sev-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      border-radius: 2px;
+      margin-bottom: 12px;
+    }
+
+    .sev-CRIT {
+      background: rgba(248, 113, 113, 0.18);
+      color: var(--red);
+      border: 1px solid rgba(248, 113, 113, 0.45);
+      box-shadow: 0 0 10px rgba(248, 113, 113, 0.25);
+    }
+
+    .sev-HIGH {
+      background: rgba(251, 191, 36, 0.16);
+      color: var(--amber);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+    }
+
+    .sev-MED {
+      background: rgba(56, 189, 248, 0.14);
+      color: var(--blue);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    .sev-LOW {
+      background: rgba(52, 211, 153, 0.12);
+      color: var(--emerald);
+      border: 1px solid rgba(52, 211, 153, 0.32);
+    }
+
+    .detail-grid {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .detail-field {
+      background: rgba(2, 6, 23, 0.6);
+      border: 1px solid var(--line-soft);
+      padding: 8px 10px;
+      border-radius: 3px;
+    }
+
+    .detail-field-label {
+      font-size: 8px;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .detail-field-value {
+      font-size: 11px;
+      color: var(--ink);
+      line-height: 1.4;
+    }
+
+    .detail-rule {
+      font-size: 10px;
+      line-height: 1.55;
+      color: #cbd5e1;
+      padding: 10px;
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 3px solid var(--indigo);
+      border-radius: 0 3px 3px 0;
+    }
+
+    #country-tooltip {
+      position: fixed;
+      pointer-events: none;
+      z-index: 30;
+      padding: 8px 12px;
+      background: rgba(10, 6, 24, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 4px;
+      font-size: 10px;
+      color: var(--ink);
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.2);
+      opacity: 0;
+      transform: translate(-50%, -120%);
+      transition: opacity 180ms ease;
+      white-space: nowrap;
+    }
+
+    #country-tooltip.visible {
+      opacity: 1;
+    }
+
+    #country-tooltip .tt-name {
+      color: var(--blue);
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 3px;
+    }
+
+    #country-tooltip .tt-count {
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    #stats-strip {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--stats-h);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: rgba(10, 6, 24, 0.96);
+      border-top: 1px solid var(--line);
+      z-index: 20;
+    }
+
+    .stat-cell {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 16px;
+      border-right: 1px solid var(--line-soft);
+      transition: background 220ms ease;
+    }
+
+    .stat-cell:last-child {
+      border-right: none;
+    }
+
+    .stat-cell.highlight {
+      background: rgba(56, 189, 248, 0.06);
+    }
+
+    .stat-label {
+      font-size: 8px;
+      letter-spacing: 1.6px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      transition: color 220ms ease;
+    }
+
+    .stat-value.crit {
+      color: var(--red);
+      text-shadow: 0 0 8px rgba(248, 113, 113, 0.45);
+    }
+
+    .stat-value.active {
+      color: var(--emerald);
+    }
+
+    #globe-hint {
+      position: fixed;
+      bottom: calc(var(--stats-h) + 12px);
+      left: calc(var(--sidebar-w) + 12px);
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      z-index: 5;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
-  <div id="hdr">CARTOGRAPHY · THREAT ARCS</div>
-  <div id="globe"></div>
-  <aside id="drawer"><h3 style="font-size:9px;letter-spacing:2px;margin-bottom:12px;color:#38bdf8">LAYERS</h3><div id="layers"></div><p id="country-info" style="margin-top:16px;color:#64748b">Click arc origin</p></aside>
+  <header id="hdr">
+    <span id="hdr-led" aria-hidden="true"></span>
+    <span id="hdr-title">Cartography · Threat Arc Engine</span>
+    <span id="hdr-meta">Meridian-7 Geo Intel · v15.2</span>
+    <span id="hdr-clock">00:00:00 UTC</span>
+  </header>
+
+  <canvas id="starfield" aria-hidden="true"></canvas>
+  <div id="globe-mount" aria-label="Interactive threat globe"></div>
+
+  <aside id="sidebar">
+    <div class="panel-block">
+      <div class="panel-title">Threat Layers</div>
+      <div id="layer-list"></div>
+      <div id="layer-summary">All layers active · 0 arcs plotted</div>
+    </div>
+
+    <div class="panel-block">
+      <div class="panel-title">Threat Actor</div>
+      <label class="filter-label" for="actor-filter">Filter by attribution</label>
+      <select id="actor-filter" class="filter-select">
+        <option value="all">All Actors</option>
+        <option value="APT28">APT28 (Fancy Bear)</option>
+        <option value="APT41">APT41 (Double Dragon)</option>
+        <option value="Lazarus">Lazarus Group</option>
+        <option value="Sandworm">Sandworm Team</option>
+        <option value="FIN7">FIN7</option>
+      </select>
+    </div>
+
+    <div class="panel-block">
+      <div class="panel-title">Severity Threshold</div>
+      <div class="severity-group" id="severity-filter">
+        <label class="severity-option"><input type="radio" name="sev" value="all" checked /> All severities</label>
+        <label class="severity-option"><input type="radio" name="sev" value="highplus" /> HIGH and above</label>
+        <label class="severity-option"><input type="radio" name="sev" value="crit" /> CRIT only</label>
+      </div>
+    </div>
+
+    <div class="panel-block">
+      <div class="panel-title">Arc Legend</div>
+      <p style="font-size:9px;color:var(--muted);line-height:1.55">
+        Dashed animated arcs represent live SIEM-detected flows between source and destination regions.
+        Click any arc to inspect attribution, tactic, event volume, and recommended detection rule.
+      </p>
+    </div>
+  </aside>
+
+  <aside id="detail-panel">
+    <div class="panel-title">Arc Intelligence</div>
+    <div id="detail-empty">
+      Select a threat arc on the globe to view actor attribution, MITRE tactic mapping, severity classification, and Meridian-7 recommended rule deployment.
+    </div>
+    <div id="detail-content">
+      <div class="detail-actor" id="d-actor"></div>
+      <div class="detail-route" id="d-route"></div>
+      <div class="sev-badge" id="d-severity"></div>
+      <div class="detail-grid">
+        <div class="detail-field">
+          <div class="detail-field-label">Tactic</div>
+          <div class="detail-field-value" id="d-tactic"></div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-field-label">Layer</div>
+          <div class="detail-field-value" id="d-layer"></div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-field-label">Event Count (24h)</div>
+          <div class="detail-field-value" id="d-count"></div>
+        </div>
+        <div class="detail-field">
+          <div class="detail-field-label">Last Observed</div>
+          <div class="detail-field-value" id="d-observed"></div>
+        </div>
+      </div>
+      <div class="detail-field-label" style="margin-bottom:6px">Recommended Rule</div>
+      <div class="detail-rule" id="d-rule"></div>
+    </div>
+  </aside>
+
+  <div id="country-tooltip" aria-hidden="true">
+    <div class="tt-name" id="tt-name"></div>
+    <div class="tt-count" id="tt-count"></div>
+  </div>
+
+  <div id="globe-hint">Drag to rotate · Scroll to zoom · Click arc for intel</div>
+
+  <footer id="stats-strip">
+    <div class="stat-cell highlight">
+      <div class="stat-label">Visible Arcs</div>
+      <div class="stat-value active" id="stat-arcs">0</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">Highest Severity</div>
+      <div class="stat-value" id="stat-severity">—</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">Most Active Source</div>
+      <div class="stat-value" id="stat-region">—</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">Total Events (filtered)</div>
+      <div class="stat-value" id="stat-events">0</div>
+    </div>
+  </footer>
+
   <script src="assets/siem-core.js"></script>
   <script src="assets/palette.js"></script>
   <script>
-  (function(){
-    SiemCore.bootPage('cartography'); SiemCore.AchievementSystem.check('visit_cartography');
-    var LAYERS=['Alerts','Botnets','APT','Scanning','Tor Exit','C2','Exfil'];
-    var layerState={}; LAYERS.forEach(function(l){layerState[l]=true;});
-    var el=document.getElementById('layers');
-    LAYERS.forEach(function(l){
-      var row=document.createElement('label');row.className='layer';
-      row.innerHTML='<input type="checkbox" checked data-layer="'+l+'" /> '+l;
-      el.appendChild(row);
-    });
-    var arcs=[
-      {startLat:51.5,startLng:-0.1,endLat:40.7,endLng:-74,color:'rgba(248,113,113,0.6)',country:'UK → US',layer:'Alerts'},
-      {startLat:35.6,startLng:139.6,endLat:1.3,endLng:103.8,color:'rgba(251,191,36,0.6)',country:'JP → SG',layer:'APT'},
-      {startLat:55.7,startLng:37.6,endLat:48.8,endLng:2.3,color:'rgba(99,102,241,0.6)',country:'RU → FR',layer:'Botnets'},
-      {startLat:31.2,startLng:121.4,endLat:37.7,endLng:-122.4,color:'rgba(52,211,153,0.6)',country:'CN → US',layer:'APT'},
-      {startLat:40.7,startLng:-74,endLat:48.1,endLng:16.3,color:'rgba(248,113,113,0.6)',country:'US → AT',layer:'Scanning'},
-      {startLat:1.3,startLng:103.8,endLat:35.6,endLng:139.6,color:'rgba(167,139,250,0.6)',country:'SG → JP',layer:'C2'},
-      {startLat:48.8,startLng:2.3,endLat:-33.8,endLng:151.2,color:'rgba(251,191,36,0.6)',country:'FR → AU',layer:'Exfil'},
-      {startLat:52.3,startLng:4.9,endLat:19.4,endLng:-99.1,color:'rgba(248,113,113,0.6)',country:'NL → MX',layer:'Tor Exit'}
+  (function () {
+    'use strict';
+
+    SiemCore.bootPage('cartography');
+    SiemCore.AchievementSystem.check('visit_cartography');
+
+    var LAYERS = ['Alerts', 'Botnets', 'APT', 'Scanning', 'Tor Exit', 'C2', 'Exfil'];
+    var LAYER_COLORS = {
+      'Alerts': '#f87171',
+      'Botnets': '#6366f1',
+      'APT': '#fbbf24',
+      'Scanning': '#38bdf8',
+      'Tor Exit': '#c4b5fd',
+      'C2': '#34d399',
+      'Exfil': '#f472b6'
+    };
+
+    var SEV_RANK = { CRIT: 4, HIGH: 3, MED: 2, LOW: 1 };
+
+    var COUNTRY_COORDS = {
+      'United States': { lat: 38.9, lng: -77.0 },
+      'United Kingdom': { lat: 51.5, lng: -0.12 },
+      'Russia': { lat: 55.75, lng: 37.62 },
+      'China': { lat: 39.9, lng: 116.4 },
+      'Iran': { lat: 35.7, lng: 51.42 },
+      'North Korea': { lat: 39.03, lng: 125.75 },
+      'France': { lat: 48.86, lng: 2.35 },
+      'Germany': { lat: 52.52, lng: 13.41 },
+      'Brazil': { lat: -23.55, lng: -46.63 },
+      'Singapore': { lat: 1.35, lng: 103.82 },
+      'Australia': { lat: -33.87, lng: 151.21 },
+      'India': { lat: 28.61, lng: 77.21 },
+      'Ukraine': { lat: 50.45, lng: 30.52 },
+      'Israel': { lat: 32.07, lng: 34.78 }
+    };
+
+    var ALL_ARCS = [
+      { startLat: 55.75, startLng: 37.62, endLat: 38.9, endLng: -77.0, color: 'rgba(248,113,113,0.72)', country: 'RU → US', srcCountry: 'Russia', dstCountry: 'United States', layer: 'APT', actor: 'APT28', tactic: 'Initial Access', severity: 'CRIT', count: 1247, rule: 'rule=apt28-phish-o365 threshold=3 window=15m action=ALERT CRIT' },
+      { startLat: 55.75, startLng: 37.62, endLat: 51.5, endLng: -0.12, color: 'rgba(248,113,113,0.65)', country: 'RU → UK', srcCountry: 'Russia', dstCountry: 'United Kingdom', layer: 'APT', actor: 'APT28', tactic: 'Credential Access', severity: 'HIGH', count: 892, rule: 'rule=apt28-brute-force threshold=8 window=5m action=BLOCK IP' },
+      { startLat: 39.03, startLng: 125.75, endLat: 38.9, endLng: -77.0, color: 'rgba(251,191,36,0.7)', country: 'KP → US', srcCountry: 'North Korea', dstCountry: 'United States', layer: 'APT', actor: 'Lazarus', tactic: 'Exfiltration', severity: 'CRIT', count: 2103, rule: 'rule=lazarus-crypto-drain dst_port=443 volume=500MB action=ALERT CRIT' },
+      { startLat: 39.03, startLng: 125.75, endLat: 1.35, endLng: 103.82, color: 'rgba(251,191,36,0.62)', country: 'KP → SG', srcCountry: 'North Korea', dstCountry: 'Singapore', layer: 'Exfil', actor: 'Lazarus', tactic: 'Exfiltration', severity: 'HIGH', count: 634, rule: 'rule=dns-tunnel-exfil txt_queries=400 window=4m action=ALERT HIGH' },
+      { startLat: 39.03, startLng: 125.75, endLat: -33.87, endLng: 151.21, color: 'rgba(244,114,182,0.6)', country: 'KP → AU', srcCountry: 'North Korea', dstCountry: 'Australia', layer: 'Exfil', actor: 'Lazarus', tactic: 'Impact', severity: 'CRIT', count: 445, rule: 'rule=ransomware-beacon file_ext=.locked action=ISOLATE HOST' },
+      { startLat: 39.9, startLng: 116.4, endLat: 38.9, endLng: -77.0, color: 'rgba(251,191,36,0.68)', country: 'CN → US', srcCountry: 'China', dstCountry: 'United States', layer: 'APT', actor: 'APT41', tactic: 'Persistence', severity: 'HIGH', count: 1567, rule: 'rule=apt41-supply-chain pkg_hash=known-bad action=QUARANTINE' },
+      { startLat: 39.9, startLng: 116.4, endLat: 48.86, endLng: 2.35, color: 'rgba(251,191,36,0.58)', country: 'CN → FR', srcCountry: 'China', dstCountry: 'France', layer: 'APT', actor: 'APT41', tactic: 'Lateral Movement', severity: 'HIGH', count: 723, rule: 'rule=smb-lateral-move src=dmz dst=internal action=ALERT HIGH' },
+      { startLat: 31.2, startLng: 121.4, endLat: 52.52, endLng: 13.41, color: 'rgba(251,191,36,0.55)', country: 'CN → DE', srcCountry: 'China', dstCountry: 'Germany', layer: 'C2', actor: 'APT41', tactic: 'Command and Control', severity: 'MED', count: 389, rule: 'rule=beaconing-pattern interval=60s jitter=15% action=ALERT MED' },
+      { startLat: 39.9, startLng: 116.4, endLat: 28.61, endLng: 77.21, color: 'rgba(99,102,241,0.6)', country: 'CN → IN', srcCountry: 'China', dstCountry: 'India', layer: 'Scanning', actor: 'APT41', tactic: 'Discovery', severity: 'MED', count: 2841, rule: 'rule=port-scan sweep=100 ports window=30s action=ALERT MED' },
+      { startLat: 50.45, startLng: 30.52, endLat: 52.52, endLng: 13.41, color: 'rgba(248,113,113,0.7)', country: 'UA → DE', srcCountry: 'Ukraine', dstCountry: 'Germany', layer: 'APT', actor: 'Sandworm', tactic: 'Impact', severity: 'CRIT', count: 978, rule: 'rule=industroyer-modbus cmd=0x05 action=ALERT CRIT isolate=OT' },
+      { startLat: 55.75, startLng: 37.62, endLat: 50.45, endLng: 30.52, color: 'rgba(248,113,113,0.62)', country: 'RU → UA', srcCountry: 'Russia', dstCountry: 'Ukraine', layer: 'APT', actor: 'Sandworm', tactic: 'Initial Access', severity: 'CRIT', count: 1834, rule: 'rule=wiper-payload hash=notpetya-variant action=BLOCK EXEC' },
+      { startLat: 55.75, startLng: 37.62, endLat: 48.86, endLng: 2.35, color: 'rgba(99,102,241,0.58)', country: 'RU → FR', srcCountry: 'Russia', dstCountry: 'France', layer: 'Botnets', actor: 'Sandworm', tactic: 'Resource Development', severity: 'HIGH', count: 562, rule: 'rule=botnet-enrollment c2=known-ip action=BLOCK IP' },
+      { startLat: 55.75, startLng: 37.62, endLat: -23.55, endLng: -46.63, color: 'rgba(99,102,241,0.55)', country: 'RU → BR', srcCountry: 'Russia', dstCountry: 'Brazil', layer: 'Botnets', actor: 'Sandworm', tactic: 'Command and Control', severity: 'MED', count: 412, rule: 'rule=mirai-botnet iot_scan=enabled action=ALERT MED' },
+      { startLat: 35.7, startLng: 51.42, endLat: 32.07, endLng: 34.78, color: 'rgba(196,181,253,0.65)', country: 'IR → IL', srcCountry: 'Iran', dstCountry: 'Israel', layer: 'C2', actor: 'APT28', tactic: 'Command and Control', severity: 'HIGH', count: 667, rule: 'rule=dns-fast-flux ttl<60 action=ALERT HIGH' },
+      { startLat: 35.7, startLng: 51.42, endLat: 38.9, endLng: -77.0, color: 'rgba(196,181,253,0.58)', country: 'IR → US', srcCountry: 'Iran', dstCountry: 'United States', layer: 'Scanning', actor: 'APT28', tactic: 'Reconnaissance', severity: 'MED', count: 1923, rule: 'rule=shodan-mirror scan_rate=50/s action=ALERT MED' },
+      { startLat: 51.5, startLng: -0.12, endLat: 38.9, endLng: -77.0, color: 'rgba(248,113,113,0.6)', country: 'UK → US', srcCountry: 'United Kingdom', dstCountry: 'United States', layer: 'Alerts', actor: 'FIN7', tactic: 'Collection', severity: 'HIGH', count: 334, rule: 'rule=pos-malware track2_regex action=ALERT HIGH' },
+      { startLat: 51.5, startLng: -0.12, endLat: 48.86, endLng: 2.35, color: 'rgba(248,113,113,0.55)', country: 'UK → FR', srcCountry: 'United Kingdom', dstCountry: 'France', layer: 'Alerts', actor: 'FIN7', tactic: 'Initial Access', severity: 'MED', count: 278, rule: 'rule=phish-kit domain=lookalike action=BLOCK URL' },
+      { startLat: 40.7, startLng: -74.0, endLat: 48.86, endLng: 2.35, color: 'rgba(56,189,248,0.58)', country: 'US → FR', srcCountry: 'United States', dstCountry: 'France', layer: 'Scanning', actor: 'FIN7', tactic: 'Discovery', severity: 'LOW', count: 4521, rule: 'rule=vuln-scan nmap_sig action=LOG' },
+      { startLat: 40.7, startLng: -74.0, endLat: 52.52, endLng: 13.41, color: 'rgba(56,189,248,0.52)', country: 'US → DE', srcCountry: 'United States', dstCountry: 'Germany', layer: 'Scanning', actor: 'FIN7', tactic: 'Reconnaissance', severity: 'LOW', count: 3890, rule: 'rule=masscan-signature rate=1000pps action=LOG' },
+      { startLat: 52.3, startLng: 4.9, endLat: 38.9, endLng: -77.0, color: 'rgba(196,181,253,0.62)', country: 'NL → US', srcCountry: 'Netherlands', dstCountry: 'United States', layer: 'Tor Exit', actor: 'FIN7', tactic: 'Defense Evasion', severity: 'MED', count: 891, rule: 'rule=tor-exit-node src_list=tor-project action=ALERT MED' },
+      { startLat: 1.35, startLng: 103.82, endLat: 39.9, endLng: 116.4, color: 'rgba(52,211,153,0.6)', country: 'SG → CN', srcCountry: 'Singapore', dstCountry: 'China', layer: 'C2', actor: 'Lazarus', tactic: 'Command and Control', severity: 'HIGH', count: 556, rule: 'rule=https-beacon uri=/gate.php interval=300s action=ALERT HIGH' },
+      { startLat: 48.86, startLng: 2.35, endLat: -33.87, endLng: 151.21, color: 'rgba(244,114,182,0.58)', country: 'FR → AU', srcCountry: 'France', dstCountry: 'Australia', layer: 'Exfil', actor: 'APT28', tactic: 'Exfiltration', severity: 'HIGH', count: 723, rule: 'rule=data-staging volume=2GB dst=cloud action=ALERT HIGH' },
+      { startLat: 28.61, startLng: 77.21, endLat: 38.9, endLng: -77.0, color: 'rgba(248,113,113,0.58)', country: 'IN → US', srcCountry: 'India', dstCountry: 'United States', layer: 'Alerts', actor: 'APT41', tactic: 'Credential Access', severity: 'MED', count: 445, rule: 'rule=credential-stuffing failures=20 window=2m action=BLOCK IP' },
+      { startLat: -23.55, startLng: -46.63, endLat: 38.9, endLng: -77.0, color: 'rgba(99,102,241,0.6)', country: 'BR → US', srcCountry: 'Brazil', dstCountry: 'United States', layer: 'Botnets', actor: 'Sandworm', tactic: 'Command and Control', severity: 'HIGH', count: 678, rule: 'rule=emotet-c2 dst_port=8080 action=BLOCK IP' },
+      { startLat: 32.07, startLng: 34.78, endLat: 35.7, endLng: 51.42, color: 'rgba(56,189,248,0.55)', country: 'IL → IR', srcCountry: 'Israel', dstCountry: 'Iran', layer: 'Scanning', actor: 'APT28', tactic: 'Reconnaissance', severity: 'LOW', count: 1567, rule: 'rule=active-probe nmap_scripts action=LOG' },
+      { startLat: 52.52, startLng: 13.41, endLat: 55.75, endLng: 37.62, color: 'rgba(196,181,253,0.55)', country: 'DE → RU', srcCountry: 'Germany', dstCountry: 'Russia', layer: 'Tor Exit', actor: 'Lazarus', tactic: 'Defense Evasion', severity: 'MED', count: 334, rule: 'rule=tor-relay-chain hops>3 action=ALERT MED' }
     ];
-    var globe=Globe()(document.getElementById('globe'))
-      .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
-      .arcsData(arcs).arcColor('color').arcDashLength(0.4).arcDashGap(0.2).arcDashAnimateTime(2000)
-      .onArcClick(function(d){document.getElementById('country-info').textContent=d.country;});
-    el.addEventListener('change',function(e){
-      if(e.target.dataset.layer){layerState[e.target.dataset.layer]=e.target.checked;globe.arcsData(arcs.filter(function(a){return layerState[a.layer]!==false;}));}
+
+    COUNTRY_COORDS['Netherlands'] = { lat: 52.3, lng: 4.9 };
+
+    var layerState = {};
+    LAYERS.forEach(function (l) { layerState[l] = true; });
+
+    var selectedActor = 'all';
+    var selectedSeverity = 'all';
+    var selectedArc = null;
+
+    var layerListEl = document.getElementById('layer-list');
+    LAYERS.forEach(function (layer) {
+      var row = document.createElement('label');
+      row.className = 'layer-row';
+      var dot = document.createElement('span');
+      dot.className = 'layer-dot';
+      dot.style.background = LAYER_COLORS[layer];
+      dot.style.boxShadow = '0 0 6px ' + LAYER_COLORS[layer];
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = true;
+      cb.dataset.layer = layer;
+      row.appendChild(cb);
+      row.appendChild(dot);
+      row.appendChild(document.createTextNode(layer));
+      layerListEl.appendChild(row);
+    });
+
+    function pad(n) { return n < 10 ? '0' + n : String(n); }
+
+    function updateClock() {
+      var d = new Date();
+      document.getElementById('hdr-clock').textContent =
+        pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + ' UTC';
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    var sfCanvas = document.getElementById('starfield');
+    var sfCtx = sfCanvas.getContext('2d');
+    var stars = [];
+
+    function resizeStarfield() {
+      var rect = sfCanvas.getBoundingClientRect();
+      sfCanvas.width = Math.floor(rect.width);
+      sfCanvas.height = Math.floor(rect.height);
+      stars = [];
+      var count = Math.floor((sfCanvas.width * sfCanvas.height) / 2800);
+      for (var i = 0; i < count; i++) {
+        stars.push({
+          x: Math.random() * sfCanvas.width,
+          y: Math.random() * sfCanvas.height,
+          z: Math.random(),
+          tw: Math.random() * Math.PI * 2
+        });
+      }
+    }
+
+    function drawStarfield() {
+      sfCtx.fillStyle = 'rgba(2, 6, 23, 0.35)';
+      sfCtx.fillRect(0, 0, sfCanvas.width, sfCanvas.height);
+      var t = Date.now() * 0.001;
+      stars.forEach(function (s) {
+        var alpha = 0.15 + s.z * 0.55 + Math.sin(t + s.tw) * 0.12;
+        sfCtx.fillStyle = 'rgba(148, 163, 184, ' + alpha + ')';
+        var sz = 0.5 + s.z * 1.5;
+        sfCtx.fillRect(s.x, s.y, sz, sz);
+      });
+      requestAnimationFrame(drawStarfield);
+    }
+
+    resizeStarfield();
+    drawStarfield();
+    window.addEventListener('resize', resizeStarfield);
+
+    function passesSeverity(sev) {
+      if (selectedSeverity === 'all') return true;
+      if (selectedSeverity === 'crit') return sev === 'CRIT';
+      if (selectedSeverity === 'highplus') return sev === 'CRIT' || sev === 'HIGH';
+      return true;
+    }
+
+    function getFilteredArcs() {
+      return ALL_ARCS.filter(function (a) {
+        if (layerState[a.layer] === false) return false;
+        if (selectedActor !== 'all' && a.actor !== selectedActor) return false;
+        if (!passesSeverity(a.severity)) return false;
+        return true;
+      });
+    }
+
+    function highestSeverity(arcs) {
+      var best = null;
+      var rank = 0;
+      arcs.forEach(function (a) {
+        var r = SEV_RANK[a.severity] || 0;
+        if (r > rank) { rank = r; best = a.severity; }
+      });
+      return best;
+    }
+
+    function mostActiveSource(arcs) {
+      var counts = {};
+      arcs.forEach(function (a) {
+        counts[a.srcCountry] = (counts[a.srcCountry] || 0) + a.count;
+      });
+      var best = null;
+      var max = 0;
+      Object.keys(counts).forEach(function (k) {
+        if (counts[k] > max) { max = counts[k]; best = k; }
+      });
+      return best;
+    }
+
+    function countryArcCounts(arcs) {
+      var map = {};
+      arcs.forEach(function (a) {
+        map[a.srcCountry] = (map[a.srcCountry] || 0) + 1;
+        map[a.dstCountry] = (map[a.dstCountry] || 0) + 1;
+      });
+      return map;
+    }
+
+    function updateStats(arcs) {
+      document.getElementById('stat-arcs').textContent = String(arcs.length);
+      var hi = highestSeverity(arcs);
+      var sevEl = document.getElementById('stat-severity');
+      sevEl.textContent = hi || '—';
+      sevEl.className = 'stat-value' + (hi === 'CRIT' ? ' crit' : '');
+
+      var region = mostActiveSource(arcs);
+      document.getElementById('stat-region').textContent = region || '—';
+
+      var total = 0;
+      arcs.forEach(function (a) { total += a.count; });
+      document.getElementById('stat-events').textContent = total.toLocaleString();
+
+      document.getElementById('layer-summary').textContent =
+        arcs.length + ' arcs visible · ' +
+        LAYERS.filter(function (l) { return layerState[l]; }).length + ' layers active';
+    }
+
+    function showDetail(arc) {
+      selectedArc = arc;
+      document.getElementById('detail-empty').style.display = 'none';
+      var content = document.getElementById('detail-content');
+      content.classList.add('visible');
+      document.getElementById('detail-panel').classList.add('has-selection');
+
+      document.getElementById('d-actor').textContent = arc.actor;
+      document.getElementById('d-route').textContent = arc.srcCountry + ' → ' + arc.dstCountry;
+      var sevBadge = document.getElementById('d-severity');
+      sevBadge.textContent = arc.severity;
+      sevBadge.className = 'sev-badge sev-' + arc.severity;
+      document.getElementById('d-tactic').textContent = arc.tactic;
+      document.getElementById('d-layer').textContent = arc.layer;
+      document.getElementById('d-count').textContent = arc.count.toLocaleString() + ' events';
+      var mins = Math.floor(Math.random() * 45) + 2;
+      document.getElementById('d-observed').textContent = mins + ' minutes ago · ingest shard m7-geo-02';
+      document.getElementById('d-rule').textContent = arc.rule;
+    }
+
+    function refreshGlobe() {
+      var filtered = getFilteredArcs();
+      globe.arcsData(filtered);
+      updateStats(filtered);
+      countryCounts = countryArcCounts(filtered);
+      if (selectedArc && filtered.indexOf(selectedArc) === -1) {
+        selectedArc = null;
+        document.getElementById('detail-empty').style.display = 'block';
+        document.getElementById('detail-content').classList.remove('visible');
+        document.getElementById('detail-panel').classList.remove('has-selection');
+      }
+    }
+
+    var countryCounts = countryArcCounts(getFilteredArcs());
+    var tooltip = document.getElementById('country-tooltip');
+
+    var globe = Globe()(document.getElementById('globe-mount'))
+      .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
+      .backgroundColor('rgba(0,0,0,0)')
+      .showAtmosphere(true)
+      .atmosphereColor('#38bdf8')
+      .atmosphereAltitude(0.15)
+      .arcColor('color')
+      .arcStroke(0.35)
+      .arcDashLength(0.42)
+      .arcDashGap(0.18)
+      .arcDashAnimateTime(2200)
+      .arcAltitudeAutoScale(0.35)
+      .arcsTransitionDuration(400)
+      .onArcClick(function (arc) { showDetail(arc); })
+      .onArcHover(function (arc) {
+        document.getElementById('globe-mount').style.cursor = arc ? 'pointer' : 'grab';
+      });
+
+    globe.controls().autoRotate = true;
+    globe.controls().autoRotateSpeed = 0.3;
+    globe.controls().enableDamping = true;
+    globe.controls().dampingFactor = 0.12;
+    globe.pointOfView({ lat: 22, lng: 10, altitude: 2.1 }, 0);
+
+    refreshGlobe();
+
+    document.getElementById('layer-list').addEventListener('change', function (e) {
+      if (e.target && e.target.dataset.layer) {
+        layerState[e.target.dataset.layer] = e.target.checked;
+        refreshGlobe();
+      }
+    });
+
+    document.getElementById('actor-filter').addEventListener('change', function (e) {
+      selectedActor = e.target.value;
+      refreshGlobe();
+    });
+
+    document.getElementById('severity-filter').addEventListener('change', function (e) {
+      if (e.target.name === 'sev') {
+        selectedSeverity = e.target.value;
+        refreshGlobe();
+      }
+    });
+
+    function haversineKm(lat1, lng1, lat2, lng2) {
+      var R = 6371;
+      var dLat = (lat2 - lat1) * Math.PI / 180;
+      var dLng = (lng2 - lng1) * Math.PI / 180;
+      var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    var mountEl = document.getElementById('globe-mount');
+    mountEl.addEventListener('mousemove', function (ev) {
+      var rect = mountEl.getBoundingClientRect();
+      var nx = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+      var ny = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
+
+      var pov = globe.pointOfView();
+      var hoverLat = pov.lat - ny * 28;
+      var hoverLng = pov.lng + nx * 42;
+
+      var nearest = null;
+      var nearestDist = Infinity;
+      Object.keys(COUNTRY_COORDS).forEach(function (name) {
+        if (!countryCounts[name]) return;
+        var c = COUNTRY_COORDS[name];
+        var d = haversineKm(hoverLat, hoverLng, c.lat, c.lng);
+        if (d < nearestDist) {
+          nearestDist = d;
+          nearest = name;
+        }
+      });
+
+      if (nearest && nearestDist < 1200) {
+        document.getElementById('tt-name').textContent = nearest;
+        document.getElementById('tt-count').textContent =
+          countryCounts[nearest] + ' active arc' + (countryCounts[nearest] === 1 ? '' : 's');
+        tooltip.style.left = ev.clientX + 'px';
+        tooltip.style.top = ev.clientY + 'px';
+        tooltip.classList.add('visible');
+      } else {
+        tooltip.classList.remove('visible');
+      }
+    });
+
+    mountEl.addEventListener('mouseleave', function () {
+      tooltip.classList.remove('visible');
+    });
+
+    window.addEventListener('resize', function () {
+      resizeStarfield();
     });
   })();
   </script>

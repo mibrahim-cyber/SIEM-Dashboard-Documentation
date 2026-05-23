@@ -7,125 +7,262 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <meta name="description" content="Boot the SOC shell — command-line triage, log grep, and virtual filesystem lab." />
+  <meta name="description" content="Meridian-7 SOC terminal with analyst command workflow, live log tails, and incident triage tooling." />
   <meta property="og:title" content="The Terminal — HABIBI-SIEM" />
-  <meta property="og:description" content="Boot the SOC shell — command-line triage, log grep, and virtual filesystem lab." />
+  <meta property="og:description" content="Meridian-7 SOC terminal with analyst command workflow, live log tails, and incident triage tooling." />
   <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/terminal-og.png" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="The Terminal — HABIBI-SIEM" />
-  <meta name="twitter:description" content="Boot the SOC shell — command-line triage, log grep, and virtual filesystem lab." />
+  <meta name="twitter:description" content="Meridian-7 SOC terminal with analyst command workflow, live log tails, and incident triage tooling." />
   <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/terminal-og.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Terminal — Meridian-7 SIEM</title>  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <title>The Terminal — Meridian-7 SIEM</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
   <link rel="stylesheet" href="assets/palette.css" />
   <link rel="stylesheet" href="assets/deck-nav.css" />
   <style>
     :root {
+      --bg: #030a04;
+      --bg-soft: rgba(3, 10, 4, 0.95);
       --phosphor: #39ff14;
-      --phosphor-dim: #1a8f0a;
-      --crt-bg: #030a04;
-      --header-h: 36px;
+      --phosphor-soft: rgba(57, 255, 20, 0.65);
+      --muted: #6b7280;
+      --accent-blue: #38bdf8;
+      --accent-amber: #fbbf24;
+      --accent-red: #f87171;
+      --header-h: 40px;
+      --boot-shadow: 0 0 18px rgba(57, 255, 20, 0.4);
+      --soft-border: 1px solid rgba(57, 255, 20, 0.24);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      width: 100%; height: 100%; overflow: hidden;
-      background: var(--crt-bg);
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
       font-family: "IBM Plex Mono", Consolas, monospace;
-    }
-    body::before {
-      content: '';
-      position: fixed; inset: 0; pointer-events: none; z-index: 50;
-      background: linear-gradient(180deg, rgba(57,255,20,0.03) 0%, transparent 40%, rgba(0,0,0,0.4) 100%);
-    }
-    body::after {
-      content: '';
-      position: fixed; inset: 0; pointer-events: none; z-index: 51;
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px);
-    }
-    #term-header {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 40;
-      height: var(--header-h);
-      display: flex; align-items: center; gap: 12px;
-      padding: 0 12px;
-      background: rgba(3, 10, 4, 0.96);
-      border-bottom: 1px solid rgba(57, 255, 20, 0.25);
-      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
       color: var(--phosphor);
     }
-    #term-led {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--phosphor);
-      box-shadow: 0 0 8px var(--phosphor);
-      animation: pulse 2s ease-in-out infinite;
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      background: linear-gradient(180deg, rgba(57, 255, 20, 0.03) 0%, transparent 38%, rgba(0, 0, 0, 0.46) 100%);
     }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
-    #term-utc { margin-left: auto; color: #64748b; letter-spacing: 1px; }
-    #term-version { color: var(--phosphor-dim); }
-    #term-wrap {
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.2) 2px,
+        rgba(0, 0, 0, 0.2) 4px
+      );
+    }
+
+    #shell-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-h);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 14px;
+      background: var(--bg-soft);
+      border-bottom: var(--soft-border);
+      z-index: 10;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      font-size: 10px;
+      backdrop-filter: blur(3px);
+    }
+
+    #live-led {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--phosphor);
+      box-shadow: 0 0 10px var(--phosphor);
+      animation: ledPulse 1.8s ease infinite;
+      flex: 0 0 auto;
+    }
+
+    #host-label {
+      color: var(--phosphor);
+    }
+
+    #version-label {
+      color: #16a34a;
+    }
+
+    #live-pill {
+      margin-left: 8px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(251, 191, 36, 0.34);
+      color: var(--accent-amber);
+      opacity: 0;
+      transform: translateY(-2px);
+      transition: opacity 220ms ease, transform 220ms ease;
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0);
+    }
+
+    #live-pill.active {
+      opacity: 1;
+      transform: translateY(0);
+      animation: livePulse 1s ease-in-out infinite;
+      box-shadow: 0 0 16px rgba(251, 191, 36, 0.22);
+    }
+
+    #utc-clock {
+      margin-left: auto;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    #terminal-frame {
       position: fixed;
       top: var(--header-h);
-      left: 0; right: 0; bottom: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       padding: 8px;
-      z-index: 10;
+      z-index: 4;
     }
+
     #terminal {
-      width: 100%; height: 100%;
-      text-shadow: 1px 0 rgba(255,0,80,0.08), -1px 0 rgba(0,180,255,0.08);
+      width: 100%;
+      height: 100%;
+      border: 1px solid rgba(57, 255, 20, 0.12);
+      box-shadow: inset 0 0 24px rgba(57, 255, 20, 0.08);
+      text-shadow: 1px 0 rgba(255, 0, 80, 0.08), -1px 0 rgba(0, 180, 255, 0.08);
     }
-    #term-boot {
-      position: fixed; inset: 0; z-index: 100;
+
+    .boot-layer {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 30;
       background: #000;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
+      letter-spacing: 2px;
+      font-size: 11px;
       color: var(--phosphor);
-      font-size: 11px; letter-spacing: 2px;
+      transition: opacity 240ms ease;
       cursor: pointer;
     }
-    #term-boot.hidden { display: none; }
-    #term-boot-bar {
-      width: min(320px, 80vw); height: 4px;
-      background: rgba(57,255,20,0.15);
-      margin-top: 24px; overflow: hidden;
+
+    .boot-layer.hidden {
+      opacity: 0;
+      pointer-events: none;
     }
-    #term-boot-fill {
-      height: 100%; width: 0;
+
+    #boot-title {
+      text-align: center;
+      line-height: 1.6;
+      text-shadow: 0 0 10px rgba(57, 255, 20, 0.33);
+    }
+
+    #boot-bar {
+      width: min(360px, 84vw);
+      height: 6px;
+      border: var(--soft-border);
+      background: rgba(57, 255, 20, 0.08);
+      overflow: hidden;
+      border-radius: 3px;
+    }
+
+    #boot-fill {
+      width: 0;
+      height: 100%;
       background: var(--phosphor);
-      box-shadow: 0 0 12px var(--phosphor);
-      transition: width 0.08s linear;
+      box-shadow: var(--boot-shadow);
+      transition: width 80ms linear;
     }
-    #term-boot-hint {
-      margin-top: 16px; font-size: 9px;
-      color: var(--phosphor-dim); letter-spacing: 3px;
+
+    #boot-sub {
+      font-size: 9px;
+      color: rgba(57, 255, 20, 0.7);
+      letter-spacing: 2.5px;
     }
-    .xterm { padding: 4px; }
-    .xterm-viewport { background: transparent !important; }
+
+    .xterm {
+      padding: 4px;
+    }
+
+    .xterm-viewport {
+      background: transparent !important;
+    }
+
+    @keyframes ledPulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes livePulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.55; }
+      100% { opacity: 1; }
+    }
+
     @media (max-width: 900px) {
-      #term-header { font-size: 8px; gap: 6px; }
-      #term-wrap { padding: 4px; }
-    }
-    @media print {
-      #term-boot, #term-header { display: none; }
-      body::before, body::after { display: none; }
+      #shell-header {
+        font-size: 8px;
+        gap: 8px;
+        padding: 0 10px;
+      }
+
+      #terminal-frame {
+        padding: 5px;
+      }
     }
   </style>
 </head>
 <body>
-  <div id="term-boot" role="button" tabindex="0" aria-label="Click to boot terminal">
-    <div>MERIDIAN-7 // ANALYST TERMINAL</div>
-    <div id="term-boot-bar"><div id="term-boot-fill"></div></div>
-    <div id="term-boot-hint">BOOTING ANALYST SHELL · v15.2</div>
+  <div id="term-boot" class="boot-layer" role="button" tabindex="0" aria-label="Boot Meridian-7 terminal">
+    <div id="boot-title">
+      MERIDIAN-7 SIEM<br />
+      ANALYST TERMINAL
+    </div>
+    <div id="boot-bar"><div id="boot-fill"></div></div>
+    <div id="boot-sub">SECURE SHELL INITIALIZATION · v15.2.0</div>
   </div>
-  <header id="term-header">
-    <span id="term-led" aria-hidden="true"></span>
-    <span>M7-TERM</span>
-    <span id="term-version">v15.2.0</span>
-    <span id="term-utc">--:--:-- UTC</span>
+
+  <header id="shell-header">
+    <span id="live-led" aria-hidden="true"></span>
+    <span id="host-label">meridian-7-terminal</span>
+    <span id="version-label">v15.2</span>
+    <span id="live-pill">[live]</span>
+    <span id="utc-clock">--:--:-- UTC</span>
   </header>
-  <div id="term-wrap">
-    <div id="terminal" aria-label="Terminal emulator"></div>
-  </div>
+
+  <main id="terminal-frame">
+    <div id="terminal" aria-label="SOC analyst terminal"></div>
+  </main>
+
   <div id="deck-nav-root"></div>
 
   <script src="assets/siem-core.js"></script>
@@ -136,123 +273,1210 @@
   <script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.min.js"></script>
   <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
   <script>
-  (function () {
-    'use strict';
-    SiemCore.bootPage('terminal');
-    SiemCore.AchievementSystem.check('visit_terminal');
-    SiemCore.AchievementSystem.check('first_boot');
+    (function () {
+      "use strict";
 
-    var bootEl = document.getElementById('term-boot');
-    var bootFill = document.getElementById('term-boot-fill');
-    var utcEl = document.getElementById('term-utc');
-    var term, fitAddon, lineBuf = '', booted = false;
+      SiemCore.bootPage("terminal");
+      SiemCore.AchievementSystem.check("visit_terminal");
 
-    function tickUtc() {
-      utcEl.textContent = new Date().toISOString().slice(11, 19) + ' UTC';
-    }
-    tickUtc();
-    setInterval(tickUtc, 1000);
+      var termEl = document.getElementById("terminal");
+      var clockEl = document.getElementById("utc-clock");
+      var bootLayer = document.getElementById("term-boot");
+      var bootFill = document.getElementById("boot-fill");
+      var livePill = document.getElementById("live-pill");
 
-    function runBoot(cb) {
-      var p = 0;
-      var iv = setInterval(function () {
-        p += 4 + Math.random() * 8;
-        if (p >= 100) {
-          p = 100;
-          clearInterval(iv);
-          setTimeout(cb, 200);
+      var term = null;
+      var fitAddon = null;
+      var webLinksAddon = null;
+
+      var shellState = {
+        user: "analyst",
+        host: "meridian-7",
+        cwd: "/home/analyst",
+        elevated: false,
+        history: [],
+        historyIndex: -1,
+        inputBuffer: "",
+        mode: "shell",
+        tailInterval: null,
+        pythonPrompt: ">>> ",
+        pendingSudoCommand: "",
+        sshTarget: "",
+        tailFilePath: "",
+        startEpoch: Date.now() - 1000 * 60 * 60 * 7 - 1000 * 41,
+      };
+
+      var COMMANDS = [
+        "ls",
+        "cd",
+        "pwd",
+        "cat",
+        "grep",
+        "tail",
+        "head",
+        "wc",
+        "history",
+        "whoami",
+        "hostname",
+        "uname",
+        "uptime",
+        "date",
+        "ps",
+        "top",
+        "netstat",
+        "curl",
+        "ssh",
+        "nmap",
+        "python3",
+        "sudo",
+        "jq",
+        "find",
+        "chmod",
+        "chown",
+        "man",
+        "fortune",
+        "clear",
+        "echo",
+        "rm",
+        "alias"
+      ];
+
+      var ALIASES = [
+        "ll='ls -la'",
+        "alerts='tail -f /var/log/siem/alerts.log'",
+        "crit='grep CRIT /var/log/siem/alerts.log'",
+        "status='cat /opt/siem/config.json'"
+      ];
+
+      var FORTUNES = [
+        "Correlate early. Escalate only when the evidence is clean.",
+        "A noisy dashboard is quieter than a missed breach.",
+        "If the payload looks normal, compare it to yesterday.",
+        "Logs are memory. Memory is defense.",
+        "Containment beats certainty during minute one.",
+        "Never trust one signal. Trust signal convergence."
+      ];
+
+      var MAN_PAGES = {
+        grep: [
+          "GREP(1)                           Meridian-7 Manual                          GREP(1)",
+          "",
+          "NAME",
+          "       grep - print lines that match patterns",
+          "",
+          "SYNOPSIS",
+          "       grep PATTERN FILE",
+          "       grep -r PATTERN /path",
+          "",
+          "DESCRIPTION",
+          "       Searches for PATTERN in FILE. Matching terms are highlighted in amber.",
+          "       Recursive mode in this terminal returns indexed SIEM data paths.",
+          "",
+          "EXAMPLES",
+          "       grep CRIT /var/log/siem/alerts.log",
+          "       grep -r ingest /var/log",
+          "",
+          "EXIT STATUS",
+          "       0 on match, 1 on no match, >1 on terminal parser error."
+        ].join("\n"),
+        tail: [
+          "TAIL(1)                           Meridian-7 Manual                           TAIL(1)",
+          "",
+          "NAME",
+          "       tail - display end of files",
+          "",
+          "SYNOPSIS",
+          "       tail -n N FILE",
+          "       tail -f FILE",
+          "",
+          "DESCRIPTION",
+          "       Streams alert activity with live mode. Use Ctrl+C to return to prompt.",
+          "       The [live] LED in the header pulses while follow mode is active.",
+          "",
+          "EXAMPLES",
+          "       tail -n 30 /var/log/siem/alerts.log",
+          "       tail -f /var/log/siem/alerts.log"
+        ].join("\n"),
+        siem: [
+          "SIEM(7)                           Meridian-7 Manual                           SIEM(7)",
+          "",
+          "NAME",
+          "       siem - Security Information and Event Management shell profile",
+          "",
+          "DESCRIPTION",
+          "       Meridian-7 provides ingest, correlation, threat intel enrichment,",
+          "       and analyst action orchestration from a single operating console.",
+          "",
+          "NOTES",
+          "       This terminal is backed by a synthetic filesystem for training.",
+          "       Every command execution emits an internal audit marker."
+        ].join("\n"),
+        habibi: [
+          "HABIBI(7)                         Meridian-7 Manual                         HABIBI(7)",
+          "",
+          "NAME",
+          "       habibi - workstation profile for Meridian SOC operations",
+          "",
+          "DESCRIPTION",
+          "       Correlates high-volume telemetry with human-led response actions.",
+          "       Profile defaults prioritize containment and evidence preservation.",
+          "",
+          "AUTHOR",
+          "       Meridian-7 Security Engineering"
+        ].join("\n"),
+        nmap: [
+          "NMAP(1)                           Meridian-7 Manual                           NMAP(1)",
+          "",
+          "NAME",
+          "       nmap - network scanner simulation",
+          "",
+          "SYNOPSIS",
+          "       nmap TARGET",
+          "",
+          "DESCRIPTION",
+          "       Produces SIEM-style service discovery with version guesses.",
+          "       Intended for analyst training and impact assessment drills."
+        ].join("\n"),
+        ssh: [
+          "SSH(1)                            Meridian-7 Manual                            SSH(1)",
+          "",
+          "NAME",
+          "       ssh - secure shell remote login simulation",
+          "",
+          "SYNOPSIS",
+          "       ssh user@host",
+          "",
+          "DESCRIPTION",
+          "       Opens remote prompt mode. Type exit or logout to return.",
+          "       Session banners include host hardening and legal notices."
+        ].join("\n")
+      };
+
+      var FILES = {
+        "/etc/motd": [
+          "╔══════════════════════════════════════════════════╗",
+          "║  MERIDIAN-7 SIEM · ANALYST TERMINAL v15.2        ║",
+          "║  Authorized personnel only. All actions logged.  ║",
+          "╚══════════════════════════════════════════════════╝",
+          "Last login: Today from 10.0.4.12",
+          "847 active rules · 3 critical alerts · ingest: online"
+        ].join("\n"),
+        "/etc/passwd": [
+          "root:x:0:0:root:/root:/bin/bash",
+          "daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin",
+          "sys:x:3:3:sys:/dev:/usr/sbin/nologin",
+          "www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin",
+          "auditd:x:111:115:Audit daemon:/var/lib/audit:/usr/sbin/nologin",
+          "analyst:x:1000:1000:SOC Analyst:/home/analyst:/bin/bash",
+          "replay:x:1001:1001:Incident Replay:/home/replay:/bin/bash"
+        ].join("\n"),
+        "/opt/siem/config.json": JSON.stringify(
+          {
+            station: "meridian-7",
+            mode: "operations",
+            ingest: {
+              parserBundle: "v15.2.0",
+              heartbeatIntervalSec: 10,
+              queueDepth: 14
+            },
+            detection: {
+              activeRules: 847,
+              criticalRules: 63,
+              dedupeWindowSec: 60
+            },
+            integrations: {
+              geoip: "online",
+              abuseipdb: "online",
+              ticketing: "degraded"
+            },
+            retention: {
+              alertsDays: 365,
+              auditDays: 730,
+              immutable: true
+            }
+          },
+          null,
+          2
+        ),
+        "/home/analyst/notes.txt": [
+          "Shift handoff notes:",
+          "- Track 10.0.4.12 repeated auth failures against dc-auth-02.",
+          "- Ticket INC-2026-0447 waiting for endpoint isolation validation.",
+          "- Review exfil signature tuning after 13:00 UTC ingest spike.",
+          "- DNS tunnel detector raised confidence from 0.86 to 0.93 after patch.",
+          "- SOC manager asked for timeline export before end of shift."
+        ].join("\n"),
+        "/home/analyst/.bash_history": [
+          "whoami",
+          "cat /etc/motd",
+          "grep CRIT /var/log/siem/alerts.log",
+          "tail -f /var/log/siem/alerts.log",
+          "nmap 10.0.4.0/24",
+          "sudo cat /opt/siem/config.json",
+          "find / -name \"*.log\"",
+          "history payload"
+        ].join("\n"),
+        "/proc/1/cmdline": "/usr/sbin/ingestd --config /opt/siem/config.json --foreground",
+        "/proc/42/cmdline": "/usr/sbin/rules-engine --policy /opt/siem/rules --worker 4",
+        "/var/log/siem/ingest.log": [
+          "[2026-05-23T11:07:00Z] ingest parser=apache events=344 ok=344 dropped=0",
+          "[2026-05-23T11:08:00Z] ingest parser=syslog events=510 ok=507 dropped=3",
+          "[2026-05-23T11:09:00Z] ingest parser=cef events=220 ok=220 dropped=0",
+          "[2026-05-23T11:10:00Z] enrich geoip lookups=114 misses=2",
+          "[2026-05-23T11:11:00Z] pipeline latency_p95_ms=31 queue_depth=12"
+        ].join("\n"),
+        "/var/log/siem/audit.log": [
+          "[2026-05-23T11:07:22Z] user=analyst action=login src=10.0.4.12",
+          "[2026-05-23T11:08:15Z] user=analyst action=grep file=/var/log/siem/alerts.log",
+          "[2026-05-23T11:08:48Z] user=analyst action=tailf file=/var/log/siem/alerts.log",
+          "[2026-05-23T11:10:04Z] user=analyst action=sudo command='cat /opt/siem/config.json'",
+          "[2026-05-23T11:11:14Z] user=analyst action=find pattern='*.log'"
+        ].join("\n"),
+        "/var/log/nginx/access.log": [
+          "10.0.4.12 - - [23/May/2026:11:06:31 +0000] \"POST /api/login HTTP/1.1\" 401 181",
+          "10.0.4.12 - - [23/May/2026:11:06:32 +0000] \"POST /api/login HTTP/1.1\" 401 181",
+          "10.0.4.12 - - [23/May/2026:11:06:33 +0000] \"POST /api/login HTTP/1.1\" 401 181",
+          "10.0.4.12 - - [23/May/2026:11:06:34 +0000] \"POST /api/login HTTP/1.1\" 401 181",
+          "10.0.4.12 - - [23/May/2026:11:06:35 +0000] \"POST /api/login HTTP/1.1\" 200 712"
+        ].join("\n"),
+        "/var/log/nginx/error.log": [
+          "[error] 2431#2431: *912 upstream timed out while reading response header",
+          "[warn] 2431#2431: *944 insecure request URI detected: /../../etc/passwd",
+          "[error] 2431#2431: *951 SQL pattern trigger in query string id=' OR 1=1--",
+          "[notice] 2431#2431: signal process started"
+        ].join("\n"),
+        "/var/log/auth.log": [
+          "May 23 11:04:11 meridian sshd[9122]: Failed password for analyst from 10.0.4.12 port 50144 ssh2",
+          "May 23 11:04:13 meridian sshd[9122]: Failed password for analyst from 10.0.4.12 port 50144 ssh2",
+          "May 23 11:04:15 meridian sshd[9122]: Failed password for analyst from 10.0.4.12 port 50144 ssh2",
+          "May 23 11:04:18 meridian sshd[9122]: Accepted password for analyst from 10.0.4.12 port 50144 ssh2"
+        ].join("\n"),
+        "/var/log/kern.log": [
+          "May 23 11:00:12 meridian kernel: [11203.2242] eth0: Link is Up - 1Gbps/Full",
+          "May 23 11:03:47 meridian kernel: [11418.0048] nf_conntrack: table full, dropping packet",
+          "May 23 11:03:53 meridian kernel: [11424.4492] audit: NETFILTER_CFG table=filter family=2 entries=145"
+        ].join("\n")
+      };
+
+      var DIRECTORY_MAP = {
+        "/": ["etc", "home", "opt", "proc", "var", "tmp", ".dockerenv"],
+        "/etc": ["motd", "passwd", "hostname", "resolv.conf"],
+        "/home": ["analyst"],
+        "/home/analyst": ["notes.txt", ".bash_history", ".ssh", "cases"],
+        "/opt": ["siem"],
+        "/opt/siem": ["config.json", "policies", "parsers", "rules"],
+        "/proc": ["1", "42", "uptime", "version"],
+        "/var": ["log", "lib", "tmp", "spool"],
+        "/var/log": ["siem", "nginx", "auth.log", "kern.log"],
+        "/var/log/siem": ["alerts.log", "audit.log", "ingest.log"],
+        "/var/log/nginx": ["access.log", "error.log"]
+      };
+
+      var LOG_FIND_RESULTS = [
+        "/var/log/siem/alerts.log",
+        "/var/log/siem/audit.log",
+        "/var/log/siem/ingest.log",
+        "/var/log/nginx/access.log",
+        "/var/log/nginx/error.log",
+        "/var/log/auth.log",
+        "/var/log/kern.log",
+        "/opt/siem/policies/alerts-engine.log"
+      ];
+
+      function ensureAlertLog() {
+        if (FILES["/var/log/siem/alerts.log"]) {
+          return;
         }
-        bootFill.style.width = p + '%';
-      }, 60);
-    }
-
-    function initTerm() {
-      if (typeof Terminal === 'undefined') {
-        booted = false;
-        bootEl.classList.remove('hidden');
-        document.getElementById('term-boot-hint').textContent = 'XTERM FAILED TO LOAD — REFRESH OR CHECK NETWORK';
-        return;
+        var rows = [];
+        var severities = ["INFO", "LOW", "MED", "HIGH", "CRIT"];
+        var rules = ["brute-force-login", "sql-injection", "dns-tunnel", "lateral-move", "suspicious-exfil"];
+        var ips = ["10.0.4.12", "192.168.1.44", "172.16.0.91", "203.0.113.8", "10.33.14.7"];
+        var base = Date.now() - 1000 * 60 * 240;
+        for (var i = 0; i < 260; i += 1) {
+          var sev = severities[i % severities.length];
+          var rule = rules[i % rules.length];
+          var ip = ips[i % ips.length];
+          var stamp = new Date(base + i * 1000 * 40).toISOString();
+          rows.push("[" + stamp + "] " + sev + " rule=" + rule + " src=" + ip + " msg=event-" + String(i + 1).padStart(4, "0"));
+        }
+        FILES["/var/log/siem/alerts.log"] = rows.join("\n");
       }
-      term = new Terminal({
-        cursorBlink: true,
-        fontFamily: '"IBM Plex Mono", Consolas, monospace',
-        fontSize: 14,
-        lineHeight: 1.2,
-        theme: {
-          background: '#030a04',
-          foreground: '#39ff14',
-          cursor: '#39ff14',
-          selectionBackground: 'rgba(57,255,20,0.25)',
-          black: '#0a140a',
-          green: '#39ff14',
-          yellow: '#fbbf24',
-          blue: '#38bdf8',
-          red: '#f87171',
-          brightBlack: '#64748b',
-        },
-        scrollback: 5000,
-      });
-      fitAddon = typeof FitAddon !== 'undefined' ? new FitAddon.FitAddon() : null;
-      if (fitAddon) term.loadAddon(fitAddon);
-      if (typeof WebLinksAddon !== 'undefined') {
-        term.loadAddon(new WebLinksAddon.WebLinksAddon());
+
+      ensureAlertLog();
+
+      function updateClock() {
+        clockEl.textContent = new Date().toISOString().slice(11, 19) + " UTC";
       }
-      term.open(document.getElementById('terminal'));
-      if (fitAddon) fitAddon.fit();
 
-      term.writeln('\x1b[32m' + TerminalShell.getMotd().replace(/\n/g, '\r\n') + '\x1b[0m');
-      term.write(TerminalShell.prompt());
-
-      term.onData(function (data) {
-        if (data === '\u0003') {
-          TerminalShell.stopTailF();
-          term.write('^C\r\n' + TerminalShell.prompt());
-          lineBuf = '';
-          return;
+      function showLive(on) {
+        if (on) {
+          livePill.classList.add("active");
+        } else {
+          livePill.classList.remove("active");
         }
-        if (data === '\r') {
-          term.write('\r\n');
-          var pending = TerminalShell.runCommand(lineBuf, term, function (s) { term.write(s); });
-          if (pending !== 'SUDO_PENDING') {
-            term.write(TerminalShell.prompt());
+      }
+
+      function bootProgress(done) {
+        var pct = 0;
+        var id = setInterval(function () {
+          pct += 4 + Math.random() * 8;
+          if (pct >= 100) {
+            pct = 100;
+            clearInterval(id);
+            setTimeout(done, 130);
           }
-          lineBuf = '';
+          bootFill.style.width = pct + "%";
+        }, 58);
+      }
+
+      function colorPathName(name) {
+        if (name.startsWith(".")) {
+          return "\x1b[90m" + name + "\x1b[0m";
+        }
+        if (isDirectoryName(name, shellState.cwd)) {
+          return "\x1b[36m" + name + "\x1b[0m";
+        }
+        return "\x1b[37m" + name + "\x1b[0m";
+      }
+
+      function splitArgs(line) {
+        var out = [];
+        var cur = "";
+        var q = "";
+        for (var i = 0; i < line.length; i += 1) {
+          var ch = line[i];
+          if ((ch === "'" || ch === '"') && q === "") {
+            q = ch;
+            continue;
+          }
+          if (ch === q) {
+            q = "";
+            continue;
+          }
+          if (ch === " " && q === "") {
+            if (cur) {
+              out.push(cur);
+              cur = "";
+            }
+            continue;
+          }
+          cur += ch;
+        }
+        if (cur) {
+          out.push(cur);
+        }
+        return out;
+      }
+
+      function resolvePath(path) {
+        var input = path || shellState.cwd;
+        var abs = input.startsWith("/") ? input : shellState.cwd + (shellState.cwd.endsWith("/") ? "" : "/") + input;
+        var parts = abs.split("/").filter(Boolean);
+        var stack = [];
+        for (var i = 0; i < parts.length; i += 1) {
+          var p = parts[i];
+          if (p === ".") {
+            continue;
+          }
+          if (p === "..") {
+            stack.pop();
+            continue;
+          }
+          stack.push(p);
+        }
+        return "/" + stack.join("/");
+      }
+
+      function isDir(path) {
+        return Object.prototype.hasOwnProperty.call(DIRECTORY_MAP, path);
+      }
+
+      function isFile(path) {
+        return Object.prototype.hasOwnProperty.call(FILES, path);
+      }
+
+      function isDirectoryName(name, parentPath) {
+        var full = resolvePath(parentPath + "/" + name);
+        return isDir(full);
+      }
+
+      function currentPrompt() {
+        if (shellState.mode === "ssh") {
+          return "$ ";
+        }
+        if (shellState.mode === "python") {
+          return shellState.pythonPrompt;
+        }
+        var sig = shellState.elevated ? "#" : "$";
+        return "\x1b[32m" + shellState.user + "@" + shellState.host + "\x1b[0m:\x1b[34m" + shellState.cwd + "\x1b[0m" + sig + " ";
+      }
+
+      function write(text) {
+        term.write(text);
+      }
+
+      function writeln(text) {
+        term.write((text || "") + "\r\n");
+      }
+
+      function renderPrompt() {
+        write(currentPrompt());
+      }
+
+      function redrawInput(newValue) {
+        while (shellState.inputBuffer.length > 0) {
+          write("\b \b");
+          shellState.inputBuffer = shellState.inputBuffer.slice(0, -1);
+        }
+        shellState.inputBuffer = newValue;
+        write(shellState.inputBuffer);
+      }
+
+      function stopTailMode() {
+        if (shellState.tailInterval) {
+          clearInterval(shellState.tailInterval);
+          shellState.tailInterval = null;
+        }
+        showLive(false);
+      }
+
+      function formatLongLs(path, includeHidden) {
+        var items = DIRECTORY_MAP[path] || [];
+        var filtered = items.filter(function (n) {
+          return includeHidden || !n.startsWith(".");
+        });
+        filtered.sort();
+        return filtered.map(function (name) {
+          var full = resolvePath(path + "/" + name);
+          var dir = isDir(full);
+          var mode = dir ? "drwxr-xr-x" : "-rw-r--r--";
+          var size = dir ? "4096" : String((FILES[full] || "").length);
+          var date = "May 23 11:42";
+          return mode + " 1 analyst analyst " + size.padStart(6, " ") + " " + date + " " + colorPathName(name);
+        }).join("\r\n");
+      }
+
+      function formatShortLs(path, includeHidden) {
+        var items = DIRECTORY_MAP[path] || [];
+        var filtered = items.filter(function (n) {
+          return includeHidden || !n.startsWith(".");
+        });
+        filtered.sort();
+        return filtered.map(colorPathName).join("  ");
+      }
+
+      function getFileContent(path) {
+        if (isFile(path)) {
+          return FILES[path];
+        }
+        return null;
+      }
+
+      function parseOptionValue(args, key, fallback) {
+        var idx = args.indexOf(key);
+        if (idx !== -1 && args[idx + 1]) {
+          var val = parseInt(args[idx + 1], 10);
+          if (!Number.isNaN(val)) {
+            return val;
+          }
+        }
+        return fallback;
+      }
+
+      function formatWithLineNumbers(content) {
+        var lines = content.split("\n");
+        return lines.map(function (line, i) {
+          return String(i + 1).padStart(4, " ") + "  " + line;
+        }).join("\r\n");
+      }
+
+      function grepHighlight(line, pattern) {
+        var re = new RegExp(pattern, "gi");
+        return line.replace(re, function (m) {
+          return "\x1b[30;43m" + m + "\x1b[0m";
+        });
+      }
+
+      function listCompletions(prefix) {
+        var cmdMatches = COMMANDS.filter(function (c) {
+          return c.indexOf(prefix) === 0;
+        });
+        var dirEntries = (DIRECTORY_MAP[shellState.cwd] || []).filter(function (n) {
+          return n.indexOf(prefix) === 0;
+        });
+        var dedup = {};
+        cmdMatches.concat(dirEntries).forEach(function (x) {
+          dedup[x] = true;
+        });
+        return Object.keys(dedup).sort();
+      }
+
+      function runTailFollow(path) {
+        var file = getFileContent(path);
+        if (file === null) {
+          writeln("tail: cannot open '" + path + "': No such file");
           return;
         }
-        if (data === '\u007f') {
-          if (lineBuf.length) {
-            lineBuf = lineBuf.slice(0, -1);
-            term.write('\b \b');
+        stopTailMode();
+        shellState.tailFilePath = path;
+        var lines = file.split("\n");
+        lines.slice(-8).forEach(function (line) {
+          writeln(line);
+        });
+        writeln("\x1b[33m[live]\x1b[0m following " + path + " (Ctrl+C to stop)");
+        showLive(true);
+        var tick = 0;
+        shellState.tailInterval = setInterval(function () {
+          tick += 1;
+          var sev = ["INFO", "LOW", "MED", "HIGH", "CRIT"][tick % 5];
+          var src = ["10.0.4.12", "192.168.1.44", "172.16.0.91", "203.0.113.8"][tick % 4];
+          var msg = "[" + new Date().toISOString() + "] " + sev + " rule=live-ingest src=" + src + " msg=stream-event-" + String(tick).padStart(3, "0");
+          writeln(msg);
+        }, 2000);
+      }
+
+      function safeMathEval(expression) {
+        if (!/^[0-9+\-*/().\s%]+$/.test(expression)) {
+          return { ok: false, value: "python3: only arithmetic expressions are allowed in this lab shell" };
+        }
+        try {
+          var value = Function("return (" + expression + ");")();
+          if (typeof value === "number" && Number.isFinite(value)) {
+            return { ok: true, value: String(value) };
+          }
+          return { ok: false, value: "python3: expression did not evaluate to a finite number" };
+        } catch (_err) {
+          return { ok: false, value: "python3: invalid expression" };
+        }
+      }
+
+      function runCommand(raw) {
+        var line = raw.trim();
+        if (!line) {
+          return;
+        }
+        shellState.history.push(line);
+        shellState.historyIndex = shellState.history.length;
+
+        var argv = splitArgs(line);
+        var cmd = argv[0];
+        var args = argv.slice(1);
+
+        if (cmd === "clear") {
+          term.clear();
+          return;
+        }
+
+        if (cmd === "ls") {
+          var includeHidden = args.includes("-a") || args.includes("-la") || args.includes("-al");
+          var longFmt = args.includes("-l") || args.includes("-la") || args.includes("-al");
+          var target = args.filter(function (a) { return !a.startsWith("-"); })[0] || shellState.cwd;
+          var resolved = resolvePath(target);
+          if (!isDir(resolved)) {
+            writeln("ls: cannot access '" + target + "': No such directory");
+            return;
+          }
+          if (longFmt) {
+            writeln(formatLongLs(resolved, includeHidden));
+          } else {
+            writeln(formatShortLs(resolved, includeHidden));
           }
           return;
         }
-        if (data >= ' ') {
-          lineBuf += data;
-          term.write(data);
+
+        if (cmd === "cd") {
+          var cdTarget = resolvePath(args[0] || "/home/analyst");
+          if (!isDir(cdTarget)) {
+            writeln("cd: " + (args[0] || "~") + ": No such directory");
+            return;
+          }
+          shellState.cwd = cdTarget;
+          return;
+        }
+
+        if (cmd === "pwd") {
+          writeln(shellState.cwd);
+          return;
+        }
+
+        if (cmd === "cat") {
+          if (!args[0]) {
+            writeln("cat: missing file operand");
+            return;
+          }
+          var catPath = resolvePath(args[0]);
+          var content = getFileContent(catPath);
+          if (content === null) {
+            writeln("cat: " + args[0] + ": No such file");
+            return;
+          }
+          var lineCount = content.split("\n").length;
+          if (lineCount > 20) {
+            writeln(formatWithLineNumbers(content));
+          } else {
+            writeln(content);
+          }
+          return;
+        }
+
+        if (cmd === "grep") {
+          if (args[0] === "-r") {
+            var patR = args[1];
+            var rootPath = args[2] || shellState.cwd;
+            if (!patR) {
+              writeln("grep: usage: grep -r PATTERN /path");
+              return;
+            }
+            writeln(resolvePath(rootPath) + "/alerts.log:221:[HIGH] correlation match for " + patR);
+            writeln(resolvePath(rootPath) + "/ingest.log:77:parser warning includes token " + patR);
+            writeln("/opt/siem/policies/detection.yaml:14:watch pattern " + patR);
+            writeln("/home/analyst/notes.txt:3:investigate " + patR + " before handoff");
+            return;
+          }
+          if (!args[0] || !args[1]) {
+            writeln("grep: usage: grep PATTERN FILE");
+            return;
+          }
+          var pat = args[0];
+          var grepPath = resolvePath(args[1]);
+          var grepContent = getFileContent(grepPath);
+          if (grepContent === null) {
+            writeln("grep: " + args[1] + ": No such file");
+            return;
+          }
+          var re = null;
+          try {
+            re = new RegExp(pat, "i");
+          } catch (_err) {
+            writeln("grep: invalid regular expression");
+            return;
+          }
+          var hits = 0;
+          grepContent.split("\n").forEach(function (lineText, idx) {
+            if (re.test(lineText)) {
+              hits += 1;
+              writeln(String(idx + 1).padStart(4, " ") + ":" + grepHighlight(lineText, pat));
+            }
+          });
+          if (hits === 0) {
+            writeln("grep: no matches");
+          }
+          return;
+        }
+
+        if (cmd === "tail") {
+          if (args[0] === "-f" && args[1]) {
+            runTailFollow(resolvePath(args[1]));
+            return;
+          }
+          var n = parseOptionValue(args, "-n", 10);
+          var tailPath = resolvePath(args[args.length - 1] || "");
+          var tailData = getFileContent(tailPath);
+          if (tailData === null) {
+            writeln("tail: cannot open '" + (args[args.length - 1] || "") + "'");
+            return;
+          }
+          tailData.split("\n").slice(-n).forEach(function (ln) {
+            writeln(ln);
+          });
+          return;
+        }
+
+        if (cmd === "head") {
+          var hn = parseOptionValue(args, "-n", 10);
+          var headPath = resolvePath(args[args.length - 1] || "");
+          var headData = getFileContent(headPath);
+          if (headData === null) {
+            writeln("head: cannot open '" + (args[args.length - 1] || "") + "'");
+            return;
+          }
+          headData.split("\n").slice(0, hn).forEach(function (ln) {
+            writeln(ln);
+          });
+          return;
+        }
+
+        if (cmd === "wc" && args[0] === "-l" && args[1]) {
+          var wcPath = resolvePath(args[1]);
+          var wcData = getFileContent(wcPath);
+          if (wcData === null) {
+            writeln("wc: " + args[1] + ": No such file");
+            return;
+          }
+          writeln(String(wcData.split("\n").length) + " " + wcPath);
+          return;
+        }
+
+        if (cmd === "history") {
+          if (args[0] === "payload") {
+            writeln("\x1b[33m[!]\x1b[0m Historical payload fragment recovered: M7-HIST-0xDEADBEEF");
+            return;
+          }
+          shellState.history.forEach(function (h, idx) {
+            writeln(String(idx + 1).padStart(4, " ") + "  " + h);
+          });
+          return;
+        }
+
+        if (cmd === "whoami") {
+          writeln(shellState.user);
+          return;
+        }
+
+        if (cmd === "hostname") {
+          writeln(shellState.host);
+          return;
+        }
+
+        if (cmd === "uname" && args[0] === "-a") {
+          writeln("Linux meridian-7 6.6.12-m7 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux");
+          return;
+        }
+
+        if (cmd === "uptime") {
+          var upSec = Math.floor((Date.now() - shellState.startEpoch) / 1000);
+          var h = Math.floor(upSec / 3600);
+          var m = Math.floor((upSec % 3600) / 60);
+          writeln(" " + new Date().toISOString().slice(11, 16) + ":01 up " + h + "h " + m + "m,  3 users,  load average: 0.41, 0.37, 0.29");
+          return;
+        }
+
+        if (cmd === "date") {
+          writeln(new Date().toUTCString());
+          return;
+        }
+
+        if (cmd === "ps" && args[0] === "aux") {
+          writeln("USER      PID %CPU %MEM CMD");
+          writeln("root        1  0.7  0.5 /usr/sbin/ingestd --config /opt/siem/config.json");
+          writeln("siem       42  7.8  1.3 /usr/sbin/rules-engine --worker 4");
+          writeln("analyst  1337  0.1  0.2 /bin/bash");
+          writeln("analyst  1402  0.2  0.3 /usr/bin/tail -f /var/log/siem/alerts.log");
+          return;
+        }
+
+        if (cmd === "top") {
+          writeln("top - " + new Date().toISOString().slice(11, 19) + " up 7:42, 1 user, load average: 0.41, 0.37, 0.29");
+          writeln("PID   CPU%  MEM%  CMD");
+          writeln("1      0.7   0.5  ingestd");
+          writeln("42     7.8   1.3  rules-engine");
+          writeln("1337   0.1   0.2  bash");
+          return;
+        }
+
+        if (cmd === "netstat" && args[0] === "-an") {
+          writeln("Proto Recv-Q Send-Q Local Address        Foreign Address      State");
+          writeln("tcp        0      0 0.0.0.0:514          0.0.0.0:*            LISTEN");
+          writeln("tcp        0      0 0.0.0.0:5601         0.0.0.0:*            LISTEN");
+          writeln("tcp        0      0 0.0.0.0:9200         0.0.0.0:*            LISTEN");
+          writeln("tcp        0      0 127.0.0.1:6379       0.0.0.0:*            LISTEN");
+          return;
+        }
+
+        if (cmd === "curl") {
+          var url = args[0] || "";
+          if (/^https?:\/\/(localhost|127\.0\.0\.1|meridian-7|siem\.internal|10\.)/i.test(url) || url.startsWith("/")) {
+            writeln('{"status":"ok","station":"meridian-7"}');
+          } else {
+            writeln("HTTP/1.1 403 Forbidden");
+            writeln('{"status":"denied","reason":"external egress blocked by policy"}');
+          }
+          return;
+        }
+
+        if (cmd === "ssh") {
+          if (!args[0] || !args[0].includes("@")) {
+            writeln("ssh: usage: ssh USER@HOST");
+            return;
+          }
+          shellState.mode = "ssh";
+          shellState.sshTarget = args[0];
+          writeln("Connected to " + args[0]);
+          writeln("Meridian relay " + args[0].split("@")[1] + " · hardened profile enabled");
+          writeln("Type exit or logout to return.");
+          return;
+        }
+
+        if (cmd === "nmap") {
+          var target = args[0] || "target";
+          writeln("Starting Nmap 7.94 scan against " + target);
+          writeln("PORT     STATE SERVICE     VERSION");
+          writeln("22/tcp   open  ssh         OpenSSH 9.2p1");
+          writeln("80/tcp   open  http        nginx 1.24");
+          writeln("443/tcp  open  https       nginx 1.24 + TLS1.3");
+          writeln("514/udp  open  syslog      rsyslogd");
+          writeln("9200/tcp open  elastic     Elasticsearch 8.x");
+          writeln("Nmap done: 1 IP address (1 host up) scanned in 2.08 seconds");
+          return;
+        }
+
+        if (cmd === "python3") {
+          if (args[0] === "-c" && args[1]) {
+            var expr = args.slice(1).join(" ");
+            if ((expr.startsWith('"') && expr.endsWith('"')) || (expr.startsWith("'") && expr.endsWith("'"))) {
+              expr = expr.slice(1, -1);
+            }
+            var result = safeMathEval(expr);
+            writeln(result.value);
+            return;
+          }
+          shellState.mode = "python";
+          writeln("Python 3.11.8 (Meridian shell)");
+          writeln("Type arithmetic expressions or exit()");
+          return;
+        }
+
+        if (cmd === "sudo") {
+          if (!args.length) {
+            writeln("usage: sudo COMMAND");
+            return;
+          }
+          if (shellState.elevated) {
+            runCommand(args.join(" "));
+            return;
+          }
+          shellState.mode = "sudo";
+          shellState.pendingSudoCommand = args.join(" ");
+          write("[sudo] password for analyst: ");
+          return;
+        }
+
+        if (cmd === "jq" && args[0] === "." && args[1] === "/opt/siem/config.json") {
+          writeln(FILES["/opt/siem/config.json"]);
+          return;
+        }
+
+        if (cmd === "find" && args[0] === "/" && args[1] === "-name" && args[2] === "*.log") {
+          LOG_FIND_RESULTS.forEach(function (path) {
+            writeln(path);
+          });
+          return;
+        }
+
+        if (cmd === "chmod" || cmd === "chown") {
+          writeln("operation recorded in audit log");
+          return;
+        }
+
+        if (cmd === "man") {
+          var topic = args[0] || "";
+          if (!MAN_PAGES[topic]) {
+            writeln("No manual entry for " + topic);
+            return;
+          }
+          writeln(MAN_PAGES[topic]);
+          return;
+        }
+
+        if (cmd === "fortune") {
+          writeln(FORTUNES[Math.floor(Math.random() * FORTUNES.length)]);
+          return;
+        }
+
+        if (cmd === "echo") {
+          var body = args.join(" ");
+          if (body === "$SIEM_SECRET") {
+            writeln("ACCESS GRANTED — SIEM_SECRET=meridian-seven-observation-deck");
+            return;
+          }
+          writeln(body);
+          return;
+        }
+
+        if (cmd === "rm" && args.join(" ") === "-rf /") {
+          writeln("rm: it is too late. The logs have already seen you.");
+          return;
+        }
+
+        if (cmd === "alias") {
+          ALIASES.forEach(function (entry) {
+            writeln(entry);
+          });
+          return;
+        }
+
+        writeln("bash: " + cmd + ": command not found");
+      }
+
+      function processShellLine(line) {
+        runCommand(line);
+        renderPrompt();
+      }
+
+      function processSudoPassword(line) {
+        if (line === "meridian" || line === "habibi") {
+          shellState.elevated = true;
+          writeln("");
+          writeln("[sudo] analyst granted elevated session");
+          var pending = shellState.pendingSudoCommand;
+          shellState.pendingSudoCommand = "";
+          shellState.mode = "shell";
+          runCommand(pending);
+          renderPrompt();
+          return;
+        }
+        writeln("");
+        writeln("[sudo] authentication failed");
+        shellState.pendingSudoCommand = "";
+        shellState.mode = "shell";
+        renderPrompt();
+      }
+
+      function processSshLine(line) {
+        if (line === "exit" || line === "logout") {
+          shellState.mode = "shell";
+          shellState.sshTarget = "";
+          writeln("Connection to remote host closed.");
+          renderPrompt();
+          return;
+        }
+        writeln("remote:" + line + ": command not found");
+        renderPrompt();
+      }
+
+      function processPythonLine(line) {
+        if (line === "exit()" || line === "quit()") {
+          shellState.mode = "shell";
+          shellState.pythonPrompt = ">>> ";
+          renderPrompt();
+          return;
+        }
+        if (!line.trim()) {
+          renderPrompt();
+          return;
+        }
+        var result = safeMathEval(line.trim());
+        writeln(result.value);
+        renderPrompt();
+      }
+
+      function handleEnter() {
+        var line = shellState.inputBuffer;
+        shellState.inputBuffer = "";
+        writeln("");
+
+        if (shellState.mode === "sudo") {
+          processSudoPassword(line);
+          return;
+        }
+
+        if (shellState.mode === "ssh") {
+          processSshLine(line.trim());
+          return;
+        }
+
+        if (shellState.mode === "python") {
+          processPythonLine(line);
+          return;
+        }
+
+        processShellLine(line);
+      }
+
+      function handleCtrlC() {
+        if (shellState.tailInterval) {
+          stopTailMode();
+          writeln("^C");
+          renderPrompt();
+          shellState.inputBuffer = "";
+          return;
+        }
+        if (shellState.mode === "python") {
+          shellState.mode = "shell";
+          shellState.pythonPrompt = ">>> ";
+          writeln("^C");
+          renderPrompt();
+          return;
+        }
+        if (shellState.mode === "sudo") {
+          shellState.mode = "shell";
+          shellState.pendingSudoCommand = "";
+          writeln("^C");
+          renderPrompt();
+          return;
+        }
+        if (shellState.mode === "ssh") {
+          writeln("^C");
+          renderPrompt();
+          return;
+        }
+        shellState.inputBuffer = "";
+        writeln("^C");
+        renderPrompt();
+      }
+
+      function handleBackspace() {
+        if (!shellState.inputBuffer.length) {
+          return;
+        }
+        shellState.inputBuffer = shellState.inputBuffer.slice(0, -1);
+        write("\b \b");
+      }
+
+      function handleHistory(direction) {
+        if (shellState.mode !== "shell") {
+          return;
+        }
+        if (!shellState.history.length) {
+          return;
+        }
+        if (direction < 0) {
+          shellState.historyIndex = Math.max(0, shellState.historyIndex - 1);
+        } else {
+          shellState.historyIndex = Math.min(shellState.history.length, shellState.historyIndex + 1);
+        }
+        if (shellState.historyIndex === shellState.history.length) {
+          redrawInput("");
+        } else {
+          redrawInput(shellState.history[shellState.historyIndex] || "");
+        }
+      }
+
+      function handleTabCompletion() {
+        if (shellState.mode !== "shell") {
+          return;
+        }
+        var parts = splitArgs(shellState.inputBuffer);
+        if (shellState.inputBuffer.endsWith(" ")) {
+          parts.push("");
+        }
+        var current = parts.length ? parts[parts.length - 1] : "";
+        var matches = listCompletions(current);
+        if (matches.length === 1) {
+          var resolved = matches[0];
+          var rebuilt = parts.slice(0, -1).concat([resolved]).join(" ");
+          if (!rebuilt.endsWith(" ")) {
+            rebuilt += " ";
+          }
+          redrawInput(rebuilt);
+          return;
+        }
+        if (matches.length > 1) {
+          writeln("");
+          writeln(matches.join("   "));
+          renderPrompt();
+          write(shellState.inputBuffer);
+        }
+      }
+
+      function handleInput(data) {
+        if (data === "\u0003") {
+          handleCtrlC();
+          return;
+        }
+        if (data === "\u000c") {
+          term.clear();
+          renderPrompt();
+          write(shellState.inputBuffer);
+          return;
+        }
+        if (data === "\r") {
+          handleEnter();
+          return;
+        }
+        if (data === "\u007f") {
+          handleBackspace();
+          return;
+        }
+        if (data === "\t") {
+          handleTabCompletion();
+          return;
+        }
+        if (data === "\u001b[A") {
+          handleHistory(-1);
+          return;
+        }
+        if (data === "\u001b[B") {
+          handleHistory(1);
+          return;
+        }
+        if (data >= " " && data <= "~") {
+          shellState.inputBuffer += data;
+          if (shellState.mode === "sudo") {
+            write("*");
+          } else {
+            write(data);
+          }
+        }
+      }
+
+      function writeMotd() {
+        writeln(FILES["/etc/motd"]);
+      }
+
+      function initTerminal() {
+        term = new Terminal({
+          cursorBlink: true,
+          fontFamily: '"IBM Plex Mono", Consolas, monospace',
+          fontSize: 14,
+          lineHeight: 1.2,
+          scrollback: 5000,
+          theme: {
+            background: "#030a04",
+            foreground: "#39ff14",
+            cursor: "#39ff14",
+            selectionBackground: "rgba(57,255,20,0.25)",
+            black: "#020617",
+            red: "#f87171",
+            green: "#39ff14",
+            yellow: "#fbbf24",
+            blue: "#38bdf8",
+            magenta: "#6366f1",
+            cyan: "#34d399",
+            white: "#f8fafc",
+            brightBlack: "#64748b",
+            brightRed: "#f87171",
+            brightGreen: "#39ff14",
+            brightYellow: "#fbbf24",
+            brightBlue: "#38bdf8",
+            brightMagenta: "#c4b5fd",
+            brightCyan: "#34d399",
+            brightWhite: "#ffffff"
+          }
+        });
+
+        fitAddon = new FitAddon.FitAddon();
+        webLinksAddon = new WebLinksAddon.WebLinksAddon();
+        term.loadAddon(fitAddon);
+        term.loadAddon(webLinksAddon);
+        term.open(termEl);
+        fitAddon.fit();
+        term.focus();
+        term.onData(handleInput);
+      }
+
+      function resizeTerminal() {
+        if (fitAddon) {
+          fitAddon.fit();
+        }
+      }
+
+      function startBoot() {
+        bootProgress(function () {
+          bootLayer.classList.add("hidden");
+          initTerminal();
+          writeMotd();
+          renderPrompt();
+          addEventListener("resize", resizeTerminal);
+        });
+      }
+
+      bootLayer.addEventListener("click", function () {
+        if (!bootLayer.classList.contains("hidden")) {
+          startBoot();
         }
       });
 
-      addEventListener('resize', function () {
-        try { if (fitAddon) fitAddon.fit(); } catch (_) { /* */ }
+      bootLayer.addEventListener("keydown", function (evt) {
+        if ((evt.key === "Enter" || evt.key === " ") && !bootLayer.classList.contains("hidden")) {
+          evt.preventDefault();
+          startBoot();
+        }
       });
-      term.focus();
-    }
 
-    function startSession() {
-      if (booted) return;
-      booted = true;
-      runBoot(function () {
-        bootEl.classList.add('hidden');
-        initTerm();
-      });
-    }
-
-    bootEl.addEventListener('click', startSession);
-    bootEl.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') startSession();
-    });
-    setTimeout(startSession, 320);
-  })();
+      updateClock();
+      setInterval(updateClock, 1000);
+    })();
   </script>
 </body>
 </html>

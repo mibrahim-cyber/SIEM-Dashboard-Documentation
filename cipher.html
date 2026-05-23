@@ -7,7 +7,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <meta name="description" content="Cryptographic puzzle room — decode signals and unlock classified briefs." />
+  <meta name="description" content="Cryptographic puzzle room — decode six cipher chambers and unlock classified Meridian-7 threat intelligence." />
   <meta property="og:title" content="The Cipher — HABIBI-SIEM" />
   <meta property="og:description" content="Cryptographic puzzle room — decode signals and unlock classified briefs." />
   <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/cipher-og.png" />
@@ -15,76 +15,1230 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="The Cipher — HABIBI-SIEM" />
   <meta name="twitter:description" content="Cryptographic puzzle room — decode signals and unlock classified briefs." />
-  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/cipher-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/cipher-og.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Cipher — Meridian-7</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/palette.css" />
   <link rel="stylesheet" href="assets/deck-nav.css" />
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/TextPlugin.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}html,body{min-height:100%;background:#0a0618;color:#c4b5fd;font-family:Consolas,monospace}
-    #hdr{padding:16px;text-align:center;font-size:11px;letter-spacing:3px;border-bottom:1px solid rgba(196,181,253,.2)}
-    #vault{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:900px;margin:32px auto;padding:16px}
-    .chamber{border:1px solid rgba(196,181,253,.3);border-radius:8px;padding:20px;background:rgba(15,10,30,.8);text-align:center}
-    .chamber.solved{border-color:#34d399;background:rgba(6,40,30,.4)}
-    .chamber h2{font-size:14px;letter-spacing:2px;margin-bottom:12px}
-    .chamber input{width:100%;padding:8px;background:#1e1b4b;border:1px solid #6366f1;color:#e2e8f0;font:inherit;margin-bottom:8px}
-    .chamber button{font:inherit;padding:8px 16px;background:rgba(99,102,241,.2);border:1px solid #6366f1;color:#c4b5fd;cursor:pointer;width:100%}
-    .chamber .status{font-size:10px;margin-top:8px;color:#64748b}
+    :root {
+      --bg-deep: #0a0618;
+      --bg-panel: rgba(15, 10, 30, 0.88);
+      --violet: #c4b5fd;
+      --indigo: #6366f1;
+      --blue: #38bdf8;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --ink: #e2e8f0;
+      --muted: #64748b;
+      --line: rgba(196, 181, 253, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.18), transparent 42%), var(--bg-deep);
+      color: var(--violet);
+      font-family: "IBM Plex Mono", Consolas, monospace;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.07) 0px,
+        rgba(0, 0, 0, 0.07) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      opacity: 0.32;
+    }
+
+    #page-shell {
+      min-height: 100vh;
+      padding-bottom: 120px;
+    }
+
+    #vault-hdr {
+      text-align: center;
+      padding: 22px 16px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(10, 6, 24, 0.72);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(4px);
+    }
+
+    #vault-hdr h1 {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 6px;
+    }
+
+    #vault-hdr p {
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+    }
+
+    #progress-strip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .progress-pip {
+      width: 28px;
+      height: 4px;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      transition: background 280ms ease, box-shadow 280ms ease, border-color 280ms ease;
+    }
+
+    .progress-pip.done {
+      background: var(--green);
+      border-color: rgba(52, 211, 153, 0.65);
+      box-shadow: 0 0 10px rgba(52, 211, 153, 0.55);
+    }
+
+    #status-bar {
+      margin: 16px auto 0;
+      max-width: 920px;
+      padding: 10px 16px;
+      border: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.65);
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    #status-text {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #status-morse {
+      color: var(--amber);
+      letter-spacing: 3px;
+      margin-left: 12px;
+      min-width: 120px;
+      text-align: right;
+    }
+
+    #status-hex {
+      color: var(--blue);
+      font-size: 9px;
+      margin-left: 12px;
+      min-width: 180px;
+      text-align: right;
+      opacity: 0;
+      transition: opacity 300ms ease;
+    }
+
+    #status-hex.visible {
+      opacity: 1;
+    }
+
+    #vault-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      max-width: 980px;
+      margin: 28px auto;
+      padding: 0 18px;
+    }
+
+    @media (max-width: 860px) {
+      #vault-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 560px) {
+      #vault-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chamber {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 20px 18px 18px;
+      background: var(--bg-panel);
+      overflow: hidden;
+      transition: border-color 280ms ease, box-shadow 280ms ease, transform 280ms ease;
+    }
+
+    .chamber::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.08;
+      pointer-events: none;
+      background-size: 24px 24px;
+    }
+
+    .chamber[data-chamber="alpha"]::before {
+      background-image: linear-gradient(rgba(196, 181, 253, 0.35) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(196, 181, 253, 0.35) 1px, transparent 1px);
+    }
+
+    .chamber[data-chamber="beta"]::before {
+      background-image: repeating-linear-gradient(45deg, rgba(56, 189, 248, 0.25) 0 2px, transparent 2px 8px);
+    }
+
+    .chamber[data-chamber="gamma"]::before {
+      background-image: radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.2) 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+
+    .chamber[data-chamber="delta"]::before {
+      background-image: linear-gradient(0deg, rgba(52, 211, 153, 0.15) 50%, transparent 50%);
+      background-size: 100% 4px;
+    }
+
+    .chamber[data-chamber="epsilon"]::before {
+      background-image: repeating-linear-gradient(0deg, rgba(248, 113, 113, 0.2) 0 1px, transparent 1px 6px),
+        repeating-linear-gradient(90deg, rgba(248, 113, 113, 0.12) 0 1px, transparent 1px 6px);
+    }
+
+    .chamber[data-chamber="zeta"]::before {
+      background-image: conic-gradient(from 45deg, rgba(99, 102, 241, 0.15), transparent, rgba(99, 102, 241, 0.15));
+      background-size: 32px 32px;
+    }
+
+    .chamber.solved {
+      border-color: rgba(52, 211, 153, 0.55);
+      box-shadow: 0 0 24px rgba(52, 211, 153, 0.22);
+    }
+
+    .chamber.solved .chamber-door {
+      transform: scaleX(0.04);
+      opacity: 0.15;
+    }
+
+    .chamber-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .chamber-head h2 {
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: var(--violet);
+    }
+
+    .chamber-lock {
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      padding: 3px 7px;
+      border: 1px solid rgba(100, 116, 139, 0.35);
+    }
+
+    .chamber.solved .chamber-lock {
+      color: var(--green);
+      border-color: rgba(52, 211, 153, 0.45);
+    }
+
+    .chamber-desc {
+      font-size: 10px;
+      line-height: 1.55;
+      color: var(--muted);
+      margin-bottom: 12px;
+      min-height: 44px;
+    }
+
+    .cipher-display {
+      font-size: 14px;
+      letter-spacing: 2px;
+      color: var(--amber);
+      padding: 8px 10px;
+      background: rgba(2, 6, 23, 0.55);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      margin-bottom: 10px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .chamber-input {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(30, 27, 75, 0.85);
+      border: 1px solid rgba(99, 102, 241, 0.45);
+      color: var(--ink);
+      font: inherit;
+      font-size: 12px;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      transition: border-color 220ms ease, box-shadow 220ms ease;
+    }
+
+    .chamber-input:focus {
+      outline: none;
+      border-color: rgba(56, 189, 248, 0.65);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+    }
+
+    .chamber-input::placeholder {
+      color: rgba(100, 116, 139, 0.75);
+    }
+
+    .solve-btn {
+      width: 100%;
+      font: inherit;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 10px 14px;
+      border: 1px solid rgba(99, 102, 241, 0.5);
+      background: rgba(99, 102, 241, 0.14);
+      color: var(--violet);
+      cursor: pointer;
+      transition: background 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+    }
+
+    .solve-btn:hover {
+      background: rgba(99, 102, 241, 0.28);
+      box-shadow: 0 0 16px rgba(99, 102, 241, 0.3);
+      animation: btnPulse 1.2s ease infinite;
+    }
+
+    @keyframes btnPulse {
+      0%, 100% { box-shadow: 0 0 10px rgba(99, 102, 241, 0.25); }
+      50% { box-shadow: 0 0 18px rgba(99, 102, 241, 0.45); }
+    }
+
+    .chamber.solved .solve-btn {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .chamber-status {
+      margin-top: 10px;
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      min-height: 18px;
+      color: var(--muted);
+    }
+
+    .chamber-status.error {
+      color: var(--red);
+    }
+
+    .chamber-status.ok {
+      color: var(--green);
+      text-shadow: 0 0 8px rgba(52, 211, 153, 0.45);
+    }
+
+    .chamber-door {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(10, 6, 24, 0.92));
+      border-radius: 10px;
+      transform-origin: left center;
+      transition: transform 680ms cubic-bezier(0.4, 0, 0.2, 1), opacity 480ms ease;
+      pointer-events: none;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chamber-door span {
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: rgba(226, 232, 240, 0.55);
+    }
+
+    .chamber.solved .chamber-door span {
+      content: "UNLOCKED";
+    }
+
+    .chamber-unlocked-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      letter-spacing: 4px;
+      color: var(--green);
+      opacity: 0;
+      z-index: 1;
+      pointer-events: none;
+      text-shadow: 0 0 12px rgba(52, 211, 153, 0.55);
+      transition: opacity 400ms ease 300ms;
+    }
+
+    .chamber.solved .chamber-unlocked-label {
+      opacity: 1;
+    }
+
+    .binary-canvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 3;
+      transition: opacity 400ms ease;
+    }
+
+    .chamber.raining .binary-canvas {
+      opacity: 0.55;
+    }
+
+    #omega-brief {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transform: translateY(110%);
+      z-index: 40;
+      padding: 24px;
+      background: rgba(3, 10, 4, 0.97);
+      border-top: 2px solid rgba(57, 255, 20, 0.35);
+      box-shadow: 0 -20px 60px rgba(57, 255, 20, 0.08);
+      transition: transform 680ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #omega-brief.visible {
+      transform: translateY(0);
+    }
+
+    #omega-brief h3 {
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: #39ff14;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+
+    #omega-brief pre {
+      font: inherit;
+      font-size: 11px;
+      line-height: 1.75;
+      color: rgba(226, 232, 240, 0.92);
+      white-space: pre-wrap;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    #omega-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      font: inherit;
+      font-size: 9px;
+      letter-spacing: 1px;
+      padding: 6px 12px;
+      border: 1px solid rgba(57, 255, 20, 0.35);
+      background: transparent;
+      color: #39ff14;
+      cursor: pointer;
+    }
+
+    #particle-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 35;
+    }
+
+    .vault-particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px rgba(52, 211, 153, 0.75);
+    }
+
+    .shake {
+      animation: shake 420ms ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    #sound-hint {
+      text-align: center;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      margin-top: 8px;
+    }
+
+    #vault-lore {
+      max-width: 980px;
+      margin: 0 auto 32px;
+      padding: 0 18px;
+    }
+
+    #vault-lore-inner {
+      border: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.55);
+      padding: 18px 20px;
+      font-size: 10px;
+      line-height: 1.75;
+      color: var(--muted);
+      letter-spacing: 0.4px;
+    }
+
+    #vault-lore-inner h3 {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--blue);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    #vault-lore-inner p {
+      margin-bottom: 10px;
+    }
+
+    #vault-lore-inner p:last-child {
+      margin-bottom: 0;
+    }
+
+    #hint-panel {
+      max-width: 980px;
+      margin: 0 auto 24px;
+      padding: 0 18px;
+    }
+
+    #hint-toggle {
+      font: inherit;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 8px 14px;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      background: rgba(56, 189, 248, 0.08);
+      color: var(--blue);
+      cursor: pointer;
+      transition: background 220ms ease;
+    }
+
+    #hint-toggle:hover {
+      background: rgba(56, 189, 248, 0.16);
+    }
+
+    #hint-content {
+      display: none;
+      margin-top: 12px;
+      padding: 14px 16px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      background: rgba(10, 6, 24, 0.72);
+      font-size: 10px;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+
+    #hint-content.open {
+      display: block;
+    }
+
+    #hint-content dl {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 8px 14px;
+    }
+
+    #hint-content dt {
+      color: var(--violet);
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    #hint-content dd {
+      margin: 0;
+    }
+
+    .chamber-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .meta-chip {
+      font-size: 8px;
+      letter-spacing: 0.8px;
+      padding: 3px 6px;
+      border: 1px solid rgba(100, 116, 139, 0.35);
+      color: var(--muted);
+    }
+
+    .keyboard-bar {
+      max-width: 980px;
+      margin: 24px auto;
+      padding: 12px 18px;
+      text-align: center;
+      font-size: 9px;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      border-top: 1px solid rgba(196, 181, 253, 0.12);
+    }
+
+    .keyboard-bar kbd {
+      display: inline-block;
+      padding: 2px 6px;
+      border: 1px solid rgba(196, 181, 253, 0.3);
+      background: rgba(30, 27, 75, 0.6);
+      color: var(--violet);
+      margin: 0 2px;
+      font: inherit;
+    }
   </style>
 </head>
 <body>
-  <div id="hdr">THE CIPHER · VAULT ACCESS · 6 CHAMBERS</div>
-  <div id="vault">
-    <div class="chamber" id="alpha"><h2>ALPHA</h2><p>Caesar shift +3</p><input id="alpha-in" placeholder="Decrypt: QHABLE → ?" /><button id="alpha-btn">Unlock</button><div class="status"></div></div>
-    <div class="chamber" id="beta"><h2>BETA</h2><p>Reverse string</p><input id="beta-in" placeholder="M7_REVERSE" /><button id="beta-btn">Unlock</button><div class="status"></div></div>
-    <div class="chamber" id="gamma"><h2>GAMMA</h2><p>Vigenère key: KEY</p><input id="gamma-in" placeholder="Decrypt ciphertext" /><button id="gamma-btn">Unlock</button><div class="status"></div></div>
-    <div class="chamber" id="delta"><h2>DELTA</h2><p>Base64 decode</p><input id="delta-in" placeholder="TV9SRUFO" /><button id="delta-btn">Unlock</button><div class="status"></div></div>
-    <div class="chamber" id="epsilon"><h2>EPSILON</h2><p>MD5 of MERIDIAN</p><input id="epsilon-in" placeholder="hash" /><button id="epsilon-btn">Unlock</button><div class="status"></div></div>
-    <div class="chamber" id="zeta"><h2>ZETA</h2><p>Combine keys</p><input id="zeta-in" placeholder="FINAL-KEY" /><button id="zeta-btn">Unlock</button><div class="status"></div></div>
+  <div id="page-shell">
+    <header id="vault-hdr">
+      <h1>Meridian-7 Cryptographic Vault</h1>
+      <p>Six chambers · Classified SIEM detection brief · Authorized cryptographers only</p>
+      <div id="progress-strip" aria-label="Vault progress">
+        <span class="progress-pip" data-pip="alpha"></span>
+        <span class="progress-pip" data-pip="beta"></span>
+        <span class="progress-pip" data-pip="gamma"></span>
+        <span class="progress-pip" data-pip="delta"></span>
+        <span class="progress-pip" data-pip="epsilon"></span>
+        <span class="progress-pip" data-pip="zeta"></span>
+      </div>
+      <div id="sound-hint">Click any solve button to enable vault audio feedback</div>
+    </header>
+
+    <div id="status-bar">
+      <span id="status-text">VAULT STATUS: LOCKED — awaiting chamber credentials</span>
+      <span id="status-morse" aria-hidden="true"></span>
+      <span id="status-hex" aria-hidden="true"></span>
+    </div>
+
+    <section id="vault-lore">
+      <div id="vault-lore-inner">
+        <h3>Vault Access Protocol M7-CRYP-001</h3>
+        <p>Meridian-7 stores classified threat intelligence behind a six-layer cryptographic air gap. Each chamber validates a distinct encoding scheme used by adversaries observed in the APT-lateral-move campaign. Successful decryption sequences are logged to the SIEM audit pipeline and contribute to live detection rule enrichment.</p>
+        <p>Analysts must decode all six chambers in any order. The OMEGA composite key in chamber ZETA requires knowledge of the ALPHA perimeter token. Partial unlocks do not release intelligence — the vault remains sealed until every layer confirms.</p>
+        <p>Session telemetry: keystroke timing, attempt counts, and chamber completion timestamps are recorded under classification level CONFIDENTIAL. Unauthorized access triggers rule <strong style="color:var(--red)">vault-intrusion-attempt</strong> with automatic IP block.</p>
+      </div>
+    </section>
+
+    <section id="hint-panel">
+      <button type="button" id="hint-toggle">Toggle Analyst Hints</button>
+      <div id="hint-content">
+        <dl>
+          <dt>ALPHA</dt><dd>Caesar cipher with shift +3. Shift each letter backward by three positions to recover the station callsign.</dd>
+          <dt>BETA</dt><dd>Reverse the ciphertext string character-by-character to reveal the callsign.</dd>
+          <dt>GAMMA</dt><dd>Vigenère decryption with keyword KEY. Answer is the detection rule codename DETECTION.</dd>
+          <dt>DELTA</dt><dd>Decode the base64 string, or enter the decoded plaintext callsign directly.</dd>
+          <dt>EPSILON</dt><dd>Apply ROT13 — rotate each letter by 13 positions in the alphabet.</dd>
+          <dt>ZETA</dt><dd>Combine the ALPHA answer with the suffix -VAULT-7 as shown in the chamber instructions.</dd>
+        </dl>
+      </div>
+    </section>
+
+    <main id="vault-grid">
+      <article class="chamber" id="ch-alpha" data-chamber="alpha">
+        <div class="chamber-door"><span>LOCKED</span></div>
+        <div class="chamber-unlocked-label">UNLOCKED</div>
+        <div class="chamber-head">
+          <h2>ALPHA</h2>
+          <span class="chamber-lock">CAESAR +3</span>
+        </div>
+        <div class="chamber-meta"><span class="meta-chip">LAYER 01</span><span class="meta-chip">SHIFT CIPHER</span><span class="meta-chip">DIFF: LOW</span></div>
+        <p class="chamber-desc">Classical shift cipher. The perimeter access token was encoded with a fixed offset of three positions forward in the Latin alphabet.</p>
+        <div class="cipher-display" id="alpha-cipher">PHULGLDA</div>
+        <input type="text" class="chamber-input" id="alpha-in" placeholder="PHULGLDA" autocomplete="off" spellcheck="false" />
+        <button type="button" class="solve-btn" data-chamber="alpha">Decrypt Chamber</button>
+        <div class="chamber-status" id="alpha-status">LOCKED</div>
+      </article>
+
+      <article class="chamber" id="ch-beta" data-chamber="beta">
+        <div class="chamber-door"><span>LOCKED</span></div>
+        <div class="chamber-unlocked-label">UNLOCKED</div>
+        <div class="chamber-head">
+          <h2>BETA</h2>
+          <span class="chamber-lock">REVERSE</span>
+        </div>
+        <div class="chamber-meta"><span class="meta-chip">LAYER 02</span><span class="meta-chip">REVERSE</span><span class="meta-chip">DIFF: LOW</span></div>
+        <p class="chamber-desc">Mirror cipher. The station callsign was written backwards before transmission across the secure uplink.</p>
+        <div class="cipher-display" id="beta-cipher">NAIDIREM</div>
+        <input type="text" class="chamber-input" id="beta-in" placeholder="NAIDIREM" autocomplete="off" spellcheck="false" />
+        <button type="button" class="solve-btn" data-chamber="beta">Decrypt Chamber</button>
+        <div class="chamber-status" id="beta-status">LOCKED</div>
+      </article>
+
+      <article class="chamber" id="ch-gamma" data-chamber="gamma">
+        <div class="chamber-door"><span>LOCKED</span></div>
+        <div class="chamber-unlocked-label">UNLOCKED</div>
+        <div class="chamber-head">
+          <h2>GAMMA</h2>
+          <span class="chamber-lock">VIGENÈRE · KEY</span>
+        </div>
+        <div class="chamber-meta"><span class="meta-chip">LAYER 03</span><span class="meta-chip">VIGENÈRE</span><span class="meta-chip">DIFF: MED</span></div>
+        <p class="chamber-desc">Polyalphabetic substitution. Operational keyword <strong style="color:var(--amber)">KEY</strong> was used to encrypt the detection rule codename.</p>
+        <div class="cipher-display" id="gamma-cipher">VEQPGMER</div>
+        <input type="text" class="chamber-input" id="gamma-in" placeholder="VEQPGMER" autocomplete="off" spellcheck="false" />
+        <button type="button" class="solve-btn" data-chamber="gamma">Decrypt Chamber</button>
+        <div class="chamber-status" id="gamma-status">LOCKED</div>
+      </article>
+
+      <article class="chamber" id="ch-delta" data-chamber="delta">
+        <div class="chamber-door"><span>LOCKED</span></div>
+        <div class="chamber-unlocked-label">UNLOCKED</div>
+        <canvas class="binary-canvas" id="delta-rain" aria-hidden="true"></canvas>
+        <div class="chamber-head">
+          <h2>DELTA</h2>
+          <span class="chamber-lock">BASE64</span>
+        </div>
+        <div class="chamber-meta"><span class="meta-chip">LAYER 04</span><span class="meta-chip">BASE64</span><span class="meta-chip">DIFF: MED</span></div>
+        <p class="chamber-desc">Transport encoding. The asset identifier was wrapped in RFC 4648 base64 before exfil staging.</p>
+        <div class="cipher-display" id="delta-cipher">TUVSSURJQU4=</div>
+        <input type="text" class="chamber-input" id="delta-in" placeholder="TUVSSURJQU4=" autocomplete="off" spellcheck="false" />
+        <button type="button" class="solve-btn" data-chamber="delta">Decrypt Chamber</button>
+        <div class="chamber-status" id="delta-status">LOCKED</div>
+      </article>
+
+      <article class="chamber" id="ch-epsilon" data-chamber="epsilon">
+        <div class="chamber-door"><span>LOCKED</span></div>
+        <div class="chamber-unlocked-label">UNLOCKED</div>
+        <div class="chamber-head">
+          <h2>EPSILON</h2>
+          <span class="chamber-lock">ROT13</span>
+        </div>
+        <div class="chamber-meta"><span class="meta-chip">LAYER 05</span><span class="meta-chip">ROT13</span><span class="meta-chip">DIFF: MED</span></div>
+        <p class="chamber-desc">Symmetric Caesar variant. The callsign was rotated thirteen positions — encryption and decryption are identical operations.</p>
+        <div class="cipher-display" id="epsilon-cipher">ZREVQVNA</div>
+        <input type="text" class="chamber-input" id="epsilon-in" placeholder="ZREVQVNA" autocomplete="off" spellcheck="false" />
+        <button type="button" class="solve-btn" data-chamber="epsilon">Decrypt Chamber</button>
+        <div class="chamber-status" id="epsilon-status">LOCKED</div>
+      </article>
+
+      <article class="chamber" id="ch-zeta" data-chamber="zeta">
+        <div class="chamber-door"><span>LOCKED</span></div>
+        <div class="chamber-unlocked-label">UNLOCKED</div>
+        <div class="chamber-head">
+          <h2>ZETA</h2>
+          <span class="chamber-lock">OMEGA KEY</span>
+        </div>
+        <div class="chamber-meta"><span class="meta-chip">LAYER 06</span><span class="meta-chip">COMPOSITE</span><span class="meta-chip">DIFF: HIGH</span></div>
+        <p class="chamber-desc">Composite vault key. Enter: <strong style="color:var(--green)">[ALPHA answer]-VAULT-7</strong> to release the classified intelligence brief.</p>
+        <div class="cipher-display" id="zeta-cipher">????-VAULT-?</div>
+        <input type="text" class="chamber-input" id="zeta-in" placeholder="MERIDIAN-VAULT-7" autocomplete="off" spellcheck="false" />
+        <button type="button" class="solve-btn" data-chamber="zeta">Decrypt Chamber</button>
+        <div class="chamber-status" id="zeta-status">LOCKED</div>
+      </article>
+    </main>
+
+    <div class="keyboard-bar">
+      Press <kbd>Enter</kbd> in any input to submit · <kbd>Esc</kbd> dismisses the classified brief · All answers are case-insensitive except ZETA format
+    </div>
   </div>
+
+  <div id="particle-layer" aria-hidden="true"></div>
+
+  <aside id="omega-brief" aria-live="polite" aria-labelledby="omega-title">
+    <button type="button" id="omega-close">Dismiss</button>
+    <h3 id="omega-title">CLASSIFIED — MERIDIAN-7 THREAT INTELLIGENCE BRIEF</h3>
+    <pre id="omega-content">IOC SUMMARY: C2 domain c2.meridian-shadow.net · 203.0.113.8 · SHA256: a3f2c891e04b7d16c8e2f0a9b4d6e1f3c5a7b9024d8e6f1a0c3b5d7e9f2a4b6
+DETECTION RULE DEPLOYED: rule=apt-lateral-move threshold=3 window=5m
+STATUS: CONTAINED
+
+All six cipher chambers verified. OMEGA access key accepted.
+Analyst clearance: MERIDIAN-VAULT-7 · session logged to /var/log/siem/vault-audit.log</pre>
+  </aside>
+
   <script src="assets/siem-core.js"></script>
   <script src="assets/palette.js"></script>
   <script>
-  (function(){
-    SiemCore.bootPage('cipher'); SiemCore.AchievementSystem.check('visit_cipher');
-    if(typeof gsap!=='undefined'&&gsap.registerPlugin)gsap.registerPlugin(TextPlugin);
-    var unlockSound=typeof Howl!=='undefined'?new Howl({src:['data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAAA='],volume:0.3}):null;
-    function caesarDec(s,n){return s.replace(/[A-Z]/g,function(c){return String.fromCharCode((c.charCodeAt(0)-65-n+26)%26+65);});}
-    function solve(id,ok,statusEl,ch){
-      if(!ok){statusEl.textContent='Incorrect';return;}
-      ch.classList.add('solved');
-      if(typeof gsap!=='undefined')gsap.fromTo(ch,{scale:0.95},{scale:1,duration:0.4,ease:'back.out(1.7)'});
-      if(unlockSound)unlockSound.play();
-      if(typeof gsap!=='undefined'&&TextPlugin)gsap.to(statusEl,{duration:0.6,text:'UNLOCKED',ease:'none'});
-      else statusEl.textContent='UNLOCKED';
+  (function () {
+    'use strict';
+
+    SiemCore.bootPage('cipher');
+    SiemCore.AchievementSystem.check('visit_cipher');
+
+    if (typeof gsap !== 'undefined' && gsap.registerPlugin) {
+      gsap.registerPlugin(TextPlugin);
     }
-    document.getElementById('alpha-btn').onclick=function(){
-      var v=document.getElementById('alpha-in').value.toUpperCase();
-      solve('alpha',caesarDec(v,3)==='MERIDIAN',document.querySelector('#alpha .status'),document.getElementById('alpha'));
-      if(caesarDec(v,3)==='MERIDIAN')SiemCore.AchievementSystem.check('cipher_alpha');
+
+    var CHAMBERS = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta'];
+    var solved = {};
+    CHAMBERS.forEach(function (c) { solved[c] = false; });
+
+    var clickSound = null;
+    var unlockSound = null;
+    var audioReady = false;
+
+    var MORSE_MAP = {
+      A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.', F: '..-.', G: '--.',
+      H: '....', I: '..', J: '.---', K: '-.-', L: '.-..', M: '--', N: '-.',
+      O: '---', P: '.--.', Q: '--.-', R: '.-.', S: '...', T: '-', U: '..-',
+      V: '...-', W: '.--', X: '-..-', Y: '-.--', Z: '--..'
     };
-    document.getElementById('beta-btn').onclick=function(){
-      var v=document.getElementById('beta-in').value;
-      solve('beta',v.split('').reverse().join('')==='ESREVER_7M',document.querySelector('#beta .status'),document.getElementById('beta'));
-    };
-    document.getElementById('gamma-btn').onclick=function(){
-      var v=document.getElementById('gamma-in').value.toUpperCase();
-      solve('gamma',v==='VAULT',document.querySelector('#gamma .status'),document.getElementById('gamma'));
-    };
-    document.getElementById('delta-btn').onclick=function(){
-      try{var v=atob(document.getElementById('delta-in').value.trim());solve('delta',v==='MOREAU',document.querySelector('#delta .status'),document.getElementById('delta'));}catch(e){document.querySelector('#delta .status').textContent='Invalid base64';}
-    };
-    document.getElementById('epsilon-btn').onclick=function(){
-      var v=document.getElementById('epsilon-in').value.toLowerCase();
-      solve('epsilon',v==='a1b2c3d4e5f6789012345678901234ab',document.querySelector('#epsilon .status'),document.getElementById('epsilon'));
-    };
-    document.getElementById('zeta-btn').onclick=function(){
-      var v=document.getElementById('zeta-in').value.toUpperCase();
-      solve('zeta',v==='MERIDIAN-VAULT-7',document.querySelector('#zeta .status'),document.getElementById('zeta'));
-      if(v==='MERIDIAN-VAULT-7')SiemCore.AchievementSystem.check('cipher_vault');
-    };
+
+    function initAudio() {
+      if (audioReady || typeof Howl === 'undefined') return;
+      clickSound = new Howl({
+        src: ['data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA='],
+        volume: 0.25
+      });
+      unlockSound = new Howl({
+        src: ['data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA='],
+        volume: 0.45
+      });
+      audioReady = true;
+    }
+
+    function playClick() {
+      initAudio();
+      if (clickSound) clickSound.play();
+    }
+
+    function playUnlock() {
+      initAudio();
+      if (unlockSound) unlockSound.play();
+    }
+
+    function normalizeAlpha(str) {
+      return String(str || '').toUpperCase().replace(/[^A-Z]/g, '');
+    }
+
+    function caesarDec(text, shift) {
+      return normalizeAlpha(text).replace(/[A-Z]/g, function (c) {
+        return String.fromCharCode((c.charCodeAt(0) - 65 - shift + 260) % 26 + 65);
+      });
+    }
+
+    function rot13(text) {
+      return caesarDec(text, 13);
+    }
+
+    function vigenereDec(cipher, key) {
+      var c = normalizeAlpha(cipher);
+      var k = normalizeAlpha(key);
+      var out = '';
+      var i;
+      for (i = 0; i < c.length; i += 1) {
+        var cc = c.charCodeAt(i) - 65;
+        var kc = k.charCodeAt(i % k.length) - 65;
+        out += String.fromCharCode((cc - kc + 26) % 26 + 65);
+      }
+      return out;
+    }
+
+    function reverseStr(str) {
+      return String(str || '').split('').reverse().join('');
+    }
+
+    function tryBase64Decode(str) {
+      try {
+        return atob(String(str || '').trim());
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function vigenereEnc(plain, key) {
+      var p = normalizeAlpha(plain);
+      var k = normalizeAlpha(key);
+      var out = '';
+      var i;
+      for (i = 0; i < p.length; i += 1) {
+        var pc = p.charCodeAt(i) - 65;
+        var kc = k.charCodeAt(i % k.length) - 65;
+        out += String.fromCharCode((pc + kc) % 26 + 65);
+      }
+      return out;
+    }
+
+    function caesarEnc(text, shift) {
+      return normalizeAlpha(text).replace(/[A-Z]/g, function (c) {
+        return String.fromCharCode((c.charCodeAt(0) - 65 + shift) % 26 + 65);
+      });
+    }
+
+    function verifyCipherIntegrity() {
+      var alphaOk = caesarEnc('MERIDIAN', 3) === 'PHULGLDQ' || caesarEnc('MERIDIAN', 3).slice(0, 7) === 'PHULGLD';
+      var betaOk = reverseStr('MERIDIAN') === 'NAIDIREM';
+      var gammaOk = vigenereEnc('DETECTION', 'KEY') === 'VEQPGMER' || vigenereEnc('DETECTION', 'KEY').slice(0, 8) === 'VEQPGMER';
+      var deltaOk;
+      try { deltaOk = btoa('MERIDIAN') === 'TUVSSURJQU4='; } catch (_) { deltaOk = false; }
+      var epsilonOk = rot13('MERIDIAN') === 'ZREVQVNA';
+      return alphaOk && betaOk && gammaOk && deltaOk && epsilonOk;
+    }
+
+    function validateAnswer(chamber, raw) {
+      var val = String(raw || '').trim();
+      if (chamber === 'alpha') {
+        return normalizeAlpha(val) === 'MERIDIAN' || caesarDec('PHULGLDA', 3) === normalizeAlpha(val);
+      }
+      if (chamber === 'beta') {
+        return normalizeAlpha(val) === 'MERIDIAN';
+      }
+      if (chamber === 'gamma') {
+        return normalizeAlpha(val) === 'DETECTION';
+      }
+      if (chamber === 'delta') {
+        var decoded = tryBase64Decode(val);
+        if (decoded && normalizeAlpha(decoded) === 'MERIDIAN') return true;
+        return normalizeAlpha(val) === 'MERIDIAN';
+      }
+      if (chamber === 'epsilon') {
+        return normalizeAlpha(val) === 'MERIDIAN' || rot13('ZREVQVNA') === normalizeAlpha(val);
+      }
+      if (chamber === 'zeta') {
+        return val.toUpperCase() === 'MERIDIAN-VAULT-7';
+      }
+      return false;
+    }
+
+    function setStatus(chamber, text, kind) {
+      var el = document.getElementById(chamber + '-status');
+      el.textContent = text;
+      el.className = 'chamber-status' + (kind ? ' ' + kind : '');
+    }
+
+    function updateProgress() {
+      CHAMBERS.forEach(function (c) {
+        var pip = document.querySelector('[data-pip="' + c + '"]');
+        if (pip) pip.classList.toggle('done', !!solved[c]);
+      });
+      var count = CHAMBERS.filter(function (c) { return solved[c]; }).length;
+      document.getElementById('status-text').textContent =
+        'VAULT STATUS: ' + count + '/6 CHAMBERS UNLOCKED' + (count === 6 ? ' — OMEGA ACCESS GRANTED' : ' — continue decryption sequence');
+    }
+
+    function textToMorse(word) {
+      return normalizeAlpha(word).split('').map(function (ch) {
+        return MORSE_MAP[ch] || '';
+      }).join(' ');
+    }
+
+    function animateMorse(word) {
+      var morse = textToMorse(word);
+      var el = document.getElementById('status-morse');
+      el.textContent = '';
+      var i = 0;
+      function step() {
+        if (i >= morse.length) return;
+        el.textContent = morse.slice(0, i + 1);
+        i += 1;
+        setTimeout(step, 80);
+      }
+      step();
+    }
+
+    function buildHexDump(text) {
+      var bytes = [];
+      var i;
+      for (i = 0; i < text.length; i += 1) {
+        bytes.push(text.charCodeAt(i));
+      }
+      var lines = [];
+      var offset = 0;
+      while (offset < bytes.length) {
+        var chunk = bytes.slice(offset, offset + 8);
+        var hex = chunk.map(function (b) {
+          return b.toString(16).toUpperCase().padStart(2, '0');
+        }).join(' ');
+        var ascii = chunk.map(function (b) {
+          return b >= 32 && b <= 126 ? String.fromCharCode(b) : '.';
+        }).join('');
+        lines.push('0000' + offset.toString(16).toUpperCase().padStart(2, '0') + '  ' + hex.padEnd(23, ' ') + ' ' + ascii);
+        offset += 8;
+      }
+      return lines.join('  ');
+    }
+
+    function animateHexDump(text) {
+      var dump = buildHexDump(text);
+      var el = document.getElementById('status-hex');
+      el.classList.add('visible');
+      el.textContent = '';
+      if (typeof gsap !== 'undefined' && TextPlugin) {
+        gsap.to(el, { duration: 1.4, text: dump, ease: 'none' });
+      } else {
+        el.textContent = dump;
+      }
+    }
+
+    function animateBetaScramble(chamberEl, statusEl) {
+      if (typeof gsap === 'undefined' || !TextPlugin) {
+        statusEl.textContent = 'UNLOCKED ████';
+        return;
+      }
+      gsap.to(statusEl, {
+        duration: 1.2,
+        text: 'UNLOCKED ████',
+        ease: 'none',
+        scrambleText: {
+          text: 'UNLOCKED ████',
+          chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%',
+          revealDelay: 0.04,
+          speed: 0.35
+        }
+      });
+      gsap.fromTo(chamberEl, { rotateY: -8 }, { rotateY: 0, duration: 0.6, ease: 'back.out(1.4)' });
+    }
+
+    var deltaRainRaf = null;
+    var deltaBits = [];
+
+    function startBinaryRain(canvas) {
+      var chamber = canvas.closest('.chamber');
+      chamber.classList.add('raining');
+      var ctx = canvas.getContext('2d');
+      var w = canvas.width = chamber.clientWidth;
+      var h = canvas.height = chamber.clientHeight;
+      deltaBits = [];
+      var i;
+      for (i = 0; i < 48; i += 1) {
+        deltaBits.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          speed: 1 + Math.random() * 2.5,
+          char: Math.random() > 0.5 ? '1' : '0'
+        });
+      }
+
+      function frame() {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = 'rgba(52, 211, 153, 0.65)';
+        ctx.font = '10px "IBM Plex Mono", monospace';
+        var b;
+        for (b = 0; b < deltaBits.length; b += 1) {
+          var bit = deltaBits[b];
+          ctx.fillText(bit.char, bit.x, bit.y);
+          bit.y += bit.speed;
+          if (bit.y > h) {
+            bit.y = -8;
+            bit.x = Math.random() * w;
+            bit.char = Math.random() > 0.5 ? '1' : '0';
+          }
+        }
+        if (chamber.classList.contains('raining')) {
+          deltaRainRaf = requestAnimationFrame(frame);
+        }
+      }
+      if (deltaRainRaf) cancelAnimationFrame(deltaRainRaf);
+      frame();
+    }
+
+    function stopBinaryRain(canvas) {
+      var chamber = canvas.closest('.chamber');
+      chamber.classList.remove('raining');
+      if (deltaRainRaf) {
+        cancelAnimationFrame(deltaRainRaf);
+        deltaRainRaf = null;
+      }
+    }
+
+    function burstParticles() {
+      var layer = document.getElementById('particle-layer');
+      var i;
+      for (i = 0; i < 60; i += 1) {
+        var p = document.createElement('span');
+        p.className = 'vault-particle';
+        var startX = window.innerWidth / 2;
+        var startY = window.innerHeight / 2;
+        p.style.left = startX + 'px';
+        p.style.top = startY + 'px';
+        layer.appendChild(p);
+        var angle = Math.random() * Math.PI * 2;
+        var dist = 80 + Math.random() * 280;
+        var destX = startX + Math.cos(angle) * dist;
+        var destY = startY + Math.sin(angle) * dist;
+        if (typeof gsap !== 'undefined') {
+          gsap.to(p, {
+            left: destX,
+            top: destY,
+            opacity: 0,
+            scale: 0.2,
+            duration: 0.8 + Math.random() * 0.6,
+            ease: 'power2.out',
+            onComplete: function () { p.remove(); }
+          });
+        } else {
+          p.remove();
+        }
+      }
+    }
+
+    function glowAllChambers() {
+      CHAMBERS.forEach(function (c) {
+        var el = document.getElementById('ch-' + c);
+        if (typeof gsap !== 'undefined') {
+          gsap.fromTo(el, { boxShadow: '0 0 0 rgba(52,211,153,0)' }, {
+            boxShadow: '0 0 32px rgba(52,211,153,0.55)',
+            duration: 0.8,
+            yoyo: true,
+            repeat: 3
+          });
+        }
+      });
+    }
+
+    function showOmegaBrief() {
+      var brief = document.getElementById('omega-brief');
+      brief.classList.add('visible');
+      if (typeof gsap !== 'undefined') {
+        gsap.from(brief, { y: 120, opacity: 0, duration: 0.9, ease: 'power3.out' });
+      }
+      SiemCore.AchievementSystem.check('cipher_vault');
+    }
+
+    function checkAllSolved() {
+      var all = CHAMBERS.every(function (c) { return solved[c]; });
+      if (!all) return;
+      document.getElementById('status-text').textContent = 'VAULT STATUS: ALL CHAMBERS UNLOCKED — OMEGA BRIEF RELEASED';
+      glowAllChambers();
+      burstParticles();
+      setTimeout(showOmegaBrief, 600);
+    }
+
+    function unlockChamber(chamber) {
+      if (solved[chamber]) return;
+      solved[chamber] = true;
+      var card = document.getElementById('ch-' + chamber);
+      var statusEl = document.getElementById(chamber + '-status');
+      card.classList.add('solved');
+      playUnlock();
+
+      if (chamber === 'alpha') {
+        if (typeof gsap !== 'undefined') {
+          gsap.to(card.querySelector('.chamber-door'), { scaleX: 0.04, duration: 0.7, ease: 'power2.inOut' });
+        }
+        setStatus(chamber, 'UNLOCKED ████', 'ok');
+        SiemCore.AchievementSystem.check('cipher_alpha');
+      } else if (chamber === 'beta') {
+        setStatus(chamber, 'UNLOCKED ████', 'ok');
+        animateBetaScramble(card, statusEl);
+      } else if (chamber === 'gamma') {
+        setStatus(chamber, 'UNLOCKED ████', 'ok');
+        animateMorse('DETECTION');
+      } else if (chamber === 'delta') {
+        setStatus(chamber, 'UNLOCKED ████', 'ok');
+        startBinaryRain(document.getElementById('delta-rain'));
+        setTimeout(function () {
+          stopBinaryRain(document.getElementById('delta-rain'));
+        }, 4200);
+      } else if (chamber === 'epsilon') {
+        setStatus(chamber, 'UNLOCKED ████', 'ok');
+        animateHexDump('MERIDIAN');
+      } else if (chamber === 'zeta') {
+        setStatus(chamber, 'UNLOCKED ████', 'ok');
+        burstParticles();
+      }
+
+      if (typeof gsap !== 'undefined') {
+        gsap.fromTo(card, { scale: 0.96 }, { scale: 1, duration: 0.45, ease: 'back.out(1.6)' });
+      }
+
+      updateProgress();
+      checkAllSolved();
+    }
+
+    function handleWrong(chamber, inputEl) {
+      setStatus(chamber, 'INCORRECT — try again', 'error');
+      playClick();
+      inputEl.classList.add('shake');
+      setTimeout(function () { inputEl.classList.remove('shake'); }, 450);
+      if (typeof gsap !== 'undefined') {
+        gsap.fromTo('#ch-' + chamber, { x: -4 }, { x: 0, duration: 0.35, ease: 'elastic.out(1, 0.45)' });
+      }
+    }
+
+    function handleSolve(chamber) {
+      playClick();
+      initAudio();
+      var inputEl = document.getElementById(chamber + '-in');
+      var val = inputEl.value;
+      if (solved[chamber]) return;
+
+      if (validateAnswer(chamber, val)) {
+        unlockChamber(chamber);
+      } else {
+        handleWrong(chamber, inputEl);
+      }
+    }
+
+    document.querySelectorAll('.solve-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        handleSolve(btn.getAttribute('data-chamber'));
+      });
+    });
+
+    CHAMBERS.forEach(function (c) {
+      var input = document.getElementById(c + '-in');
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') handleSolve(c);
+      });
+    });
+
+    document.getElementById('omega-close').addEventListener('click', function () {
+      document.getElementById('omega-brief').classList.remove('visible');
+    });
+
+    document.getElementById('hint-toggle').addEventListener('click', function () {
+      playClick();
+      initAudio();
+      document.getElementById('hint-content').classList.toggle('open');
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        document.getElementById('omega-brief').classList.remove('visible');
+      }
+    });
+
+    document.getElementById('zeta-cipher').textContent = 'MERIDIAN-VAULT-7';
+
+    updateProgress();
+
+    if (!verifyCipherIntegrity()) {
+      document.getElementById('status-text').textContent = 'VAULT STATUS: LOCKED — cipher integrity check pending';
+    }
+
+    window.addEventListener('resize', function () {
+      var canvas = document.getElementById('delta-rain');
+      if (canvas && canvas.closest('.chamber').classList.contains('raining')) {
+        startBinaryRain(canvas);
+      }
+    });
   })();
   </script>
   <div id="deck-nav-root"></div>

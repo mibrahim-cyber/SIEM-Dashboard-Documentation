@@ -7,16 +7,18 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <meta name="description" content="Incident timeline replay — scrub through detections and analyst actions." />
+  <meta name="description" content="MITRE ATT&amp;CK kill chain reconstruction — cinematic timeline replay with SIEM rule intercepts." />
   <meta property="og:title" content="The Simulation — HABIBI-SIEM" />
-  <meta property="og:description" content="Incident timeline replay — scrub through detections and analyst actions." />
+  <meta property="og:description" content="MITRE ATT&amp;CK kill chain reconstruction — cinematic timeline replay with SIEM rule intercepts." />
   <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/sim-og.png" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="The Simulation — HABIBI-SIEM" />
-  <meta name="twitter:description" content="Incident timeline replay — scrub through detections and analyst actions." />
-  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/sim-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="twitter:description" content="MITRE ATT&amp;CK kill chain reconstruction — cinematic timeline replay with SIEM rule intercepts." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/sim-og.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Simulation — Meridian-7</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/palette.css" />
   <link rel="stylesheet" href="assets/deck-nav.css" />
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -24,64 +26,1119 @@
   <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#020617;color:#e2e8f0;font-family:system-ui,sans-serif}
-    #hdr{padding:12px 16px;font:600 10px/1 monospace;letter-spacing:2px;border-bottom:1px solid rgba(56,189,248,.2)}
-    #grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px;max-width:720px}
-    .mission{padding:16px;border:1px solid rgba(148,163,184,.2);border-radius:8px;cursor:pointer;background:rgba(15,23,42,.6)}
-    .mission:hover{border-color:#38bdf8}.mission.active{border-color:#fbbf24;background:rgba(56,189,248,.08)}
-    #stage{margin:0 16px;height:240px;border:1px solid rgba(56,189,248,.15);border-radius:8px;position:relative;overflow:hidden;background:#0f172a}
-    #path-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-    #actor{width:12px;height:12px;background:#fbbf24;border-radius:50%;position:absolute;left:20px;top:50%;transform:translateY(-50%);box-shadow:0 0 12px #fbbf24}
-    #narrator{padding:12px 16px;font-size:13px;color:#94a3b8;min-height:48px}
-    #scrub{margin:0 16px 16px;display:flex;align-items:center;gap:12px;font-size:11px}
-    #scrub input{flex:1}
+    :root {
+      --bg-deep: #020617;
+      --bg-violet: #0a0618;
+      --blue: #38bdf8;
+      --green: #39ff14;
+      --indigo: #6366f1;
+      --violet: #c4b5fd;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --emerald: #34d399;
+      --ink: #e2e8f0;
+      --muted: #94a3b8;
+      --line: rgba(56, 189, 248, 0.22);
+      --line-soft: rgba(148, 163, 184, 0.16);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(ellipse at 15% 0%, rgba(99, 102, 241, 0.12), transparent 42%), var(--bg-deep);
+      color: var(--ink);
+      font-family: "IBM Plex Mono", Consolas, monospace;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.08) 0px,
+        rgba(0, 0, 0, 0.08) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      z-index: 9998;
+      opacity: 0.35;
+    }
+
+    #sim-shell {
+      display: grid;
+      grid-template-rows: 52px auto 1fr 52px 72px 88px 64px;
+      grid-template-columns: 1fr 340px;
+      width: 100%;
+      height: 100%;
+      min-height: 680px;
+    }
+
+    #sim-header {
+      grid-column: 1 / span 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.92);
+      letter-spacing: 2px;
+      font-size: 10px;
+      text-transform: uppercase;
+      z-index: 5;
+    }
+
+    #sim-header .brand { color: var(--blue); font-weight: 700; }
+    #sim-header .meta { color: var(--muted); font-size: 9px; }
+    #sim-header .live-led {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px rgba(57, 255, 20, 0.7);
+      animation: ledPulse 2s ease infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes ledPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.45; }
+    }
+
+    #mission-bar {
+      grid-column: 1 / span 2;
+      display: flex;
+      gap: 8px;
+      padding: 10px 14px;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--line-soft);
+      background: rgba(10, 6, 24, 0.55);
+    }
+
+    .mission-card {
+      flex: 0 0 auto;
+      min-width: 148px;
+      padding: 10px 12px;
+      border: 1px solid var(--line-soft);
+      border-radius: 6px;
+      cursor: pointer;
+      background: rgba(15, 23, 42, 0.55);
+      transition: border-color 220ms ease, background 220ms ease, box-shadow 220ms ease;
+    }
+
+    .mission-card:hover {
+      border-color: rgba(56, 189, 248, 0.45);
+      background: rgba(56, 189, 248, 0.06);
+    }
+
+    .mission-card.active {
+      border-color: var(--amber);
+      background: rgba(251, 191, 36, 0.08);
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.18);
+    }
+
+    .mission-card .mitre {
+      font-size: 8px;
+      letter-spacing: 1.5px;
+      color: var(--violet);
+      margin-bottom: 4px;
+    }
+
+    .mission-card .title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .mission-card .tactic {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    #stage-wrap {
+      position: relative;
+      border-right: 1px solid var(--line-soft);
+      min-width: 0;
+      background: rgba(3, 10, 4, 0.35);
+    }
+
+    #stage-labels {
+      position: absolute;
+      top: 10px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    #stage-labels .attacker { color: var(--amber); }
+    #stage-labels .target { color: var(--red); }
+
+    #stage {
+      position: absolute;
+      inset: 36px 12px 12px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(2, 6, 23, 0.6), rgba(10, 6, 24, 0.85));
+    }
+
+    #path-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .phase-node {
+      fill: rgba(148, 163, 184, 0.25);
+      stroke: rgba(148, 163, 184, 0.5);
+      stroke-width: 1.5;
+      transition: fill 220ms ease, stroke 220ms ease, filter 220ms ease;
+    }
+
+    .phase-node.active {
+      fill: rgba(251, 191, 36, 0.35);
+      stroke: var(--amber);
+      filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.6));
+    }
+
+    .phase-node.done {
+      fill: rgba(52, 211, 153, 0.3);
+      stroke: var(--emerald);
+      filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.45));
+    }
+
+    .phase-label {
+      fill: var(--muted);
+      font-family: "IBM Plex Mono", Consolas, monospace;
+      font-size: 8px;
+      letter-spacing: 0.5px;
+      text-anchor: middle;
+    }
+
+    .phase-label.active { fill: var(--amber); font-weight: 600; }
+    .phase-label.done { fill: var(--emerald); }
+
+    #actor {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 16px rgba(251, 191, 36, 0.85), 0 0 4px rgba(251, 191, 36, 1);
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    #actor::after {
+      content: "";
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      animation: actorRing 1.8s ease infinite;
+    }
+
+    @keyframes actorRing {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.35); opacity: 0.15; }
+    }
+
+    #intercept-panel {
+      display: flex;
+      flex-direction: column;
+      background: rgba(10, 6, 24, 0.72);
+      min-width: 0;
+    }
+
+    #intercept-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line-soft);
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--blue);
+    }
+
+    #intercept-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .intercept-card {
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: rgba(2, 6, 23, 0.65);
+      font-size: 10px;
+      line-height: 1.55;
+      opacity: 0.35;
+      transform: translateY(8px);
+      transition: opacity 280ms ease, transform 280ms ease, box-shadow 280ms ease, border-color 280ms ease;
+    }
+
+    .intercept-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+      border-color: rgba(56, 189, 248, 0.45);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.15);
+    }
+
+    .intercept-card .rule-name {
+      color: var(--green);
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .intercept-card .field { color: var(--muted); }
+    .intercept-card .val { color: var(--ink); }
+
+    #phase-strip {
+      grid-column: 1 / span 2;
+      display: flex;
+      align-items: stretch;
+      gap: 4px;
+      padding: 8px 14px;
+      border-top: 1px solid var(--line-soft);
+      border-bottom: 1px solid var(--line-soft);
+      background: rgba(2, 6, 23, 0.88);
+      overflow-x: auto;
+    }
+
+    .phase-chip {
+      flex: 1;
+      min-width: 90px;
+      padding: 8px 6px;
+      text-align: center;
+      font-size: 8px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 4px;
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.4);
+      transition: all 220ms ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .phase-chip.active {
+      color: var(--amber);
+      border-color: rgba(251, 191, 36, 0.55);
+      background: rgba(251, 191, 36, 0.1);
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+    }
+
+    .phase-chip.done {
+      color: var(--emerald);
+      border-color: rgba(52, 211, 153, 0.45);
+      background: rgba(52, 211, 153, 0.08);
+    }
+
+    #narrator-box {
+      grid-column: 1 / span 2;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line-soft);
+      background: rgba(10, 6, 24, 0.6);
+      font-size: 12px;
+      line-height: 1.65;
+      color: #cbd5e1;
+      min-height: 72px;
+    }
+
+    #narrator-box .label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--violet);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    #controls-bar {
+      grid-column: 1 / span 2;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 16px;
+      background: rgba(2, 6, 23, 0.95);
+      border-top: 1px solid var(--line);
+    }
+
+    #time-label {
+      min-width: 64px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--amber);
+      letter-spacing: 1px;
+    }
+
+    #scrubber {
+      flex: 1;
+      height: 6px;
+      appearance: none;
+      background: rgba(148, 163, 184, 0.2);
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    #scrubber::-webkit-slider-thumb {
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+      cursor: pointer;
+    }
+
+    .ctrl-btn {
+      padding: 8px 16px;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.08);
+      color: var(--blue);
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: background 220ms ease, box-shadow 220ms ease;
+    }
+
+    .ctrl-btn:hover {
+      background: rgba(56, 189, 248, 0.16);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    }
+
+    .ctrl-btn.active {
+      border-color: var(--amber);
+      color: var(--amber);
+      background: rgba(251, 191, 36, 0.12);
+    }
+
+    #speed-group {
+      display: flex;
+      gap: 4px;
+    }
+
+    .speed-btn {
+      padding: 6px 10px;
+      border: 1px solid var(--line-soft);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 9px;
+      cursor: pointer;
+      transition: all 220ms ease;
+    }
+
+    .speed-btn.active {
+      border-color: var(--indigo);
+      color: var(--violet);
+      background: rgba(99, 102, 241, 0.15);
+    }
+
+    #mission-meta {
+      grid-column: 1 / span 2;
+      display: flex;
+      gap: 20px;
+      padding: 6px 16px 10px;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      border-top: 1px solid var(--line-soft);
+    }
+
+    #mission-meta span strong { color: var(--ink); }
+
+    @media (max-width: 900px) {
+      #sim-shell {
+        grid-template-columns: 1fr;
+        grid-template-rows: 52px auto 280px 240px 52px 72px 64px auto;
+        overflow-y: auto;
+        height: auto;
+        min-height: 100%;
+      }
+      #intercept-panel { min-height: 240px; }
+      body { overflow: auto; }
+    }
   </style>
 </head>
 <body>
-  <div id="hdr">THE SIMULATION · MISSION SELECT</div>
-  <div id="grid"></div>
-  <div id="stage"><svg id="path-svg"></svg><div id="actor"></div></div>
-  <div id="narrator">Select a mission to begin phase animation.</div>
-  <div id="scrub"><span id="time-label">T+0s</span><input type="range" id="scrubber" min="0" max="100" value="0" /><button id="play-btn">Play</button></div>
+  <div id="sim-shell">
+    <header id="sim-header">
+      <div style="display:flex;align-items:center;">
+        <span class="live-led"></span>
+        <span class="brand">MERIDIAN-7 · KILL CHAIN SIMULATOR</span>
+      </div>
+      <span class="meta" id="clock-utc">UTC —</span>
+    </header>
+
+    <div id="mission-bar"></div>
+
+    <div id="stage-wrap">
+      <div id="stage-labels">
+        <span class="attacker">◈ THREAT ACTOR</span>
+        <span class="target">◆ CROWN JEWEL</span>
+      </div>
+      <div id="stage">
+        <svg id="path-svg" viewBox="0 0 720 200" preserveAspectRatio="none"></svg>
+        <div id="actor"></div>
+      </div>
+    </div>
+
+    <aside id="intercept-panel">
+      <div id="intercept-header">SIEM RULE INTERCEPTS</div>
+      <div id="intercept-list"></div>
+    </aside>
+
+    <div id="phase-strip"></div>
+
+    <div id="narrator-box">
+      <div class="label">SOC NARRATION</div>
+      <div id="narrator-text">Select a mission to begin kill chain reconstruction. Scrub the timeline or press Play to watch attacker progression and SIEM detections fire in sequence.</div>
+    </div>
+
+    <div id="controls-bar">
+      <span id="time-label">T+0s</span>
+      <input type="range" id="scrubber" min="0" max="100" value="0" aria-label="Timeline scrubber" />
+      <button type="button" class="ctrl-btn" id="play-btn">▶ PLAY</button>
+      <button type="button" class="ctrl-btn" id="reset-btn">↺ RESET</button>
+      <div id="speed-group">
+        <button type="button" class="speed-btn" data-speed="div-2">0.5×</button>
+        <button type="button" class="speed-btn active" data-speed="1">1×</button>
+        <button type="button" class="speed-btn" data-speed="mul-2">2×</button>
+      </div>
+    </div>
+
+    <div id="mission-meta">
+      <span>MISSION: <strong id="meta-mission">—</strong></span>
+      <span>PHASE: <strong id="meta-phase">—</strong></span>
+      <span>RULES FIRED: <strong id="meta-rules">0</strong></span>
+      <span>MITRE: <strong id="meta-mitre">—</strong></span>
+    </div>
+  </div>
+
   <script src="assets/siem-core.js"></script>
   <script src="assets/palette.js"></script>
   <script>
-  (function(){
-    SiemCore.bootPage('sim'); SiemCore.AchievementSystem.check('visit_sim');
-    if(typeof gsap!=='undefined'&&gsap.registerPlugin)gsap.registerPlugin(MotionPathPlugin);
-    var MISSIONS=['Initial Access','Persistence','Lateral Move','Exfiltration','Impact','Recovery'];
-    var PHASES=['Recon','Exploit','Establish','Escalate','Extract','Contain'];
-    var grid=document.getElementById('grid'),actor=document.getElementById('actor'),active=0,t=0,playing=false;
-    var pathData='M 20 120 Q 180 40 360 120 T 680 120';
-    d3.select('#path-svg').append('path').attr('d',pathData).attr('fill','none').attr('stroke','rgba(56,189,248,0.25)').attr('stroke-width',2);
-    var motionTween=(typeof gsap!=='undefined'&&typeof MotionPathPlugin!=='undefined')
-      ?gsap.to(actor,{motionPath:{path:pathData,alignOrigin:[0.5,0.5],autoRotate:false},duration:1,paused:true,ease:'none'})
-      :null;
-    MISSIONS.forEach(function(m,i){
-      var el=document.createElement('div');el.className='mission'+(i===0?' active':'');el.textContent=m;
-      el.onclick=function(){document.querySelectorAll('.mission').forEach(function(x){x.classList.remove('active');});el.classList.add('active');active=i;runAnim();};
-      grid.appendChild(el);
-    });
-    function runAnim(){
-      var phase=Math.min(5,Math.floor(t/17));
-      document.getElementById('narrator').textContent='Mission: '+MISSIONS[active]+' — Phase: '+PHASES[phase];
-      document.getElementById('time-label').textContent='T+'+Math.floor(t*0.8)+'s';
-      document.getElementById('scrubber').value=t;
-      if(motionTween){motionTween.progress(t/100);}
-      else actor.style.left=(20+t*6)+'px';
+  (function () {
+    'use strict';
+
+    SiemCore.bootPage('sim');
+    SiemCore.AchievementSystem.check('visit_sim');
+
+    if (typeof gsap !== 'undefined' && gsap.registerPlugin) {
+      gsap.registerPlugin(MotionPathPlugin);
     }
-    document.getElementById('play-btn').onclick=function(){
-      playing=!playing;
-      document.getElementById('play-btn').textContent=playing?'Pause':'Play';
-      if(playing&&typeof Tone!=='undefined')Tone.start().catch(function(){});
+
+    var MISSIONS = [
+      {
+        id: 'initial-access',
+        title: 'Initial Access',
+        tactic: 'T1566 · T1078',
+        mitre: 'TA0001',
+        path: 'M 24 100 C 120 30, 220 170, 340 100 S 560 40, 696 100',
+        phases: [
+          {
+            name: 'Spear Phish',
+            pct: 0,
+            narration: 'At 02:47 UTC, a targeted phishing email reached finance-analyst@meridian-7.internal. The message impersonated payroll with a OneDrive link to invoice_Q4.xlsm. Email gateway logged the delivery but did not quarantine — sender domain meridian-payroll.net was only 48 hours old.',
+            rule: { name: 'suspicious-email-attachment', threshold: 'macro-enabled xlsm + new domain', source: 'mail-gateway-01', action: 'ALERT MED' }
+          },
+          {
+            name: 'Macro Exec',
+            pct: 16,
+            narration: 'The victim enabled macros. PowerShell spawned from WINWORD.EXE with encoded command line invoking IEX on a remote script. Parent-child process anomaly detected within 4 seconds of document open on host WS-FIN-042 (10.0.4.87).',
+            rule: { name: 'office-macro-powershell', threshold: 'WINWORD → powershell -enc', source: '10.0.4.87', action: 'ALERT HIGH' }
+          },
+          {
+            name: 'Cred Harvest',
+            pct: 33,
+            narration: 'A fake SSO portal captured domain credentials for svc-backup. Twelve failed logon events preceded one success from 203.0.113.44 — geolocation flagged as inconsistent with user baseline (normally Austin, TX).',
+            rule: { name: 'impossible-travel-login', threshold: 'geo delta > 5000km / 30m', source: '203.0.113.44', action: 'ALERT HIGH' }
+          },
+          {
+            name: 'Token Replay',
+            pct: 50,
+            narration: 'Captured refresh token replayed against Azure AD from the same hostile IP. Conditional access policy blocked device registration but allowed legacy IMAP auth — a gap in the MFA enforcement scope.',
+            rule: { name: 'token-replay-anomaly', threshold: 'same token / 2 IPs / 5m', source: '203.0.113.44', action: 'ALERT CRIT' }
+          },
+          {
+            name: 'First Foothold',
+            pct: 66,
+            narration: 'Attacker established persistence via dropped binary C:\\Users\\Public\\update.exe with SHA256 a3f2c891e0b4d7… Beaconing to c2.meridian-shadow.net every 62 seconds on TCP/443. First internal C2 contact confirmed.',
+            rule: { name: 'new-binary-beacon', threshold: 'unknown hash + periodic egress', source: '10.0.4.87', action: 'ALERT CRIT' }
+          },
+          {
+            name: 'Recon Sweep',
+            pct: 83,
+            narration: 'Internal port scan from WS-FIN-042 targeted 10.0.0.0/16 on common service ports. 847 SYN packets in 90 seconds triggered network IDS correlation with the earlier macro execution chain.',
+            rule: { name: 'internal-port-scan', threshold: '>500 SYN / 60s / internal src', source: '10.0.4.87', action: 'ALERT HIGH' }
+          }
+        ]
+      },
+      {
+        id: 'persistence',
+        title: 'Persistence',
+        tactic: 'T1547 · T1053 · T1546',
+        mitre: 'TA0003',
+        path: 'M 24 100 Q 180 40 340 100 T 696 100',
+        phases: [
+          {
+            name: 'Reg Run Key',
+            pct: 0,
+            narration: 'Registry modification detected: HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\SecurityUpdate pointing to %APPDATA\\svc\\host.exe. Change occurred 11 minutes after initial compromise on WS-FIN-042.',
+            rule: { name: 'registry-run-key-add', threshold: 'Run key + unsigned binary', source: '10.0.4.87', action: 'ALERT HIGH' }
+          },
+          {
+            name: 'Scheduled Task',
+            pct: 17,
+            narration: 'schtasks.exe created task "WindowsHealthCheck" executing host.exe every 15 minutes with SYSTEM privileges. Task author field spoofed as NT AUTHORITY\\SYSTEM.',
+            rule: { name: 'suspicious-scheduled-task', threshold: 'new task + SYSTEM + 15m interval', source: '10.0.4.87', action: 'ALERT HIGH' }
+          },
+          {
+            name: 'WMI Sub',
+            pct: 34,
+            narration: 'WMI event subscription registered: __EventFilter "BootTrigger" linked to CommandLineEventConsumer executing encoded PowerShell. Classic fileless persistence pattern.',
+            rule: { name: 'wmi-event-subscription', threshold: 'Filter+Consumer binding', source: '10.0.4.87', action: 'ALERT CRIT' }
+          },
+          {
+            name: 'Service Install',
+            pct: 51,
+            narration: 'Windows service "MeridianSync" installed via sc.exe with binPath in user-writable directory. Service set to auto-start with failure recovery actions re-launching on crash.',
+            rule: { name: 'user-writable-service', threshold: 'binPath in AppData + auto', source: '10.0.4.87', action: 'ALERT HIGH' }
+          },
+          {
+            name: 'DLL Hijack',
+            pct: 68,
+            narration: 'Legitimate svchost.exe loaded version.dll from non-system path C:\\ProgramData\\cache\\. DLL hash matches known Cobalt Strike loader variant in threat intel feed.',
+            rule: { name: 'dll-search-order-hijack', threshold: 'system proc + user DLL', source: '10.0.4.87', action: 'ALERT CRIT' }
+          },
+          {
+            name: 'Dual Persist',
+            pct: 85,
+            narration: 'Correlation engine linked registry, scheduled task, and WMI subscriptions to single process lineage. Three independent persistence mechanisms confirmed — redundancy typical of APT staging.',
+            rule: { name: 'persistence-correlation', threshold: '3+ persist types / 1 host / 1h', source: '10.0.4.87', action: 'ALERT CRIT' }
+          }
+        ]
+      },
+      {
+        id: 'lateral-movement',
+        title: 'Lateral Movement',
+        tactic: 'T1550 · T1021 · T1570',
+        mitre: 'TA0008',
+        path: 'M 24 120 C 100 60, 200 160, 320 80 S 520 140, 696 80',
+        phases: [
+          {
+            name: 'Cred Dump',
+            pct: 0,
+            narration: 'LSASS memory access detected via comsvcs.dll MiniDump on WS-FIN-042. Process accessed by previously flagged host.exe. NTLM hashes for 14 domain accounts extracted.',
+            rule: { name: 'lsass-memory-access', threshold: 'MiniDump + non-system caller', source: '10.0.4.87', action: 'ALERT CRIT' }
+          },
+          {
+            name: 'Pass-the-Hash',
+            pct: 16,
+            narration: 'NTLM authentication to jump-server-01 (10.0.4.12) using hash replay — no Kerberos ticket issued. Source and destination share no admin relationship in asset inventory.',
+            rule: { name: 'pass-the-hash-detect', threshold: 'NTLM only + no TGT / cross-tier', source: '10.0.4.87', action: 'ALERT CRIT' }
+          },
+          {
+            name: 'SMB Spread',
+            pct: 33,
+            narration: 'Admin$ share write from jump-server-01 to file-server-03 (10.0.8.22). Payload drop: svchost.exe masquerading in C:\\Windows\\Temp\\. Remote service creation followed within 30 seconds.',
+            rule: { name: 'admin-share-write', threshold: 'Admin$ write + remote service', source: '10.0.4.12', action: 'ALERT CRIT' }
+          },
+          {
+            name: 'DCOM Exec',
+            pct: 50,
+            narration: 'DCOM lateral movement via MMC20.Application on domain controller DC-01 (10.0.1.5). Remote process creation logged with parent wmiprvse.exe — classic PsExec alternative.',
+            rule: { name: 'dcom-lateral-exec', threshold: 'MMC20 remote activate', source: '10.0.8.22', action: 'ALERT CRIT' }
+          },
+          {
+            name: 'Admin Share',
+            pct: 66,
+            narration: 'Attacker mapped C$ on backup-server-02 and deployed ransomware staging binary encryptor.exe. File write rate exceeded 200 files/minute before SIEM correlation paused the account.',
+            rule: { name: 'mass-admin-share-access', threshold: '>3 hosts C$ / 10m', source: '10.0.1.5', action: 'ALERT CRIT' }
+          },
+          {
+            name: 'Tier Breach',
+            pct: 83,
+            narration: 'Tier-0 asset compromise confirmed: domain controller authentication logs show svc-backup performing DCSync replication request. Golden ticket path now viable — containment priority escalated.',
+            rule: { name: 'dcsync-replication-abuse', threshold: 'DRSUAPI from non-DC', source: '10.0.1.5', action: 'ALERT CRIT' }
+          }
+        ]
+      },
+      {
+        id: 'exfiltration',
+        title: 'Exfiltration',
+        tactic: 'T1074 · T1560 · T1048',
+        mitre: 'TA0010',
+        path: 'M 24 90 C 140 150, 260 50, 380 110 S 540 60, 696 110',
+        phases: [
+          {
+            name: 'Data Staging',
+            pct: 0,
+            narration: 'Bulk file access on file-server-03: 14,200 files in \\\\finance\\Q4-reports copied to C:\\ProgramData\\stage\\ within 22 minutes. Access pattern deviates 340% from user baseline.',
+            rule: { name: 'bulk-file-access-anomaly', threshold: '>5000 files / 30m / UEBA', source: '10.0.8.22', action: 'ALERT HIGH' }
+          },
+          {
+            name: 'Archive Build',
+            pct: 17,
+            narration: '7-Zip spawned with password-protected archive customer_pii.7z. Compression ratio and entropy consistent with encrypted customer database exports.',
+            rule: { name: 'suspicious-compression', threshold: '7z + password + >500MB', source: '10.0.8.22', action: 'ALERT HIGH' }
+          },
+          {
+            name: 'Split Chunks',
+            pct: 34,
+            narration: 'Archive split into 47 chunks of 50MB each in C:\\ProgramData\\stage\\chunks\\. Naming pattern chunk_001.dat through chunk_047.dat suggests exfil preparation.',
+            rule: { name: 'file-chunk-staging', threshold: 'sequential chunk files', source: '10.0.8.22', action: 'ALERT MED' }
+          },
+          {
+            name: 'DNS Tunnel',
+            pct: 51,
+            narration: 'The attacker exfiltrated 2.3 GB via DNS tunneling to 198.51.100.44. The SIEM\'s DNS tunnel rule fired after detecting 847 TXT record queries in under 4 minutes — subdomain entropy exceeded 4.2 bits.',
+            rule: { name: 'dns-tunnel-exfil', threshold: '847 TXT / 4m + high entropy', source: '10.0.8.22', action: 'ALERT CRIT' }
+          },
+          {
+            name: 'HTTPS Push',
+            pct: 68,
+            narration: 'Parallel HTTPS POST exfil to c2.meridian-shadow.net/api/upload with chunked transfer encoding. 1.8 GB egress in 12 minutes from backup-server-02 — DLP policy triggered but enforcement lagged 8 minutes.',
+            rule: { name: 'bulk-https-egress', threshold: '>1GB POST / 15m', source: '10.0.8.22', action: 'ALERT CRIT' }
+          },
+          {
+            name: 'Cleanup',
+            pct: 85,
+            narration: 'Attacker ran cipher /w and sdelete on staging directories. Event log clearing attempted on three hosts — 1102 events deleted before log-forwarding replica preserved copies.',
+            rule: { name: 'anti-forensics-activity', threshold: 'log clear + secure delete', source: '10.0.8.22', action: 'ALERT HIGH' }
+          }
+        ]
+      },
+      {
+        id: 'impact',
+        title: 'Impact',
+        tactic: 'T1486 · T1490 · T1529',
+        mitre: 'TA0040',
+        path: 'M 24 100 L 180 100 Q 340 30 500 100 T 696 100',
+        phases: [
+          {
+            name: 'Payload Drop',
+            pct: 0,
+            narration: 'Ransomware binary lockbit_meridian.exe deployed via GPO modification on OU-Workstations. Signed driver loaded to bypass EDR — stolen code-signing cert from vendor breach last quarter.',
+            rule: { name: 'gpo-ransomware-deploy', threshold: 'GPO script + known ransomware hash', source: '10.0.1.5', action: 'ALERT CRIT' }
+          },
+          {
+            name: 'Backup Wipe',
+            pct: 16,
+            narration: 'vssadmin delete shadows /all executed on 23 hosts simultaneously. wbadmin delete catalog followed on backup-server-02. Shadow copy destruction completed in 94 seconds across fleet.',
+            rule: { name: 'shadow-copy-deletion', threshold: 'vssadmin delete /all', source: 'multiple', action: 'ALERT CRIT' }
+          },
+          {
+            name: 'Encrypt Wave',
+            pct: 33,
+            narration: 'File encryption began on WS-FIN-042: 12,000 files renamed with .locked extension in 3 minutes. Ransom note README_MERIDIAN.txt dropped in every affected directory.',
+            rule: { name: 'mass-file-encryption', threshold: '>1000 renames / 5m', source: '10.0.4.87', action: 'ALERT CRIT' }
+          },
+          {
+            name: 'Spread',
+            pct: 50,
+            narration: 'Lateral encryption spread via SMB to 47 additional workstations. Network share propagation used stolen domain admin token — encryption rate peaked at 400 files/second fleet-wide.',
+            rule: { name: 'ransomware-lateral-spread', threshold: 'encrypt + SMB / multi-host', source: '10.0.0.0/16', action: 'ALERT CRIT' }
+          },
+          {
+            name: 'Ransom Note',
+            pct: 66,
+            narration: 'Tor payment portal linked in ransom note. Bitcoin wallet bc1qmeridian7shadow received ping from internal DNS resolver — outbound Tor bridge connection blocked at firewall.',
+            rule: { name: 'ransom-note-ioc-match', threshold: 'known wallet + .locked ext', source: '10.0.4.87', action: 'ALERT HIGH' }
+          },
+          {
+            name: 'Shutdown',
+            pct: 83,
+            narration: 'Attacker issued shutdown /r /f on domain controller DC-01 as final impact action. Graceful shutdown prevented but forced reboot triggered failover to DC-02 — 4-minute authentication outage.',
+            rule: { name: 'destructive-system-command', threshold: 'shutdown / DC tier-0', source: '10.0.1.5', action: 'ALERT CRIT' }
+          }
+        ]
+      },
+      {
+        id: 'recovery',
+        title: 'Recovery',
+        tactic: 'T1489 · Restore · IR',
+        mitre: 'TA0000-IR',
+        path: 'M 24 100 C 80 160, 200 40, 360 130 S 520 70, 696 100',
+        phases: [
+          {
+            name: 'Isolate',
+            pct: 0,
+            narration: 'Incident commander initiated network isolation for VLAN-Finance and VLAN-Backup at 04:22 UTC. Firewall policy M7-CONTAIN-001 pushed to edge — 847 hosts quarantined from corporate backbone.',
+            rule: { name: 'auto-containment-vlan', threshold: 'IR playbook M7-PB-04', source: 'soc-automation', action: 'BLOCK VLAN' }
+          },
+          {
+            name: 'Kill C2',
+            pct: 17,
+            narration: 'Threat intel blocklist updated: c2.meridian-shadow.net, 203.0.113.44, 198.51.100.44 sinkholed at DNS layer. Active beacon sessions terminated — 12 remaining callbacks dropped within 90 seconds.',
+            rule: { name: 'threat-intel-block', threshold: 'IOC feed auto-block', source: 'ti-gateway', action: 'BLOCK IP/DOM' }
+          },
+          {
+            name: 'Cred Reset',
+            pct: 34,
+            narration: 'Forced password rotation for 847 compromised accounts. KRBTGT double-reset scheduled. All service account keys rotated and golden ticket indicators purged from KDC logs.',
+            rule: { name: 'mass-credential-reset', threshold: 'IR playbook M7-PB-07', source: 'iam-automation', action: 'RESET CREDS' }
+          },
+          {
+            name: 'Wipe Hosts',
+            pct: 51,
+            narration: '47 encrypted workstations reimaged from known-good gold master. Forensic images preserved to cold storage before wipe. Rebuild queue completed in 6 hours with PXE boot farm.',
+            rule: { name: 'host-rebuild-tracking', threshold: 'CMDB rebuild status', source: 'sccm-server', action: 'LOG MED' }
+          },
+          {
+            name: 'Restore',
+            pct: 68,
+            narration: 'Backup-server-02 restored from air-gapped snapshot dated T-72h — last clean backup before staging activity detected. 2.1 TB recovered; integrity verified via SHA256 manifest match.',
+            rule: { name: 'backup-restore-verify', threshold: 'manifest hash match', source: 'backup-server-02', action: 'LOG LOW' }
+          },
+          {
+            name: 'Validate',
+            pct: 85,
+            narration: 'Purple team validation sweep confirmed no residual persistence. All 847 rules re-enabled. Mean time to detect reduced from 72h to 4m for this attack chain — post-incident tuning deployed.',
+            rule: { name: 'post-incident-validation', threshold: 'purple team clean scan', source: 'soc-lead', action: 'CLOSE INC' }
+          }
+        ]
+      }
+    ];
+
+    var state = {
+      missionIdx: 0,
+      progress: 0,
+      playing: false,
+      speed: 1,
+      lastPhase: -1,
+      audioReady: false,
+      rulesFired: 0
     };
-    document.getElementById('scrubber').oninput=function(){t=+this.value;runAnim();};
-    setInterval(function(){
-      if(!playing)return;
-      t=Math.min(100,t+1);runAnim();
-      if(t>=100){playing=false;document.getElementById('play-btn').textContent='Play';}
-    },80);
-    runAnim();
+
+    var actor = document.getElementById('actor');
+    var scrubber = document.getElementById('scrubber');
+    var playBtn = document.getElementById('play-btn');
+    var motionTween = null;
+    var tickSynth = null;
+    var ruleSynth = null;
+    var animFrame = null;
+    var lastTick = 0;
+
+    function initAudio() {
+      if (state.audioReady || typeof Tone === 'undefined') return;
+      Tone.start().then(function () {
+        tickSynth = new Tone.MembraneSynth({
+          pitchDecay: 0.02,
+          octaves: 2,
+          envelope: { attack: 0.001, decay: 0.12, sustain: 0 }
+        }).toDestination();
+        tickSynth.volume.value = -22;
+        ruleSynth = new Tone.Synth({
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.01, decay: 0.15, sustain: 0.05, release: 0.2 }
+        }).toDestination();
+        ruleSynth.volume.value = -18;
+        state.audioReady = true;
+      }).catch(function () { /* gesture required */ });
+    }
+
+    function playTick() {
+      if (state.audioReady && tickSynth) tickSynth.triggerAttackRelease('C2', '32n');
+    }
+
+    function playRuleSound() {
+      if (state.audioReady && ruleSynth) ruleSynth.triggerAttackRelease('E5', '16n');
+    }
+
+    function updateClock() {
+      var el = document.getElementById('clock-utc');
+      if (el) el.textContent = 'UTC ' + new Date().toISOString().slice(11, 19);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function buildMissionBar() {
+      var bar = document.getElementById('mission-bar');
+      MISSIONS.forEach(function (m, i) {
+        var card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'mission-card' + (i === 0 ? ' active' : '');
+        card.innerHTML = '<div class="mitre">' + m.mitre + '</div><div class="title">' + m.title + '</div><div class="tactic">' + m.tactic + '</div>';
+        card.addEventListener('click', function () {
+          initAudio();
+          selectMission(i);
+        });
+        bar.appendChild(card);
+      });
+    }
+
+    function selectMission(idx) {
+      state.missionIdx = idx;
+      state.progress = 0;
+      state.playing = false;
+      state.lastPhase = -1;
+      state.rulesFired = 0;
+      playBtn.textContent = '▶ PLAY';
+      playBtn.classList.remove('active');
+      scrubber.value = 0;
+
+      document.querySelectorAll('.mission-card').forEach(function (c, i) {
+        c.classList.toggle('active', i === idx);
+      });
+
+      var mission = MISSIONS[idx];
+      document.getElementById('meta-mission').textContent = mission.title;
+      document.getElementById('meta-mitre').textContent = mission.mitre;
+      document.getElementById('meta-rules').textContent = '0';
+
+      buildStage(mission);
+      buildPhaseStrip(mission);
+      buildInterceptCards(mission);
+      runAnim(true);
+    }
+
+    function buildStage(mission) {
+      var svg = d3.select('#path-svg');
+      svg.selectAll('*').remove();
+
+      var pathData = mission.path;
+
+      svg.append('path')
+        .attr('d', pathData)
+        .attr('fill', 'none')
+        .attr('stroke', 'rgba(56, 189, 248, 0.22)')
+        .attr('stroke-width', 2.5)
+        .attr('stroke-dasharray', '6 4');
+
+      svg.append('path')
+        .attr('d', pathData)
+        .attr('fill', 'none')
+        .attr('stroke', 'rgba(251, 191, 36, 0.12)')
+        .attr('stroke-width', 8)
+        .attr('stroke-linecap', 'round');
+
+      var pathEl = svg.append('path').attr('d', pathData).attr('fill', 'none').attr('id', 'motion-path').node();
+      var totalLen = pathEl.getTotalLength();
+      var phases = mission.phases;
+      var n = phases.length;
+
+      phases.forEach(function (ph, i) {
+        var pt = pathEl.getPointAtLength((i / (n - 1)) * totalLen);
+        var g = svg.append('g').attr('class', 'phase-group').attr('data-phase', i);
+
+        g.append('circle')
+          .attr('class', 'phase-node')
+          .attr('cx', pt.x)
+          .attr('cy', pt.y)
+          .attr('r', 10);
+
+        g.append('text')
+          .attr('class', 'phase-label')
+          .attr('x', pt.x)
+          .attr('y', pt.y + 22)
+          .text(ph.name);
+      });
+
+      if (typeof gsap !== 'undefined' && typeof MotionPathPlugin !== 'undefined') {
+        if (motionTween) motionTween.kill();
+        motionTween = gsap.to(actor, {
+          motionPath: { path: pathData, alignOrigin: [0.5, 0.5], autoRotate: false },
+          duration: 1,
+          paused: true,
+          ease: 'none'
+        });
+      }
+    }
+
+    function buildPhaseStrip(mission) {
+      var strip = document.getElementById('phase-strip');
+      strip.innerHTML = '';
+      mission.phases.forEach(function (ph) {
+        var chip = document.createElement('div');
+        chip.className = 'phase-chip';
+        chip.textContent = ph.name;
+        chip.title = ph.name;
+        strip.appendChild(chip);
+      });
+    }
+
+    function buildInterceptCards(mission) {
+      var list = document.getElementById('intercept-list');
+      list.innerHTML = '';
+      mission.phases.forEach(function (ph, i) {
+        var card = document.createElement('div');
+        card.className = 'intercept-card';
+        card.id = 'intercept-' + i;
+        card.innerHTML =
+          '<div class="rule-name">RULE FIRED: ' + ph.rule.name + '</div>' +
+          '<div><span class="field">Threshold: </span><span class="val">' + ph.rule.threshold + '</span></div>' +
+          '<div><span class="field">Source: </span><span class="val">' + ph.rule.source + '</span></div>' +
+          '<div><span class="field">Action: </span><span class="val">' + ph.rule.action + '</span></div>';
+        list.appendChild(card);
+      });
+    }
+
+    function getCurrentPhaseIdx(mission, progress) {
+      var idx = 0;
+      for (var i = mission.phases.length - 1; i >= 0; i--) {
+        var threshold = (i / (mission.phases.length - 1)) * 100;
+        if (progress >= threshold - 0.5) {
+          idx = i;
+          break;
+        }
+      }
+      return idx;
+    }
+
+    function runAnim(force) {
+      var mission = MISSIONS[state.missionIdx];
+      var progress = state.progress;
+      var phaseIdx = getCurrentPhaseIdx(mission, progress);
+      var phase = mission.phases[phaseIdx];
+
+      document.getElementById('time-label').textContent = 'T+' + Math.floor(progress * 1.2) + 's';
+      document.getElementById('narrator-text').textContent = phase.narration;
+      document.getElementById('meta-phase').textContent = phase.name + ' (' + (phaseIdx + 1) + '/' + mission.phases.length + ')';
+      scrubber.value = progress;
+
+      if (motionTween) {
+        motionTween.progress(progress / 100);
+      } else {
+        actor.style.left = (20 + progress * 6.5) + 'px';
+        actor.style.top = '50%';
+      }
+
+      var chips = document.querySelectorAll('.phase-chip');
+      chips.forEach(function (chip, i) {
+        chip.classList.remove('active', 'done');
+        if (i < phaseIdx) chip.classList.add('done');
+        else if (i === phaseIdx) chip.classList.add('active');
+      });
+
+      d3.selectAll('.phase-node').classed('active', false).classed('done', false);
+      d3.selectAll('.phase-label').classed('active', false).classed('done', false);
+      d3.selectAll('.phase-group').each(function (_, i) {
+        var node = d3.select(this).select('.phase-node');
+        var label = d3.select(this).select('.phase-label');
+        if (i < phaseIdx) {
+          node.classed('done', true);
+          label.classed('done', true);
+        } else if (i === phaseIdx) {
+          node.classed('active', true);
+          label.classed('active', true);
+        }
+      });
+
+      mission.phases.forEach(function (_, i) {
+        var card = document.getElementById('intercept-' + i);
+        if (card) {
+          if (i <= phaseIdx) {
+            if (!card.classList.contains('visible')) {
+              card.classList.add('visible');
+              if (i === phaseIdx && i !== state.lastPhase) {
+                playRuleSound();
+                if (typeof gsap !== 'undefined') {
+                  gsap.fromTo(card, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power2.out' });
+                }
+              }
+            }
+          } else {
+            card.classList.remove('visible');
+          }
+        }
+      });
+
+      if (phaseIdx !== state.lastPhase || force) {
+        state.rulesFired = phaseIdx + 1;
+        document.getElementById('meta-rules').textContent = String(state.rulesFired);
+        if (phaseIdx !== state.lastPhase && !force) playTick();
+        state.lastPhase = phaseIdx;
+      }
+    }
+
+    function loop(now) {
+      if (!state.playing) return;
+      if (!lastTick) lastTick = now;
+      var delta = now - lastTick;
+      var step = (delta / 80) * state.speed;
+      lastTick = now;
+      state.progress = Math.min(100, state.progress + step);
+      runAnim(false);
+      if (state.progress >= 100) {
+        state.playing = false;
+        playBtn.textContent = '▶ PLAY';
+        playBtn.classList.remove('active');
+        if (state.missionIdx === MISSIONS.length - 1) {
+          SiemCore.AchievementSystem.check('sim_all_missions');
+        }
+        return;
+      }
+      animFrame = requestAnimationFrame(loop);
+    }
+
+    playBtn.addEventListener('click', function () {
+      initAudio();
+      state.playing = !state.playing;
+      playBtn.textContent = state.playing ? '⏸ PAUSE' : '▶ PLAY';
+      playBtn.classList.toggle('active', state.playing);
+      if (state.playing) {
+        if (state.progress >= 100) state.progress = 0;
+        lastTick = 0;
+        animFrame = requestAnimationFrame(loop);
+      }
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', function () {
+      initAudio();
+      state.playing = false;
+      state.progress = 0;
+      state.lastPhase = -1;
+      playBtn.textContent = '▶ PLAY';
+      playBtn.classList.remove('active');
+      if (animFrame) cancelAnimationFrame(animFrame);
+      selectMission(state.missionIdx);
+    });
+
+    scrubber.addEventListener('input', function () {
+      initAudio();
+      state.progress = +scrubber.value;
+      state.playing = false;
+      playBtn.textContent = '▶ PLAY';
+      playBtn.classList.remove('active');
+      if (animFrame) cancelAnimationFrame(animFrame);
+      runAnim(false);
+    });
+
+    document.querySelectorAll('.speed-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        initAudio();
+        document.querySelectorAll('.speed-btn').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        var ds = btn.getAttribute('data-speed');
+        if (ds === 'div-2') state.speed = 0.5;
+        else if (ds === 'mul-2') state.speed = 2;
+        else state.speed = 1;
+      });
+    });
+
+    buildMissionBar();
+    selectMission(0);
   })();
   </script>
   <div id="deck-nav-root"></div>

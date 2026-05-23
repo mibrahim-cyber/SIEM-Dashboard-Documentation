@@ -7,103 +7,1738 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <meta name="description" content="Red-team containment simulation — isolate nodes and stop lateral movement." />
+  <meta name="description" content="Playable SOC breach containment simulation with topology-aware attacker AI and real-time response controls." />
   <meta property="og:title" content="The Breach — HABIBI-SIEM" />
-  <meta property="og:description" content="Red-team containment simulation — isolate nodes and stop lateral movement." />
+  <meta property="og:description" content="Playable SOC breach containment simulation with topology-aware attacker AI and real-time response controls." />
   <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/breach-og.png" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="The Breach — HABIBI-SIEM" />
-  <meta name="twitter:description" content="Red-team containment simulation — isolate nodes and stop lateral movement." />
-  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/breach-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="twitter:description" content="Playable SOC breach containment simulation with topology-aware attacker AI and real-time response controls." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/breach-og.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Breach — Meridian-7</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/palette.css" />
   <link rel="stylesheet" href="assets/deck-nav.css" />
   <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#0a0408;color:#fecaca;font-family:Consolas,monospace;overflow:hidden}
-    #hud{position:fixed;top:0;left:0;right:0;height:40px;display:flex;align-items:center;gap:16px;padding:0 12px;background:rgba(20,8,12,.95);border-bottom:1px solid rgba(248,113,113,.3);font-size:10px;letter-spacing:2px;z-index:10}
-    #canvas-wrap{position:fixed;top:40px;left:0;right:0;bottom:80px}#breach-canvas{width:100%;height:100%;display:block;cursor:pointer}
-    #panel{position:fixed;bottom:0;left:0;right:0;height:80px;padding:8px 12px;background:rgba(10,4,8,.96);border-top:1px solid rgba(248,113,113,.2);font-size:10px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-    .btn{font:inherit;padding:6px 12px;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.35);color:#fecaca;cursor:pointer}
-    .btn:hover{background:rgba(248,113,113,.25)}#score{margin-left:auto;font-size:12px;color:#fbbf24}
-    #end-screen{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:50;gap:16px}
-    #end-screen.show{display:flex}
+    :root {
+      --bg-deep: #0a0408;
+      --bg-panel: rgba(10, 4, 8, 0.94);
+      --bg-panel-soft: rgba(10, 4, 8, 0.88);
+      --red: #f87171;
+      --amber: #fbbf24;
+      --blue: #38bdf8;
+      --indigo: #6366f1;
+      --green: #34d399;
+      --violet: #c4b5fd;
+      --ink: #fecaca;
+      --muted: #94a3b8;
+      --line: rgba(248, 113, 113, 0.28);
+      --line-soft: rgba(196, 181, 253, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at 20% 8%, rgba(248, 113, 113, 0.16), transparent 36%), var(--bg-deep);
+      color: var(--ink);
+      font-family: "IBM Plex Mono", Consolas, monospace;
+    }
+
+    #app-shell {
+      display: grid;
+      grid-template-rows: 56px 1fr 142px;
+      grid-template-columns: 1fr 360px;
+      width: 100%;
+      height: 100%;
+      min-height: 640px;
+    }
+
+    #top-hud {
+      grid-column: 1 / span 2;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg-panel);
+      display: grid;
+      grid-template-columns: 300px 1fr 360px 170px;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 12px;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      font-size: 10px;
+      z-index: 6;
+      backdrop-filter: blur(2px);
+    }
+
+    #scenario-name {
+      color: var(--violet);
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #timer {
+      color: var(--green);
+      justify-self: center;
+      font-size: 14px;
+      letter-spacing: 2px;
+      transition: color 220ms ease, text-shadow 220ms ease;
+    }
+
+    #timer.danger {
+      color: var(--red);
+      text-shadow: 0 0 10px rgba(248, 113, 113, 0.7);
+      animation: timerPulse 1s ease infinite;
+    }
+
+    #score {
+      justify-self: end;
+      color: var(--amber);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    #token-strip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-self: end;
+      min-width: 300px;
+    }
+
+    #token-label {
+      color: var(--muted);
+      margin-right: 6px;
+    }
+
+    .token {
+      width: 12px;
+      height: 12px;
+      border: 1px solid rgba(52, 211, 153, 0.45);
+      border-radius: 50%;
+      background: rgba(52, 211, 153, 0.14);
+      transition: background 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+    }
+
+    .token.active {
+      background: var(--green);
+      box-shadow: 0 0 10px rgba(52, 211, 153, 0.7);
+      border-color: rgba(52, 211, 153, 0.8);
+    }
+
+    #left-stage {
+      position: relative;
+      border-right: 1px solid var(--line-soft);
+      min-width: 0;
+      background: rgba(2, 6, 23, 0.18);
+    }
+
+    #breach-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    #right-rail {
+      display: grid;
+      grid-template-rows: 42px 1fr 1fr;
+      background: var(--bg-panel-soft);
+    }
+
+    .rail-title {
+      border-bottom: 1px solid var(--line-soft);
+      color: var(--muted);
+      padding: 10px 12px;
+      letter-spacing: 1.4px;
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    #event-log {
+      overflow-y: auto;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line-soft);
+      font-size: 11px;
+      line-height: 1.4;
+      color: #fca5a5;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(248, 113, 113, 0.45) transparent;
+    }
+
+    .event-row {
+      margin-bottom: 7px;
+      white-space: pre-wrap;
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+
+    .event-row.alert {
+      color: #fde68a;
+    }
+
+    .event-row.info {
+      color: #93c5fd;
+    }
+
+    #node-details {
+      padding: 10px 12px;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #e5e7eb;
+    }
+
+    .detail-key {
+      color: var(--muted);
+      min-width: 136px;
+      display: inline-block;
+    }
+
+    #bottom-panel {
+      grid-column: 1 / span 2;
+      border-top: 1px solid var(--line);
+      background: var(--bg-panel);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      padding: 10px 14px;
+      align-items: center;
+    }
+
+    #selection-brief {
+      min-height: 112px;
+      border: 1px solid var(--line-soft);
+      background: rgba(2, 6, 23, 0.32);
+      padding: 10px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(130px, 1fr));
+      gap: 6px 14px;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .brief-head {
+      grid-column: 1 / -1;
+      color: #fde68a;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      font-size: 10px;
+    }
+
+    #action-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(138px, 1fr));
+      gap: 10px;
+      width: 460px;
+    }
+
+    .btn {
+      font-family: "IBM Plex Mono", Consolas, monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      border: 1px solid rgba(248, 113, 113, 0.36);
+      background: rgba(248, 113, 113, 0.11);
+      color: var(--ink);
+      padding: 9px 12px;
+      cursor: pointer;
+      transition: transform 220ms ease, background 220ms ease, box-shadow 220ms ease, opacity 220ms ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      background: rgba(248, 113, 113, 0.24);
+      box-shadow: 0 0 12px rgba(248, 113, 113, 0.3);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn.aux {
+      border-color: rgba(56, 189, 248, 0.5);
+      background: rgba(56, 189, 248, 0.12);
+      color: #bfdbfe;
+    }
+
+    .btn.aux:hover:not(:disabled) {
+      background: rgba(56, 189, 248, 0.24);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.33);
+    }
+
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.9);
+      display: grid;
+      place-items: center;
+      z-index: 90;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 240ms ease;
+    }
+
+    #overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #overlay-card {
+      width: min(760px, 86vw);
+      border: 1px solid rgba(248, 113, 113, 0.4);
+      background: rgba(10, 4, 8, 0.95);
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+      text-align: center;
+      box-shadow: 0 0 26px rgba(248, 113, 113, 0.28);
+    }
+
+    #overlay-title {
+      font-size: clamp(22px, 4vw, 40px);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    #overlay-title.fail {
+      color: var(--red);
+      text-shadow: 0 0 12px rgba(248, 113, 113, 0.6);
+    }
+
+    #overlay-title.win {
+      color: var(--green);
+      text-shadow: 0 0 12px rgba(52, 211, 153, 0.55);
+    }
+
+    #overlay-sub {
+      color: #d1d5db;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    #overlay-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    #audio-pill {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 8;
+      font-size: 10px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid rgba(148, 163, 184, 0.34);
+      background: rgba(2, 6, 23, 0.62);
+      padding: 6px 9px;
+      transition: all 220ms ease;
+    }
+
+    #audio-pill.ready {
+      color: #a7f3d0;
+      border-color: rgba(52, 211, 153, 0.44);
+      box-shadow: 0 0 10px rgba(52, 211, 153, 0.22);
+    }
+
+    #flash-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: rgba(248, 113, 113, 0);
+      transition: background 220ms ease;
+      z-index: 5;
+    }
+
+    #flash-layer.warn {
+      background: rgba(248, 113, 113, 0.14);
+    }
+
+    #flash-layer.alert {
+      background: rgba(251, 191, 36, 0.2);
+    }
+
+    @keyframes timerPulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.56; }
+      100% { opacity: 1; }
+    }
+
+    @media (max-width: 1260px) {
+      #app-shell {
+        grid-template-columns: 1fr 320px;
+      }
+
+      #top-hud {
+        grid-template-columns: 220px 1fr 290px 140px;
+      }
+
+      #action-grid {
+        width: 390px;
+      }
+    }
+
+    @media (max-width: 1040px) {
+      #app-shell {
+        grid-template-rows: 60px 1fr 180px;
+        grid-template-columns: 1fr;
+      }
+
+      #top-hud {
+        grid-column: 1;
+        grid-template-columns: 1fr;
+        gap: 4px;
+        height: auto;
+        padding: 6px 10px;
+      }
+
+      #right-rail {
+        display: none;
+      }
+
+      #bottom-panel {
+        grid-column: 1;
+        grid-template-columns: 1fr;
+      }
+
+      #selection-brief {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+      }
+
+      #action-grid {
+        width: 100%;
+        grid-template-columns: repeat(2, minmax(130px, 1fr));
+      }
+    }
   </style>
 </head>
 <body>
-  <div id="hud">THE BREACH · RED TEAM SIM · <span id="scenario-name">Scenario 1/5</span></div>
-  <div id="canvas-wrap"><canvas id="breach-canvas"></canvas></div>
-  <div id="panel">
-    <button class="btn" id="btn-isolate">Isolate Node</button>
-    <button class="btn" id="btn-ids">Deploy IDS</button>
-    <button class="btn" id="btn-flush">Flush Sessions</button>
-    <button class="btn" id="btn-next">Next Scenario</button>
-    <span id="score">Score: 0</span>
+  <div id="app-shell">
+    <header id="top-hud">
+      <div id="scenario-name">Scenario 1/5 · Phishing Drop</div>
+      <div id="timer">02:00</div>
+      <div id="token-strip">
+        <span id="token-label">Action tokens</span>
+        <span class="token active"></span>
+        <span class="token active"></span>
+        <span class="token active"></span>
+        <span class="token active"></span>
+        <span class="token active"></span>
+      </div>
+      <div id="score">Score 00000</div>
+    </header>
+
+    <section id="left-stage">
+      <canvas id="breach-canvas" aria-label="Breach simulation canvas"></canvas>
+      <div id="audio-pill">Audio locked</div>
+      <div id="flash-layer"></div>
+    </section>
+
+    <aside id="right-rail">
+      <div class="rail-title">Live event log</div>
+      <div id="event-log"></div>
+      <div id="node-details">
+        <div><span class="detail-key">Selection:</span><span id="sel-kind">None</span></div>
+        <div><span class="detail-key">Name:</span><span id="sel-name">-</span></div>
+        <div><span class="detail-key">IP:</span><span id="sel-ip">-</span></div>
+        <div><span class="detail-key">Zone:</span><span id="sel-zone">-</span></div>
+        <div><span class="detail-key">Compromised:</span><span id="sel-state">-</span></div>
+        <div><span class="detail-key">Connections:</span><span id="sel-connections">-</span></div>
+      </div>
+    </aside>
+
+    <section id="bottom-panel">
+      <div id="selection-brief">
+        <div class="brief-head">Selected object detail</div>
+        <div><span class="detail-key">Object:</span><span id="brief-object">None selected</span></div>
+        <div><span class="detail-key">Scenario strategy:</span><span id="brief-strategy">Phishing foothold with perimeter pivot.</span></div>
+        <div><span class="detail-key">Current attacker IP:</span><span id="brief-ip">198.51.100.25</span></div>
+        <div><span class="detail-key">Compromised nodes:</span><span id="brief-comp">1</span></div>
+        <div><span class="detail-key">IDS sensors:</span><span id="brief-ids">0</span></div>
+        <div><span class="detail-key">Crown status:</span><span id="brief-crown">Protected</span></div>
+        <div><span class="detail-key">Action hint:</span><span id="brief-hint">Select a node to isolate or an edge to deploy IDS.</span></div>
+      </div>
+
+      <div id="action-grid">
+        <button class="btn" id="btn-isolate">Isolate node (1)</button>
+        <button class="btn" id="btn-ids">Deploy IDS on edge (1)</button>
+        <button class="btn" id="btn-flush">Flush sessions (1)</button>
+        <button class="btn" id="btn-block">Block attacker IP (1)</button>
+        <button class="btn aux" id="btn-audio">Enable audio</button>
+        <button class="btn aux" id="btn-reset">Restart scenario</button>
+      </div>
+    </section>
   </div>
-  <div id="end-screen"><h2>CONTAINMENT ACHIEVED</h2><p id="end-msg"></p><button class="btn" onclick="location.reload()">Replay</button><button class="btn" id="btn-share">Share Score</button></div>
+
+  <div id="overlay" aria-live="polite">
+    <div id="overlay-card">
+      <div id="overlay-title">Containment achieved</div>
+      <div id="overlay-sub">Score summary</div>
+      <div id="overlay-buttons">
+        <button class="btn" id="btn-overlay-primary">Next scenario</button>
+        <button class="btn aux" id="btn-overlay-share">Share</button>
+        <button class="btn aux" id="btn-overlay-replay">Replay</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="deck-nav-root"></div>
+
   <script src="assets/siem-core.js"></script>
   <script src="assets/palette.js"></script>
   <script>
-  (function(){
-    SiemCore.bootPage('breach'); SiemCore.AchievementSystem.check('visit_breach');
-    var SCENARIOS=['Phishing Drop','Lateral Move','Ransomware','Data Exfil','Supply Chain'];
-    var nodes=[],edges=[],scenario=0,score=0,selected=null,traffic=[];
-    if (typeof Tone !== 'undefined') { /* audio starts on user action only */ }
-    document.getElementById('btn-share').onclick=function(){ if(window.SiemShareCard) SiemShareCard.capture({title:'The Breach',subtitle:'Containment score',score:score,filename:'breach-score.png'}); };
-    var canvas=document.getElementById('breach-canvas'),ctx=canvas.getContext('2d');
-    var zones=['DMZ','INTERNAL','OT'];
-    function resize(){canvas.width=canvas.clientWidth;canvas.height=canvas.clientHeight} resize(); addEventListener('resize',resize);
-    function initTopology(){
-      nodes=[]; var cx=canvas.width/2,cy=canvas.height/2;
-      zones.forEach(function(z,zi){for(var i=0;i<4;i++){nodes.push({id:nodes.length,x:cx+Math.cos(i+zi*2)*180,y:cy+Math.sin(i+zi*2)*120,z:z,compromised:false,isolated:false});}});
-      edges=[]; for(var a=0;a<nodes.length;a++) for(var b=a+1;b<nodes.length;b++) if(Math.random()<0.15) edges.push({a:a,b:b,active:true});
-    }
-    initTopology();
-    function spawnTraffic(){
-      if(!edges.length)return;
-      var e=edges[Math.floor(Math.random()*edges.length)];
-      if(!e||!e.active)return;
-      var na=nodes[e.a],nb=nodes[e.b];
-      traffic.push({x:na.x,y:na.y,tx:nb.x,ty:nb.y,t:0});
-    }
-    setInterval(spawnTraffic,400);
-    canvas.addEventListener('click',function(e){
-      var r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
-      selected=null; nodes.forEach(function(n){if(Math.hypot(n.x-x,n.y-y)<18){selected=n;}});
-    });
-    document.getElementById('btn-isolate').onclick=function(){if(selected){selected.isolated=true;score+=50;}};
-    document.getElementById('btn-ids').onclick=function(){score+=30;edges.forEach(function(ed){if(Math.random()<0.3)ed.active=false;});};
-    document.getElementById('btn-flush').onclick=function(){nodes.forEach(function(n){n.compromised=false;});score+=20;};
-    document.getElementById('btn-next').onclick=function(){
-      scenario++; document.getElementById('scenario-name').textContent='Scenario '+(scenario+1)+'/5';
-      if(scenario>=5){document.getElementById('end-screen').classList.add('show');document.getElementById('end-msg').textContent='Final score: '+score;SiemCore.AchievementSystem.check('breach_win');return;}
-      initTopology(); nodes[0].compromised=true;
-    };
-    nodes[0].compromised=true;
-    SiemCore.CanvasLoop.create(canvas,function(){
-      ctx.fillStyle='#0a0408';ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.strokeStyle='rgba(248,113,113,0.25)';edges.forEach(function(ed){if(!ed.active)return;var na=nodes[ed.a],nb=nodes[ed.b];ctx.beginPath();ctx.moveTo(na.x,na.y);ctx.lineTo(nb.x,nb.y);ctx.stroke();});
-      nodes.forEach(function(n){
-        ctx.beginPath();ctx.arc(n.x,n.y,14,0,Math.PI*2);
-        ctx.fillStyle=n.isolated?'#64748b':n.compromised?'#ef4444':'#22c55e';ctx.fill();
-        if(selected===n){ctx.strokeStyle='#fbbf24';ctx.lineWidth=2;ctx.stroke();ctx.lineWidth=1;}
-        ctx.fillStyle='#94a3b8';ctx.font='8px monospace';ctx.fillText(n.z,n.x-12,n.y+24);
-      });
-      traffic.forEach(function(p,i){
-        p.t+=0.02;
-        var x=p.x+(p.tx-p.x)*p.t,y=p.y+(p.ty-p.y)*p.t;
-        ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fillStyle='rgba(56,189,248,0.7)';ctx.fill();
-        if(p.t>=1)traffic.splice(i,1);
-      });
-      if(Math.random()<0.02){var e=edges[Math.floor(Math.random()*edges.length)];if(e&&e.active){var na=nodes[e.a],nb=nodes[e.b];if(na.compromised&&!nb.compromised&&!nb.isolated)nb.compromised=true;}}
-      document.getElementById('score').textContent='Score: '+score;
-    },{targetFps:30}).start();
-  })();
+    (function () {
+      "use strict";
+
+      SiemCore.bootPage("breach");
+      SiemCore.AchievementSystem.check("visit_breach");
+
+      var NODE_COLORS = {
+        WORKSTATION: "#38bdf8",
+        SERVER: "#6366f1",
+        FIREWALL: "#fbbf24",
+        DMZ: "#fb923c",
+        CROWN: "#facc15"
+      };
+
+      var ZONE_COLORS = {
+        DMZ: "rgba(248, 113, 113, 0.13)",
+        INTERNAL: "rgba(56, 189, 248, 0.09)",
+        OT: "rgba(52, 211, 153, 0.11)"
+      };
+
+      var ATTACKER_IP_POOL = [
+        "198.51.100.25",
+        "203.0.113.8",
+        "45.33.17.201",
+        "185.11.61.44",
+        "172.64.93.120"
+      ];
+
+      var SCENARIOS = [
+        {
+          name: "Phishing Drop",
+          strategy: "Credential theft starts at workstations, then pivots into internal servers.",
+          attackerCadenceMs: 3000,
+          edgePulse: 1.0,
+          nodes: [
+            { id: "ws-01", type: "WORKSTATION", zone: "DMZ", x: 16, y: 28, perimeter: true },
+            { id: "ws-02", type: "WORKSTATION", zone: "DMZ", x: 22, y: 50, perimeter: true },
+            { id: "ws-03", type: "WORKSTATION", zone: "INTERNAL", x: 36, y: 34 },
+            { id: "ws-04", type: "WORKSTATION", zone: "INTERNAL", x: 43, y: 58 },
+            { id: "srv-01", type: "SERVER", zone: "INTERNAL", x: 57, y: 33 },
+            { id: "srv-02", type: "SERVER", zone: "INTERNAL", x: 66, y: 48 },
+            { id: "fw-01", type: "FIREWALL", zone: "INTERNAL", x: 51, y: 66 },
+            { id: "dmz-gw", type: "DMZ", zone: "DMZ", x: 29, y: 39 },
+            { id: "crown-01", type: "CROWN", zone: "OT", x: 83, y: 41, crown: true },
+            { id: "ot-hmi", type: "SERVER", zone: "OT", x: 74, y: 59 },
+            { id: "ot-eng", type: "WORKSTATION", zone: "OT", x: 76, y: 27 }
+          ],
+          edges: [
+            ["ws-01", "dmz-gw"], ["ws-02", "dmz-gw"], ["dmz-gw", "ws-03"], ["dmz-gw", "ws-04"],
+            ["ws-03", "srv-01"], ["ws-04", "srv-02"], ["srv-01", "srv-02"], ["srv-01", "fw-01"],
+            ["srv-02", "fw-01"], ["fw-01", "ot-hmi"], ["ot-hmi", "crown-01"], ["ot-eng", "srv-01"],
+            ["ot-eng", "crown-01"], ["ws-03", "ws-04"], ["srv-02", "ot-hmi"], ["ot-hmi", "ot-eng"]
+          ],
+          moveLabel: "PHISHING PIVOT"
+        },
+        {
+          name: "Lateral Move",
+          strategy: "Pass-the-hash traversal prioritizes shortest route to crown infrastructure.",
+          attackerCadenceMs: 2800,
+          edgePulse: 1.15,
+          nodes: [
+            { id: "edge-01", type: "WORKSTATION", zone: "DMZ", x: 14, y: 27, perimeter: true },
+            { id: "edge-02", type: "WORKSTATION", zone: "DMZ", x: 16, y: 53, perimeter: true },
+            { id: "jump-01", type: "SERVER", zone: "INTERNAL", x: 35, y: 24 },
+            { id: "jump-02", type: "SERVER", zone: "INTERNAL", x: 39, y: 48 },
+            { id: "jump-03", type: "SERVER", zone: "INTERNAL", x: 45, y: 65 },
+            { id: "core-fw", type: "FIREWALL", zone: "INTERNAL", x: 58, y: 46 },
+            { id: "db-01", type: "SERVER", zone: "INTERNAL", x: 67, y: 24 },
+            { id: "db-02", type: "SERVER", zone: "INTERNAL", x: 67, y: 62 },
+            { id: "ot-jump", type: "DMZ", zone: "OT", x: 78, y: 45 },
+            { id: "crown-02", type: "CROWN", zone: "OT", x: 88, y: 45, crown: true },
+            { id: "analyst-vpn", type: "WORKSTATION", zone: "DMZ", x: 24, y: 42 }
+          ],
+          edges: [
+            ["edge-01", "analyst-vpn"], ["edge-02", "analyst-vpn"], ["analyst-vpn", "jump-01"],
+            ["analyst-vpn", "jump-02"], ["jump-01", "jump-02"], ["jump-02", "jump-03"],
+            ["jump-01", "db-01"], ["jump-03", "db-02"], ["db-01", "core-fw"], ["db-02", "core-fw"],
+            ["core-fw", "ot-jump"], ["ot-jump", "crown-02"], ["jump-02", "core-fw"], ["db-01", "db-02"],
+            ["jump-03", "ot-jump"], ["jump-01", "core-fw"]
+          ],
+          moveLabel: "LATERAL MOVE"
+        },
+        {
+          name: "Ransomware",
+          strategy: "Encryption campaign fans out from server clusters with secondary thread acceleration.",
+          attackerCadenceMs: 2500,
+          edgePulse: 1.3,
+          nodes: [
+            { id: "mail-01", type: "SERVER", zone: "DMZ", x: 15, y: 45, perimeter: true },
+            { id: "ws-r1", type: "WORKSTATION", zone: "INTERNAL", x: 29, y: 20 },
+            { id: "ws-r2", type: "WORKSTATION", zone: "INTERNAL", x: 31, y: 44 },
+            { id: "ws-r3", type: "WORKSTATION", zone: "INTERNAL", x: 34, y: 66 },
+            { id: "srv-r1", type: "SERVER", zone: "INTERNAL", x: 49, y: 25 },
+            { id: "srv-r2", type: "SERVER", zone: "INTERNAL", x: 53, y: 45 },
+            { id: "srv-r3", type: "SERVER", zone: "INTERNAL", x: 50, y: 65 },
+            { id: "fw-r", type: "FIREWALL", zone: "INTERNAL", x: 63, y: 45 },
+            { id: "backup", type: "SERVER", zone: "OT", x: 76, y: 31 },
+            { id: "hmi-r", type: "WORKSTATION", zone: "OT", x: 78, y: 58 },
+            { id: "crown-03", type: "CROWN", zone: "OT", x: 90, y: 45, crown: true }
+          ],
+          edges: [
+            ["mail-01", "ws-r1"], ["mail-01", "ws-r2"], ["mail-01", "ws-r3"],
+            ["ws-r1", "srv-r1"], ["ws-r2", "srv-r2"], ["ws-r3", "srv-r3"],
+            ["srv-r1", "srv-r2"], ["srv-r2", "srv-r3"], ["srv-r1", "fw-r"], ["srv-r2", "fw-r"],
+            ["srv-r3", "fw-r"], ["fw-r", "backup"], ["fw-r", "hmi-r"], ["backup", "crown-03"],
+            ["hmi-r", "crown-03"], ["backup", "hmi-r"], ["srv-r2", "backup"]
+          ],
+          moveLabel: "RANSOM SPREAD"
+        },
+        {
+          name: "Data Exfil",
+          strategy: "Stealthy exfiltration path hides in low-volume edges and targets DMZ egress.",
+          attackerCadenceMs: 3200,
+          edgePulse: 0.95,
+          nodes: [
+            { id: "ext-proxy", type: "DMZ", zone: "DMZ", x: 17, y: 40, perimeter: true },
+            { id: "acct-01", type: "WORKSTATION", zone: "INTERNAL", x: 30, y: 26 },
+            { id: "acct-02", type: "WORKSTATION", zone: "INTERNAL", x: 33, y: 55 },
+            { id: "erp-01", type: "SERVER", zone: "INTERNAL", x: 47, y: 30 },
+            { id: "erp-02", type: "SERVER", zone: "INTERNAL", x: 48, y: 55 },
+            { id: "datalake", type: "SERVER", zone: "INTERNAL", x: 60, y: 43 },
+            { id: "fw-ex", type: "FIREWALL", zone: "INTERNAL", x: 66, y: 22 },
+            { id: "fw-ex2", type: "FIREWALL", zone: "INTERNAL", x: 67, y: 64 },
+            { id: "ot-core", type: "SERVER", zone: "OT", x: 79, y: 44 },
+            { id: "crown-04", type: "CROWN", zone: "OT", x: 89, y: 44, crown: true },
+            { id: "siem-mirror", type: "SERVER", zone: "DMZ", x: 25, y: 70 }
+          ],
+          edges: [
+            ["ext-proxy", "acct-01"], ["ext-proxy", "acct-02"], ["acct-01", "erp-01"], ["acct-02", "erp-02"],
+            ["erp-01", "datalake"], ["erp-02", "datalake"], ["datalake", "fw-ex"], ["datalake", "fw-ex2"],
+            ["fw-ex", "ot-core"], ["fw-ex2", "ot-core"], ["ot-core", "crown-04"], ["siem-mirror", "acct-02"],
+            ["siem-mirror", "erp-02"], ["erp-01", "fw-ex"], ["erp-02", "fw-ex2"], ["acct-01", "acct-02"]
+          ],
+          moveLabel: "EXFIL PIVOT"
+        },
+        {
+          name: "Supply Chain",
+          strategy: "Compromised vendor update server seeds trust zones, then pivots through patch relays.",
+          attackerCadenceMs: 2900,
+          edgePulse: 1.1,
+          nodes: [
+            { id: "vendor", type: "SERVER", zone: "DMZ", x: 12, y: 45, perimeter: true },
+            { id: "patch-01", type: "SERVER", zone: "INTERNAL", x: 28, y: 26 },
+            { id: "patch-02", type: "SERVER", zone: "INTERNAL", x: 30, y: 56 },
+            { id: "relay-01", type: "DMZ", zone: "INTERNAL", x: 43, y: 20 },
+            { id: "relay-02", type: "DMZ", zone: "INTERNAL", x: 43, y: 46 },
+            { id: "relay-03", type: "DMZ", zone: "INTERNAL", x: 43, y: 70 },
+            { id: "fw-supply", type: "FIREWALL", zone: "INTERNAL", x: 58, y: 45 },
+            { id: "plant-ctrl", type: "SERVER", zone: "OT", x: 73, y: 28 },
+            { id: "safety-ctrl", type: "SERVER", zone: "OT", x: 73, y: 60 },
+            { id: "crown-05", type: "CROWN", zone: "OT", x: 88, y: 45, crown: true },
+            { id: "ops-vdi", type: "WORKSTATION", zone: "INTERNAL", x: 54, y: 18 }
+          ],
+          edges: [
+            ["vendor", "patch-01"], ["vendor", "patch-02"], ["patch-01", "relay-01"], ["patch-01", "relay-02"],
+            ["patch-02", "relay-02"], ["patch-02", "relay-03"], ["relay-01", "fw-supply"], ["relay-02", "fw-supply"],
+            ["relay-03", "fw-supply"], ["fw-supply", "plant-ctrl"], ["fw-supply", "safety-ctrl"], ["plant-ctrl", "crown-05"],
+            ["safety-ctrl", "crown-05"], ["ops-vdi", "fw-supply"], ["ops-vdi", "relay-01"], ["relay-01", "relay-02"],
+            ["relay-02", "relay-03"]
+          ],
+          moveLabel: "SUPPLY PIVOT"
+        }
+      ];
+
+      var canvas = document.getElementById("breach-canvas");
+      var ctx = canvas.getContext("2d");
+      var hudScenario = document.getElementById("scenario-name");
+      var hudTimer = document.getElementById("timer");
+      var hudScore = document.getElementById("score");
+      var eventLog = document.getElementById("event-log");
+      var overlay = document.getElementById("overlay");
+      var overlayTitle = document.getElementById("overlay-title");
+      var overlaySub = document.getElementById("overlay-sub");
+      var flashLayer = document.getElementById("flash-layer");
+      var audioPill = document.getElementById("audio-pill");
+      var tokenNodes = Array.prototype.slice.call(document.querySelectorAll(".token"));
+
+      var selKind = document.getElementById("sel-kind");
+      var selName = document.getElementById("sel-name");
+      var selIp = document.getElementById("sel-ip");
+      var selZone = document.getElementById("sel-zone");
+      var selState = document.getElementById("sel-state");
+      var selConn = document.getElementById("sel-connections");
+
+      var briefObject = document.getElementById("brief-object");
+      var briefStrategy = document.getElementById("brief-strategy");
+      var briefIp = document.getElementById("brief-ip");
+      var briefComp = document.getElementById("brief-comp");
+      var briefIds = document.getElementById("brief-ids");
+      var briefCrown = document.getElementById("brief-crown");
+      var briefHint = document.getElementById("brief-hint");
+
+      var btnIsolate = document.getElementById("btn-isolate");
+      var btnIds = document.getElementById("btn-ids");
+      var btnFlush = document.getElementById("btn-flush");
+      var btnBlock = document.getElementById("btn-block");
+      var btnAudio = document.getElementById("btn-audio");
+      var btnReset = document.getElementById("btn-reset");
+      var btnOverlayPrimary = document.getElementById("btn-overlay-primary");
+      var btnOverlayShare = document.getElementById("btn-overlay-share");
+      var btnOverlayReplay = document.getElementById("btn-overlay-replay");
+
+      var sim = {
+        scenarioIdx: 0,
+        score: 0,
+        tokens: 5,
+        tokenRegenMs: 0,
+        timeLeft: 120,
+        timerMs: 0,
+        attackStepMs: 0,
+        lastTick: performance.now(),
+        attackerIp: ATTACKER_IP_POOL[0],
+        blockUntil: 0,
+        scenarioOver: false,
+        allOver: false,
+        nodes: [],
+        edges: [],
+        selected: null,
+        threads: [],
+        secondThreadSpawned: false,
+        packets: [],
+        containCycles: 0,
+        audioReady: false,
+        audioEnabled: false,
+        actionLocked: false
+      };
+
+      var audio = {
+        alertSynth: null,
+        isolateSynth: null,
+        winSynth: null,
+        ready: false
+      };
+
+      function resizeCanvas() {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+      }
+
+      function formatClock(secs) {
+        var m = Math.floor(secs / 60);
+        var s = secs % 60;
+        return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+      }
+
+      function rand(min, max) {
+        return min + Math.random() * (max - min);
+      }
+
+      function cloneScenarioTopology(data) {
+        var zones = getZoneRects();
+        var nodes = data.nodes.map(function (n, idx) {
+          var zr = zones[n.zone];
+          var px = zr.x + (n.x / 100) * zr.w;
+          var py = zr.y + (n.y / 100) * zr.h;
+          return {
+            index: idx,
+            id: n.id,
+            name: n.id,
+            label: n.id,
+            type: n.type,
+            zone: n.zone,
+            crown: !!n.crown,
+            perimeter: !!n.perimeter,
+            x: px,
+            y: py,
+            vx: rand(-0.2, 0.2),
+            vy: rand(-0.2, 0.2),
+            compromised: false,
+            isolated: false,
+            flashUntil: 0
+          };
+        });
+        var byId = {};
+        nodes.forEach(function (n) {
+          byId[n.id] = n.index;
+        });
+        var edges = data.edges.map(function (pair, idx) {
+          return {
+            index: idx,
+            a: byId[pair[0]],
+            b: byId[pair[1]],
+            active: true,
+            ids: false,
+            compromisedAt: 0,
+            glowUntil: 0
+          };
+        });
+        return { nodes: nodes, edges: edges };
+      }
+
+      function getZoneRects() {
+        var w = canvas.width;
+        var h = canvas.height;
+        return {
+          DMZ: { x: w * 0.04, y: h * 0.1, w: w * 0.28, h: h * 0.78 },
+          INTERNAL: { x: w * 0.34, y: h * 0.1, w: w * 0.34, h: h * 0.78 },
+          OT: { x: w * 0.7, y: h * 0.1, w: w * 0.26, h: h * 0.78 }
+        };
+      }
+
+      function buildAdjacency() {
+        var map = new Map();
+        sim.nodes.forEach(function (n) {
+          map.set(n.index, []);
+        });
+        sim.edges.forEach(function (e) {
+          map.get(e.a).push({ to: e.b, edge: e });
+          map.get(e.b).push({ to: e.a, edge: e });
+        });
+        return map;
+      }
+
+      function getNodeByIndex(i) {
+        return sim.nodes[i];
+      }
+
+      function getCrownNode() {
+        return sim.nodes.find(function (n) { return n.crown; });
+      }
+
+      function nowStamp() {
+        var elapsed = 120 - sim.timeLeft;
+        var m = Math.floor(elapsed / 60);
+        var s = elapsed % 60;
+        return "[" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0") + "]";
+      }
+
+      function pushEvent(text, kind) {
+        var row = document.createElement("div");
+        row.className = "event-row " + (kind || "");
+        row.textContent = text;
+        eventLog.prepend(row);
+        while (eventLog.children.length > 90) {
+          eventLog.removeChild(eventLog.lastChild);
+        }
+      }
+
+      function playAlertTone() {
+        if (!sim.audioEnabled || !audio.alertSynth) {
+          return;
+        }
+        audio.alertSynth.triggerAttackRelease("E5", 0.12);
+      }
+
+      function playIsolationTone() {
+        if (!sim.audioEnabled || !audio.isolateSynth) {
+          return;
+        }
+        audio.isolateSynth.triggerAttackRelease("A1", 0.18);
+      }
+
+      function playWinTone() {
+        if (!sim.audioEnabled || !audio.winSynth) {
+          return;
+        }
+        var notes = ["C4", "E4", "G4", "B4", "D5"];
+        notes.forEach(function (n, idx) {
+          setTimeout(function () {
+            audio.winSynth.triggerAttackRelease(n, 0.18);
+          }, idx * 120);
+        });
+      }
+
+      function flash(type) {
+        flashLayer.classList.remove("warn", "alert");
+        void flashLayer.offsetWidth;
+        flashLayer.classList.add(type);
+        setTimeout(function () {
+          flashLayer.classList.remove(type);
+        }, 220);
+      }
+
+      function updateHud() {
+        var s = SCENARIOS[sim.scenarioIdx];
+        hudScenario.textContent = "Scenario " + (sim.scenarioIdx + 1) + "/" + SCENARIOS.length + " · " + s.name;
+        hudTimer.textContent = formatClock(sim.timeLeft);
+        hudTimer.classList.toggle("danger", sim.timeLeft < 30);
+        hudScore.textContent = "Score " + String(Math.max(0, Math.floor(sim.score))).padStart(5, "0");
+        tokenNodes.forEach(function (t, idx) {
+          t.classList.toggle("active", idx < sim.tokens);
+        });
+      }
+
+      function updateDetailsPanel() {
+        var compCount = sim.nodes.filter(function (n) { return n.compromised; }).length;
+        var idsCount = sim.edges.filter(function (e) { return e.ids; }).length;
+        var crown = getCrownNode();
+        briefComp.textContent = String(compCount);
+        briefIds.textContent = String(idsCount);
+        briefCrown.textContent = crown && crown.compromised ? "Compromised" : "Protected";
+        briefCrown.style.color = crown && crown.compromised ? "#f87171" : "#34d399";
+
+        if (!sim.selected) {
+          selKind.textContent = "None";
+          selName.textContent = "-";
+          selIp.textContent = "-";
+          selZone.textContent = "-";
+          selState.textContent = "-";
+          selConn.textContent = "-";
+          briefObject.textContent = "None selected";
+          briefHint.textContent = "Select a node to isolate or an edge to deploy IDS.";
+          return;
+        }
+
+        if (sim.selected.kind === "node") {
+          var node = getNodeByIndex(sim.selected.index);
+          var conn = sim.edges.filter(function (e) { return e.active && (e.a === node.index || e.b === node.index); }).length;
+          selKind.textContent = "Node";
+          selName.textContent = node.label;
+          selIp.textContent = fakeIpForNode(node);
+          selZone.textContent = node.zone;
+          selState.textContent = node.compromised ? "Compromised" : (node.isolated ? "Isolated" : "Clean");
+          selState.style.color = node.compromised ? "#f87171" : (node.isolated ? "#94a3b8" : "#34d399");
+          selConn.textContent = String(conn);
+          briefObject.textContent = node.label + " · " + node.type;
+          briefHint.textContent = node.crown
+            ? "Crown node cannot be isolated. Protect incoming edges with IDS."
+            : "Use Isolate Node to cut this node off from all active edges.";
+          return;
+        }
+
+        var edge = sim.edges[sim.selected.index];
+        var a = getNodeByIndex(edge.a);
+        var b = getNodeByIndex(edge.b);
+        selKind.textContent = "Edge";
+        selName.textContent = a.label + " ↔ " + b.label;
+        selIp.textContent = sim.attackerIp;
+        selZone.textContent = a.zone + " / " + b.zone;
+        selState.textContent = edge.ids ? "IDS armed" : (edge.active ? "Active route" : "Cut route");
+        selState.style.color = edge.ids ? "#fde68a" : (edge.active ? "#34d399" : "#94a3b8");
+        selConn.textContent = edge.active ? "1 route" : "0 routes";
+        briefObject.textContent = a.label + " ↔ " + b.label;
+        briefHint.textContent = edge.ids
+          ? "IDS already armed on this edge. Traversal will trigger and stop."
+          : "Deploy IDS here to halt attacker propagation attempts.";
+      }
+
+      function fakeIpForNode(node) {
+        var n = node.index + 10;
+        if (node.zone === "DMZ") {
+          return "172.16.10." + n;
+        }
+        if (node.zone === "OT") {
+          return "10.70.4." + n;
+        }
+        return "10.20.2." + n;
+      }
+
+      function consumeToken() {
+        if (sim.tokens <= 0) {
+          pushEvent(nowStamp() + " TOKEN STARVATION: action denied", "alert");
+          flash("warn");
+          return false;
+        }
+        sim.tokens -= 1;
+        return true;
+      }
+
+      function isolateSelectedNode() {
+        if (!sim.selected || sim.selected.kind !== "node") {
+          pushEvent(nowStamp() + " ACTION REJECTED: select a node first", "alert");
+          return;
+        }
+        var node = getNodeByIndex(sim.selected.index);
+        if (node.crown) {
+          pushEvent(nowStamp() + " CROWN PROTECTION: isolate denied on crown node", "alert");
+          return;
+        }
+        if (!consumeToken()) {
+          return;
+        }
+        node.isolated = true;
+        node.flashUntil = performance.now() + 420;
+        sim.edges.forEach(function (e) {
+          if (e.a === node.index || e.b === node.index) {
+            e.active = false;
+          }
+        });
+        sim.score += 75;
+        pushEvent(nowStamp() + " ISOLATE NODE: " + node.label + " connections severed", "info");
+        playIsolationTone();
+        updateDetailsPanel();
+      }
+
+      function deployIdsOnSelectedEdge() {
+        if (!sim.selected || sim.selected.kind !== "edge") {
+          pushEvent(nowStamp() + " ACTION REJECTED: select an edge first", "alert");
+          return;
+        }
+        var edge = sim.edges[sim.selected.index];
+        if (edge.ids) {
+          pushEvent(nowStamp() + " IDS already active on selected edge", "info");
+          return;
+        }
+        if (!edge.active) {
+          pushEvent(nowStamp() + " IDS cannot deploy on inactive edge", "alert");
+          return;
+        }
+        if (!consumeToken()) {
+          return;
+        }
+        edge.ids = true;
+        edge.glowUntil = performance.now() + 600;
+        sim.score += 55;
+        var from = getNodeByIndex(edge.a);
+        var to = getNodeByIndex(edge.b);
+        pushEvent(nowStamp() + " IDS DEPLOYED: " + from.label + " ↔ " + to.label, "info");
+        updateDetailsPanel();
+      }
+
+      function flushSessions() {
+        if (!consumeToken()) {
+          return;
+        }
+        var compromised = sim.nodes.filter(function (n) {
+          return n.compromised && !n.crown;
+        });
+        if (!compromised.length) {
+          pushEvent(nowStamp() + " FLUSH completed: no compromised sessions present", "info");
+          return;
+        }
+        var targets = [];
+        while (compromised.length && targets.length < 3) {
+          var pick = Math.floor(Math.random() * compromised.length);
+          targets.push(compromised.splice(pick, 1)[0]);
+        }
+        targets.forEach(function (n) {
+          n.compromised = false;
+          n.flashUntil = performance.now() + 300;
+        });
+        sim.score += targets.length * 40;
+        pushEvent(nowStamp() + " FLUSH SESSIONS: reset " + targets.map(function (n) { return n.label; }).join(", "), "info");
+        updateDetailsPanel();
+      }
+
+      function blockAttackerIp() {
+        if (!consumeToken()) {
+          return;
+        }
+        sim.blockUntil = performance.now() + 15000;
+        sim.score += 45;
+        pushEvent(nowStamp() + " BLOCK IP: " + sim.attackerIp + " movement paused 15s", "info");
+        flash("alert");
+      }
+
+      function resetScenario() {
+        startScenario(sim.scenarioIdx, true);
+      }
+
+      function showOverlay(win, reason) {
+        sim.scenarioOver = true;
+        stopActions();
+        overlay.classList.add("show");
+        overlayTitle.className = win ? "win" : "fail";
+        if (win) {
+          overlayTitle.textContent = "Containment achieved";
+          overlaySub.textContent = reason + " · score " + String(Math.max(0, Math.floor(sim.score))).padStart(5, "0");
+          btnOverlayPrimary.textContent = sim.scenarioIdx < SCENARIOS.length - 1 ? "Next scenario" : "Finish operation";
+          playWinTone();
+        } else {
+          overlayTitle.textContent = "BREACH: CROWN JEWEL COMPROMISED";
+          overlaySub.textContent = reason + " · score " + String(Math.max(0, Math.floor(sim.score))).padStart(5, "0");
+          btnOverlayPrimary.textContent = "Retry scenario";
+          playAlertTone();
+        }
+      }
+
+      function hideOverlay() {
+        overlay.classList.remove("show");
+      }
+
+      function stopActions() {
+        sim.actionLocked = true;
+      }
+
+      function startActions() {
+        sim.actionLocked = false;
+      }
+
+      function triggerScenarioFailure(message) {
+        if (sim.scenarioOver) {
+          return;
+        }
+        pushEvent(nowStamp() + " CROWN BREACH: " + message, "alert");
+        showOverlay(false, message);
+      }
+
+      function triggerScenarioWin(message) {
+        if (sim.scenarioOver) {
+          return;
+        }
+        pushEvent(nowStamp() + " CONTAINMENT ACHIEVED: " + message, "info");
+        showOverlay(true, message);
+      }
+
+      function spawnSecondThreadIfNeeded() {
+        if (sim.secondThreadSpawned) {
+          return;
+        }
+        var compromisedCount = sim.nodes.filter(function (n) { return n.compromised; }).length;
+        if (compromisedCount < 3) {
+          return;
+        }
+        var candidates = sim.nodes.filter(function (n) {
+          return n.perimeter && !n.compromised && !n.isolated;
+        });
+        if (!candidates.length) {
+          return;
+        }
+        var pick = candidates[Math.floor(Math.random() * candidates.length)];
+        sim.threads.push({
+          id: "thread-2",
+          current: pick.index,
+          pausedUntil: 0,
+          active: true
+        });
+        pick.compromised = true;
+        sim.secondThreadSpawned = true;
+        pushEvent(nowStamp() + " SECOND THREAD SPAWNED: foothold at " + pick.label, "alert");
+        playAlertTone();
+      }
+
+      function pickNextNode(thread, scenarioData, adjacency, crown) {
+        var current = getNodeByIndex(thread.current);
+        var options = (adjacency.get(current.index) || []).filter(function (entry) {
+          var target = getNodeByIndex(entry.to);
+          if (!entry.edge.active) return false;
+          if (target.isolated) return false;
+          if (target.compromised) return false;
+          return true;
+        });
+
+        if (!options.length) {
+          return null;
+        }
+
+        options.sort(function (a, b) {
+          var na = getNodeByIndex(a.to);
+          var nb = getNodeByIndex(b.to);
+          var da = Math.hypot(na.x - crown.x, na.y - crown.y);
+          var db = Math.hypot(nb.x - crown.x, nb.y - crown.y);
+          if (scenarioData.name === "Data Exfil") {
+            if (na.zone === "DMZ" && nb.zone !== "DMZ") return -1;
+            if (nb.zone === "DMZ" && na.zone !== "DMZ") return 1;
+          }
+          if (scenarioData.name === "Ransomware") {
+            if (na.type === "SERVER" && nb.type !== "SERVER") return -1;
+            if (nb.type === "SERVER" && na.type !== "SERVER") return 1;
+          }
+          if (scenarioData.name === "Supply Chain") {
+            if (na.type === "DMZ" && nb.type !== "DMZ") return -1;
+            if (nb.type === "DMZ" && na.type !== "DMZ") return 1;
+          }
+          return da - db;
+        });
+        return options[0];
+      }
+
+      function stepAttackers() {
+        if (sim.scenarioOver || sim.allOver) {
+          return;
+        }
+        if (performance.now() < sim.blockUntil) {
+          return;
+        }
+
+        var scenarioData = SCENARIOS[sim.scenarioIdx];
+        var adjacency = buildAdjacency();
+        var crown = getCrownNode();
+        var anyMove = false;
+
+        sim.threads.forEach(function (thread) {
+          if (!thread.active) return;
+          if (performance.now() < thread.pausedUntil) return;
+
+          var current = getNodeByIndex(thread.current);
+          var nextEntry = pickNextNode(thread, scenarioData, adjacency, crown);
+          if (!nextEntry) {
+            return;
+          }
+
+          var edge = nextEntry.edge;
+          var target = getNodeByIndex(nextEntry.to);
+          if (edge.ids) {
+            edge.glowUntil = performance.now() + 900;
+            thread.pausedUntil = performance.now() + 2000;
+            pushEvent(nowStamp() + " IDS ALERT: " + current.label + " → " + target.label + " blocked", "alert");
+            flash("alert");
+            playAlertTone();
+            sim.score += 20;
+            return;
+          }
+
+          edge.compromisedAt = performance.now();
+          thread.current = target.index;
+          target.compromised = true;
+          target.flashUntil = performance.now() + 400;
+          sim.packets.push({
+            from: current.index,
+            to: target.index,
+            t: 0,
+            hostile: true
+          });
+          pushEvent(nowStamp() + " " + scenarioData.moveLabel + ": " + current.label + " → " + target.label, "alert");
+          playAlertTone();
+          anyMove = true;
+          sim.score -= target.crown ? 200 : 15;
+
+          if (target.crown) {
+            triggerScenarioFailure("Crown jewel node compromised by " + sim.attackerIp);
+          }
+        });
+
+        if (sim.scenarioOver) {
+          return;
+        }
+
+        if (anyMove) {
+          sim.containCycles = 0;
+        } else {
+          sim.containCycles += 1;
+          if (sim.containCycles >= 3) {
+            triggerScenarioWin("Attacker movement halted across all active threads");
+          }
+        }
+
+        spawnSecondThreadIfNeeded();
+      }
+
+      function updatePackets(dt) {
+        for (var i = sim.packets.length - 1; i >= 0; i -= 1) {
+          var p = sim.packets[i];
+          p.t += dt * 0.0018;
+          if (p.t >= 1) {
+            sim.packets.splice(i, 1);
+          }
+        }
+      }
+
+      function emitPassivePackets() {
+        if (sim.scenarioOver) return;
+        var openEdges = sim.edges.filter(function (e) {
+          return e.active && !e.ids;
+        });
+        if (!openEdges.length) return;
+        var pick = openEdges[Math.floor(Math.random() * openEdges.length)];
+        sim.packets.push({
+          from: pick.a,
+          to: pick.b,
+          t: 0,
+          hostile: false
+        });
+      }
+
+      function updateSimulation(now, dt) {
+        if (sim.allOver) {
+          return;
+        }
+
+        if (!sim.scenarioOver) {
+          sim.timerMs += dt;
+          if (sim.timerMs >= 1000) {
+            sim.timerMs -= 1000;
+            sim.timeLeft -= 1;
+            if (sim.timeLeft <= 0) {
+              sim.timeLeft = 0;
+              triggerScenarioFailure("Timer expired before containment");
+            }
+          }
+
+          sim.tokenRegenMs += dt;
+          if (sim.tokenRegenMs >= 8000) {
+            sim.tokenRegenMs -= 8000;
+            if (sim.tokens < 5) {
+              sim.tokens += 1;
+            }
+          }
+
+          sim.attackStepMs += dt;
+          var cadence = SCENARIOS[sim.scenarioIdx].attackerCadenceMs;
+          if (sim.attackStepMs >= cadence) {
+            sim.attackStepMs = 0;
+            stepAttackers();
+          }
+
+          if (Math.random() < 0.03) {
+            emitPassivePackets();
+          }
+        }
+
+        applyForceLayout(dt);
+        updatePackets(dt);
+        updateHud();
+        updateDetailsPanel();
+      }
+
+      function applyForceLayout(dt) {
+        var zones = getZoneRects();
+        var repulsion = 9000;
+        var spring = 0.0008 * dt;
+        var damp = 0.92;
+
+        for (var i = 0; i < sim.nodes.length; i += 1) {
+          var a = sim.nodes[i];
+          for (var j = i + 1; j < sim.nodes.length; j += 1) {
+            var b = sim.nodes[j];
+            var dx = b.x - a.x;
+            var dy = b.y - a.y;
+            var d2 = dx * dx + dy * dy + 0.01;
+            var f = repulsion / d2;
+            var inv = 1 / Math.sqrt(d2);
+            var fx = f * dx * inv;
+            var fy = f * dy * inv;
+            a.vx -= fx * 0.0001 * dt;
+            a.vy -= fy * 0.0001 * dt;
+            b.vx += fx * 0.0001 * dt;
+            b.vy += fy * 0.0001 * dt;
+          }
+        }
+
+        sim.edges.forEach(function (e) {
+          var na = getNodeByIndex(e.a);
+          var nb = getNodeByIndex(e.b);
+          var dx = nb.x - na.x;
+          var dy = nb.y - na.y;
+          var dist = Math.hypot(dx, dy) || 1;
+          var target = 140;
+          var diff = dist - target;
+          var fx = (dx / dist) * diff * spring;
+          var fy = (dy / dist) * diff * spring;
+          na.vx += fx;
+          na.vy += fy;
+          nb.vx -= fx;
+          nb.vy -= fy;
+        });
+
+        sim.nodes.forEach(function (n) {
+          var zr = zones[n.zone];
+          var cx = zr.x + zr.w * 0.5;
+          var cy = zr.y + zr.h * 0.5;
+          n.vx += (cx - n.x) * 0.00003 * dt;
+          n.vy += (cy - n.y) * 0.00003 * dt;
+          n.vx *= damp;
+          n.vy *= damp;
+          n.x += n.vx;
+          n.y += n.vy;
+          n.x = Math.max(zr.x + 20, Math.min(zr.x + zr.w - 20, n.x));
+          n.y = Math.max(zr.y + 20, Math.min(zr.y + zr.h - 20, n.y));
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawZones();
+        drawEdges();
+        drawPackets();
+        drawNodes();
+      }
+
+      function drawZones() {
+        var zones = getZoneRects();
+        Object.keys(zones).forEach(function (name) {
+          var z = zones[name];
+          ctx.fillStyle = ZONE_COLORS[name];
+          ctx.strokeStyle = "rgba(148,163,184,0.2)";
+          ctx.lineWidth = 1;
+          ctx.fillRect(z.x, z.y, z.w, z.h);
+          ctx.strokeRect(z.x, z.y, z.w, z.h);
+          ctx.fillStyle = "rgba(148,163,184,0.74)";
+          ctx.font = "10px IBM Plex Mono";
+          ctx.fillText(name, z.x + 8, z.y + 16);
+        });
+      }
+
+      function drawEdges() {
+        var pulseBase = SCENARIOS[sim.scenarioIdx].edgePulse;
+        sim.edges.forEach(function (e) {
+          var a = getNodeByIndex(e.a);
+          var b = getNodeByIndex(e.b);
+          var selected = sim.selected && sim.selected.kind === "edge" && sim.selected.index === e.index;
+
+          if (!e.active) {
+            ctx.strokeStyle = "rgba(100,116,139,0.25)";
+            ctx.lineWidth = 1;
+          } else if (e.ids) {
+            ctx.strokeStyle = "rgba(251,191,36,0.9)";
+            ctx.lineWidth = 2.5;
+          } else if (e.compromisedAt > 0 && performance.now() - e.compromisedAt < 1800) {
+            var alpha = 0.38 + 0.35 * Math.sin(performance.now() * 0.016 * pulseBase);
+            ctx.strokeStyle = "rgba(248,113,113," + alpha.toFixed(3) + ")";
+            ctx.lineWidth = 2.2;
+          } else {
+            ctx.strokeStyle = "rgba(148,163,184,0.35)";
+            ctx.lineWidth = 1.2;
+          }
+
+          if (selected) {
+            ctx.strokeStyle = "rgba(251,191,36,0.95)";
+            ctx.lineWidth = 3;
+          }
+
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+
+          if (e.ids) {
+            var mx = (a.x + b.x) / 2;
+            var my = (a.y + b.y) / 2;
+            ctx.fillStyle = "rgba(251,191,36,0.95)";
+            ctx.fillRect(mx - 4, my - 4, 8, 8);
+          }
+        });
+      }
+
+      function nodeShape(type, x, y, r) {
+        ctx.beginPath();
+        if (type === "WORKSTATION" || type === "CROWN") {
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          return;
+        }
+        if (type === "SERVER") {
+          ctx.rect(x - r, y - r, r * 2, r * 2);
+          return;
+        }
+        if (type === "FIREWALL") {
+          ctx.moveTo(x, y - r);
+          for (var i = 1; i <= 6; i += 1) {
+            var a = -Math.PI / 2 + (Math.PI * 2 * i) / 6;
+            ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+          }
+          return;
+        }
+        ctx.moveTo(x, y - r);
+        ctx.lineTo(x + r, y);
+        ctx.lineTo(x, y + r);
+        ctx.lineTo(x - r, y);
+      }
+
+      function drawNodes() {
+        sim.nodes.forEach(function (n) {
+          var selected = sim.selected && sim.selected.kind === "node" && sim.selected.index === n.index;
+          var radius = n.crown ? 18 : 14;
+          var baseColor = NODE_COLORS[n.type] || "#94a3b8";
+
+          nodeShape(n.type, n.x, n.y, radius);
+          if (n.isolated) {
+            ctx.fillStyle = "rgba(100,116,139,0.8)";
+          } else if (n.compromised) {
+            ctx.fillStyle = "rgba(248,113,113,0.95)";
+          } else {
+            ctx.fillStyle = baseColor;
+          }
+          ctx.fill();
+
+          if (n.crown) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, radius + 5 + Math.sin(performance.now() * 0.01) * 1.8, 0, Math.PI * 2);
+            ctx.strokeStyle = "rgba(250,204,21,0.8)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.restore();
+          }
+
+          if (n.compromised) {
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, radius + 4, 0, Math.PI * 2);
+            ctx.strokeStyle = "rgba(248,113,113,0.65)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
+
+          if (n.flashUntil > performance.now()) {
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, radius + 8, 0, Math.PI * 2);
+            ctx.strokeStyle = "rgba(251,191,36,0.74)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
+
+          if (selected) {
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, radius + 8, 0, Math.PI * 2);
+            ctx.strokeStyle = "rgba(251,191,36,0.95)";
+            ctx.lineWidth = 2.4;
+            ctx.stroke();
+          }
+
+          ctx.fillStyle = "rgba(226,232,240,0.9)";
+          ctx.font = "10px IBM Plex Mono";
+          ctx.fillText(n.label, n.x - radius - 6, n.y + radius + 12);
+        });
+      }
+
+      function drawPackets() {
+        sim.packets.forEach(function (p) {
+          var from = getNodeByIndex(p.from);
+          var to = getNodeByIndex(p.to);
+          if (!from || !to) return;
+          var x = from.x + (to.x - from.x) * p.t;
+          var y = from.y + (to.y - from.y) * p.t;
+          ctx.beginPath();
+          ctx.arc(x, y, p.hostile ? 3.2 : 2.4, 0, Math.PI * 2);
+          ctx.fillStyle = p.hostile ? "rgba(248,113,113,0.95)" : "rgba(56,189,248,0.75)";
+          ctx.fill();
+        });
+      }
+
+      function edgeDistance(e, x, y) {
+        var a = getNodeByIndex(e.a);
+        var b = getNodeByIndex(e.b);
+        var dx = b.x - a.x;
+        var dy = b.y - a.y;
+        var len2 = dx * dx + dy * dy || 1;
+        var t = ((x - a.x) * dx + (y - a.y) * dy) / len2;
+        t = Math.max(0, Math.min(1, t));
+        var px = a.x + t * dx;
+        var py = a.y + t * dy;
+        return Math.hypot(x - px, y - py);
+      }
+
+      function pickSelection(mx, my) {
+        for (var i = 0; i < sim.nodes.length; i += 1) {
+          var n = sim.nodes[i];
+          var r = n.crown ? 20 : 16;
+          if (Math.hypot(mx - n.x, my - n.y) <= r) {
+            return { kind: "node", index: i };
+          }
+        }
+        var nearest = null;
+        var nearestDist = Infinity;
+        for (var j = 0; j < sim.edges.length; j += 1) {
+          var e = sim.edges[j];
+          var d = edgeDistance(e, mx, my);
+          if (d < nearestDist) {
+            nearestDist = d;
+            nearest = j;
+          }
+        }
+        if (nearest !== null && nearestDist <= 7) {
+          return { kind: "edge", index: nearest };
+        }
+        return null;
+      }
+
+      function attachCanvasHandlers() {
+        canvas.addEventListener("click", function (evt) {
+          ensureAudioGesture();
+          if (sim.scenarioOver || sim.allOver) return;
+          var rect = canvas.getBoundingClientRect();
+          var mx = evt.clientX - rect.left;
+          var my = evt.clientY - rect.top;
+          sim.selected = pickSelection(mx, my);
+          updateDetailsPanel();
+        });
+      }
+
+      function ensureAudioGesture() {
+        if (sim.audioReady || typeof Tone === "undefined") {
+          if (sim.audioReady) {
+            sim.audioEnabled = true;
+            btnAudio.textContent = "Audio on";
+            audioPill.textContent = "Audio active";
+            audioPill.classList.add("ready");
+          }
+          return;
+        }
+        Tone.start().then(function () {
+          audio.alertSynth = new Tone.Synth({
+            oscillator: { type: "sine" },
+            envelope: { attack: 0.001, decay: 0.08, sustain: 0.02, release: 0.08 }
+          }).toDestination();
+
+          audio.isolateSynth = new Tone.MembraneSynth({
+            pitchDecay: 0.03,
+            octaves: 3,
+            envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.16 }
+          }).toDestination();
+
+          audio.winSynth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "triangle" },
+            envelope: { attack: 0.005, decay: 0.13, sustain: 0.02, release: 0.16 }
+          }).toDestination();
+
+          audio.ready = true;
+          sim.audioReady = true;
+          sim.audioEnabled = true;
+          btnAudio.textContent = "Audio on";
+          audioPill.textContent = "Audio active";
+          audioPill.classList.add("ready");
+        }).catch(function () {
+          sim.audioReady = false;
+          sim.audioEnabled = false;
+        });
+      }
+
+      function wireButtons() {
+        btnIsolate.addEventListener("click", function () {
+          ensureAudioGesture();
+          if (sim.actionLocked) return;
+          isolateSelectedNode();
+        });
+        btnIds.addEventListener("click", function () {
+          ensureAudioGesture();
+          if (sim.actionLocked) return;
+          deployIdsOnSelectedEdge();
+        });
+        btnFlush.addEventListener("click", function () {
+          ensureAudioGesture();
+          if (sim.actionLocked) return;
+          flushSessions();
+        });
+        btnBlock.addEventListener("click", function () {
+          ensureAudioGesture();
+          if (sim.actionLocked) return;
+          blockAttackerIp();
+        });
+        btnAudio.addEventListener("click", function () {
+          ensureAudioGesture();
+        });
+        btnReset.addEventListener("click", function () {
+          ensureAudioGesture();
+          resetScenario();
+        });
+
+        btnOverlayPrimary.addEventListener("click", function () {
+          if (!sim.scenarioOver) return;
+          hideOverlay();
+          if (overlayTitle.classList.contains("fail")) {
+            startScenario(sim.scenarioIdx, true);
+            return;
+          }
+          if (sim.scenarioIdx < SCENARIOS.length - 1) {
+            startScenario(sim.scenarioIdx + 1, false);
+            return;
+          }
+          sim.allOver = true;
+          overlay.classList.add("show");
+          overlayTitle.className = "win";
+          overlayTitle.textContent = "Operation complete";
+          overlaySub.textContent = "All five scenarios contained. Final score " + String(Math.floor(sim.score)).padStart(5, "0");
+          btnOverlayPrimary.disabled = true;
+          btnOverlayPrimary.textContent = "Complete";
+          SiemCore.AchievementSystem.check("breach_win");
+        });
+
+        btnOverlayReplay.addEventListener("click", function () {
+          hideOverlay();
+          startScenario(sim.scenarioIdx, true);
+        });
+
+        btnOverlayShare.addEventListener("click", function () {
+          var payload = {
+            title: "The Breach",
+            subtitle: "Containment score",
+            score: String(Math.max(0, Math.floor(sim.score))),
+            filename: "breach-score.png"
+          };
+          if (window.SiemShareCard && typeof window.SiemShareCard.capture === "function") {
+            window.SiemShareCard.capture(payload);
+            return;
+          }
+          if (window.SiemCore && window.SiemCore.SessionState) {
+            window.SiemCore.SessionState.set("breachScore", payload.score);
+            pushEvent(nowStamp() + " SCORE CARD STORED IN SESSION STATE", "info");
+          }
+        });
+      }
+
+      function clearLog() {
+        eventLog.innerHTML = "";
+      }
+
+      function startScenario(index, isReplay) {
+        sim.scenarioIdx = index;
+        sim.tokens = 5;
+        sim.tokenRegenMs = 0;
+        sim.timeLeft = 120;
+        sim.timerMs = 0;
+        sim.attackStepMs = 0;
+        sim.blockUntil = 0;
+        sim.packets.length = 0;
+        sim.selected = null;
+        sim.secondThreadSpawned = false;
+        sim.containCycles = 0;
+        sim.scenarioOver = false;
+        sim.allOver = false;
+        startActions();
+        hideOverlay();
+
+        var s = SCENARIOS[index];
+        var topo = cloneScenarioTopology(s);
+        sim.nodes = topo.nodes;
+        sim.edges = topo.edges;
+        sim.attackerIp = ATTACKER_IP_POOL[index % ATTACKER_IP_POOL.length];
+        briefStrategy.textContent = s.strategy;
+        briefIp.textContent = sim.attackerIp;
+
+        var perimeter = sim.nodes.filter(function (n) { return n.perimeter; });
+        var startNode = perimeter[Math.floor(Math.random() * perimeter.length)] || sim.nodes[0];
+        startNode.compromised = true;
+        sim.threads = [{ id: "thread-1", current: startNode.index, pausedUntil: 0, active: true }];
+
+        if (!isReplay) {
+          sim.score += 220;
+        }
+
+        clearLog();
+        pushEvent(nowStamp() + " " + s.name.toUpperCase() + ": " + s.strategy, "info");
+        pushEvent(nowStamp() + " INITIAL ACCESS: attacker foothold at " + startNode.label + " src=" + sim.attackerIp, "alert");
+        updateHud();
+        updateDetailsPanel();
+      }
+
+      function animationFrame(now) {
+        var dt = now - sim.lastTick;
+        sim.lastTick = now;
+        updateSimulation(now, dt);
+        draw();
+        requestAnimationFrame(animationFrame);
+      }
+
+      function init() {
+        resizeCanvas();
+        addEventListener("resize", resizeCanvas);
+        attachCanvasHandlers();
+        wireButtons();
+        startScenario(0, true);
+        sim.lastTick = performance.now();
+        requestAnimationFrame(animationFrame);
+      }
+
+      init();
+    })();
   </script>
-  <div id="deck-nav-root"></div>
   <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
 </body>
 </html>

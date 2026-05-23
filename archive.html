@@ -7,6 +7,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <meta name="description" content="Three-dimensional log vault — navigate retained evidence in spatial memory." />
   <meta property="og:title" content="The Deep Archive — HABIBI-SIEM" />
   <meta property="og:description" content="Three-dimensional log vault — navigate retained evidence in spatial memory." />
@@ -15,57 +16,721 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="The Deep Archive — HABIBI-SIEM" />
   <meta name="twitter:description" content="Three-dimensional log vault — navigate retained evidence in spatial memory." />
-  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/archive-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/archive-og.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Deep Archive — Meridian-7</title>
   <link rel="stylesheet" href="assets/palette.css" />
   <link rel="stylesheet" href="assets/deck-nav.css" />
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#0a0618;overflow:hidden;color:#c4b5fd;font-family:Consolas,monospace}
-    #hdr{position:fixed;top:0;left:0;right:0;height:36px;display:flex;align-items:center;padding:0 12px;font-size:10px;letter-spacing:2px;z-index:10;background:rgba(10,6,18,.9);border-bottom:1px solid rgba(196,181,253,.2)}
-    #archive-root{position:fixed;inset:36px 0 0}#overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:20;padding:24px}
-    #overlay.show{display:flex}#doc{max-width:560px;max-height:80vh;overflow:auto;background:#1e1b4b;padding:24px;border:1px solid #6366f1;line-height:1.6;font-family:Georgia,serif;color:#e2e8f0}
-    #hint{position:fixed;bottom:12px;left:12px;font-size:9px;color:#64748b;z-index:10}
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #0a0618; overflow: hidden; color: #c4b5fd; font-family: "IBM Plex Mono", Consolas, monospace; }
+    #hdr {
+      position: fixed; top: 0; left: 0; right: 0; height: 36px; z-index: 30;
+      display: flex; align-items: center; gap: 10px; padding: 0 14px;
+      font-size: 10px; letter-spacing: 2px;
+      background: rgba(10,6,24,.92); border-bottom: 1px solid rgba(196,181,253,.22);
+    }
+    #hdr .pulse { width: 6px; height: 6px; border-radius: 50%; background: #6366f1; box-shadow: 0 0 8px #6366f1; animation: blink 2.4s ease infinite; }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+    #hdr span.meta { margin-left: auto; font-size: 9px; color: #64748b; letter-spacing: 1px; }
+    #archive-root { position: fixed; inset: 36px 0 0; cursor: crosshair; }
+    #crosshair {
+      position: fixed; top: 50%; left: 50%; width: 18px; height: 18px;
+      transform: translate(-50%, -50%); pointer-events: none; z-index: 15;
+    }
+    #crosshair::before, #crosshair::after {
+      content: ''; position: absolute; background: rgba(196,181,253,.55);
+    }
+    #crosshair::before { width: 1px; height: 100%; left: 50%; transform: translateX(-50%); }
+    #crosshair::after { height: 1px; width: 100%; top: 50%; transform: translateY(-50%); }
+    #hint {
+      position: fixed; bottom: 14px; left: 14px; z-index: 20; font-size: 9px;
+      color: rgba(100,116,139,.85); letter-spacing: 1px; line-height: 1.7;
+      background: rgba(10,6,24,.75); padding: 8px 12px; border: 1px solid rgba(148,163,184,.12); border-radius: 3px;
+    }
+    #overlay {
+      position: fixed; inset: 0; z-index: 50; display: none;
+      background: rgba(2,6,23,.88); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    #overlay.show { display: flex; }
+    #doc-shell {
+      width: min(640px, 96vw); max-height: 88vh; position: relative;
+      background: linear-gradient(180deg, rgba(30,27,75,.98), rgba(15,12,45,.98));
+      border: 1px solid rgba(99,102,241,.45); box-shadow: 0 0 40px rgba(99,102,241,.18);
+      border-radius: 4px; overflow: hidden;
+    }
+    #doc-scroll { max-height: 88vh; overflow: hidden; }
+    #doc-inner { padding: 32px 36px 40px; color: #e2e8f0; line-height: 1.75; }
+    #doc-inner h2 { font-family: "IBM Plex Mono", Consolas, monospace; font-size: clamp(18px, 3vw, 24px); color: #f8fafc; margin-bottom: 6px; letter-spacing: 1px; }
+    #doc-inner .doc-date { font-size: 10px; letter-spacing: 2px; color: #64748b; margin-bottom: 20px; }
+    #doc-inner p { font-family: Georgia, "Times New Roman", serif; font-size: 16px; color: #cbd5e1; margin-bottom: 14px; }
+    #doc-inner h3 { font-size: 10px; letter-spacing: 2px; color: #38bdf8; margin: 22px 0 10px; font-family: "IBM Plex Mono", Consolas, monospace; }
+    #doc-inner ul { margin: 0 0 14px 20px; font-family: Georgia, serif; font-size: 15px; color: #94a3b8; }
+    #doc-inner li { margin-bottom: 6px; }
+    .stamp {
+      display: inline-block; padding: 6px 14px; font-size: 11px; letter-spacing: 3px;
+      border: 2px solid; transform: rotate(-4deg); margin-bottom: 18px; font-weight: 600;
+    }
+    .stamp.confidential { color: #38bdf8; border-color: rgba(56,189,248,.6); background: rgba(56,189,248,.08); }
+    .stamp.secret { color: #fbbf24; border-color: rgba(251,191,36,.6); background: rgba(251,191,36,.08); }
+    .stamp.topsecret { color: #f87171; border-color: rgba(248,113,113,.65); background: rgba(248,113,113,.1); }
+    .rule-block {
+      margin-top: 16px; padding: 12px 14px; font-size: 11px; line-height: 1.6;
+      background: rgba(3,10,4,.85); border: 1px solid rgba(52,211,153,.25); color: #6ee7b7;
+      font-family: "IBM Plex Mono", Consolas, monospace; border-radius: 3px;
+    }
+    #doc-close {
+      position: absolute; top: 12px; right: 12px; width: 32px; height: 32px;
+      border: 1px solid rgba(148,163,184,.25); background: rgba(15,23,42,.8);
+      color: #e2e8f0; font-size: 18px; cursor: pointer; border-radius: 3px;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    #doc-close:hover { border-color: rgba(248,113,113,.5); box-shadow: 0 0 12px rgba(248,113,113,.2); }
+    #look-hint {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-size: 10px; letter-spacing: 2px; color: rgba(196,181,253,.5);
+      pointer-events: none; z-index: 12; opacity: 0; transition: opacity .3s ease;
+    }
+    #look-hint.visible { opacity: 1; }
   </style>
 </head>
 <body>
-  <div id="hdr">DEEP ARCHIVE · 3D LIBRARY · Click cabinet drawer</div>
+  <div id="hdr">
+    <span class="pulse"></span>
+    DEEP ARCHIVE · CLASSIFIED INCIDENT VAULT
+    <span class="meta" id="cabinet-meta">24 dossiers · corridor A-7</span>
+  </div>
   <div id="archive-root"></div>
-  <div id="overlay"><div id="doc"><h2>Incident Report M7-2019-004</h2><p>Supply chain compromise via signed update package. Detection delayed 72 hours due to trusted publisher flag.</p><p style="margin-top:12px">Further reading: guides/investigate/event-graph/</p><button onclick="document.getElementById('overlay').classList.remove('show')" style="margin-top:16px;padding:8px 16px;cursor:pointer">Close</button></div></div>
-  <p id="hint">WASD / arrows to walk aisles · Click drawer handle · Scroll doc with wheel</p>
+  <div id="crosshair" aria-hidden="true"></div>
+  <div id="look-hint">RIGHT-CLICK DRAG TO LOOK</div>
+  <p id="hint">WASD / arrows · walk corridor · right-click drag · look · click drawer handle · ESC close dossier</p>
+  <div id="overlay" role="dialog" aria-modal="true" aria-labelledby="doc-title">
+    <div id="doc-shell">
+      <button id="doc-close" type="button" aria-label="Close dossier">&times;</button>
+      <div id="doc-scroll"><div id="doc-inner"></div></div>
+    </div>
+  </div>
   <script src="assets/siem-core.js"></script>
   <script src="assets/palette.js"></script>
   <script>
-  (function(){
-    SiemCore.bootPage('archive'); SiemCore.AchievementSystem.check('visit_archive');
-    var root=document.getElementById('archive-root');
-    var scene=new THREE.Scene();scene.background=new THREE.Color(0x0a0618);
-    var cam=new THREE.PerspectiveCamera(60,root.clientWidth/root.clientHeight,0.1,100);cam.position.set(0,1.6,4);
-    var renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(root.clientWidth,root.clientHeight);root.appendChild(renderer.domElement);
-    scene.add(new THREE.AmbientLight(0x6366f1,0.4));var dl=new THREE.DirectionalLight(0xffffff,0.8);dl.position.set(2,4,3);scene.add(dl);
-    var floor=new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.MeshStandardMaterial({color:0x1e1b4b}));floor.rotation.x=-Math.PI/2;scene.add(floor);
-    for(var i=0;i<5;i++){var cab=new THREE.Mesh(new THREE.BoxGeometry(1.2,2,0.6),new THREE.MeshStandardMaterial({color:0x312e81}));cab.position.set(i*2-4,1,-2);cab.userData.drawer=i===2;scene.add(cab);
-      var handle=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.08,0.1),new THREE.MeshStandardMaterial({color:0xc4b5fd}));handle.position.set(i*2-4,0.6,-1.65);handle.userData.drawer=i===2;scene.add(handle);}
-    var keys={}; addEventListener('keydown',function(e){keys[e.key.toLowerCase()]=true;}); addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false;});
-    var ray=new THREE.Raycaster(),mouse=new THREE.Vector2();
-    renderer.domElement.addEventListener('click',function(e){
-      var r=renderer.domElement.getBoundingClientRect();
-      mouse.x=((e.clientX-r.left)/r.width)*2-1;mouse.y=-((e.clientY-r.top)/r.height)*2+1;
-      ray.setFromCamera(mouse,cam);
-      var hits=ray.intersectObjects(scene.children,true);
-      hits.forEach(function(h){if(h.object.userData.drawer){document.getElementById('overlay').classList.add('show');if(typeof Lenis!=='undefined'&&!window._archiveLenis){window._archiveLenis=new Lenis({wrapper:document.getElementById('doc'),content:document.getElementById('doc'),smoothWheel:true});function raf(t){window._archiveLenis.raf(t);requestAnimationFrame(raf);}requestAnimationFrame(raf);}}});
+  (function () {
+    SiemCore.bootPage('archive');
+    SiemCore.AchievementSystem.check('visit_archive');
+
+    var DOCUMENTS = [
+      {
+        id: 'M7-2019-004', date: '2019-11-14', classification: 'TOP SECRET',
+        title: 'Supply Chain Compromise — Signed Update Vector',
+        narrative: [
+          'On 14 November 2019, Meridian-7 ingest observed a sudden drop in endpoint telemetry from the finance VLAN — not because sensors failed, but because a trusted software vendor push had replaced the EDR agent with a co-signed stub. The update passed code-signing validation, hash allowlisting, and change-control ticket CHG-99201.',
+          'For seventy-two hours the SIEM treated publisher-trusted binaries as out-of-scope. Lateral movement occurred over SMB to three domain controllers before a correlation analyst noticed identical process lineage across unrelated business units.',
+          'Containment required isolating the update CDN mirror and revoking the intermediate certificate. The breach established Meridian-7\'s first publisher-reputation enrichment pipeline.'
+        ],
+        findings: ['Trusted code-signing bypassed perimeter controls', 'EDR blind spot during agent swap window', 'Cross-VLAN process lineage was the decisive signal'],
+        recommendations: ['Deploy publisher-reputation scoring on all signed binaries', 'Require out-of-band EDR heartbeat alerts during patch windows', 'Segment finance VLAN with explicit east-west logging'],
+        rule: 'rule=supply-chain-trust-anomaly threshold=1 window=24h action=ALERT CRIT'
+      },
+      {
+        id: 'M7-2020-017', date: '2020-03-22', classification: 'SECRET',
+        title: 'Ransomware Pivot — Macro Dropper and DNS Exfil',
+        narrative: [
+          'A single HR workstation executed a macro-enabled document at 09:14 UTC. Within four hours, backup servers in the secondary datacenter began reporting VSS deletion events while the SOC queue flooded with decoy failed-login alerts from unrelated subnets.',
+          'The real exfiltration ran as encoded TXT queries to domains resolving through Cloudflare fronting. Volume stayed under per-query thresholds until a hunting query joined DNS entropy with backup deletion timestamps.',
+          'Recovery took eleven days. The decoy alert storm was generated by a lightweight botnet rented to obscure the primary C2 channel.'
+        ],
+        findings: ['Decoy alert volume exceeded analyst capacity by 340%', 'DNS TXT tunnel averaged 847 queries in 4 minutes at peak', 'Backup deletion preceded encryption by 47 minutes'],
+        recommendations: ['Enable DNS tunnel correlation with backup integrity events', 'Cap per-source alert fan-out with adaptive suppression', 'Mandate macro-disabled GPO for non-engineering staff'],
+        rule: 'rule=dns-tunnel-backup-correlation threshold=3 window=15m action=ALERT HIGH'
+      },
+      {
+        id: 'M7-2021-031', date: '2021-07-08', classification: 'CONFIDENTIAL',
+        title: 'Cloud Misconfiguration — Public Object Storage',
+        narrative: [
+          'A Terraform apply intended to clone a staging bucket instead set acl=public-read on meridian-customer-pii-prod due to a copy-paste error in module v3.2.1. CloudTrail logged the change, but the SIEM rule scoped to on-prem syslog never evaluated the event.',
+          'Eleven days passed before an external researcher disclosed the exposure. During that window, 2.1 million records were indexed by a public search engine crawler.',
+          'The incident drove a unified cloud + on-prem detection fabric and mandatory drift detection on all IaC merges.'
+        ],
+        findings: ['SIEM rule existed but was scoped to on-prem only', 'CloudTrail delivery lag was 4 minutes — acceptable but unmonitored', 'No anomaly on bucket ACL change from break-glass account'],
+        recommendations: ['Extend rule scope to all cloud control planes', 'Alert on any public-read ACL for buckets tagged PII', 'Require dual approval for production Terraform applies'],
+        rule: 'rule=s3-public-acl-pii-tag action=ALERT CRIT integration=auto-remediate'
+      },
+      {
+        id: 'M7-2022-009', date: '2022-02-19', classification: 'SECRET',
+        title: 'Insider Exfiltration — Trusted Credentials, Abnormal Volume',
+        narrative: [
+          'A senior database administrator with ten years of tenure accessed customer tables via approved VPN during normal business hours. Behavior analytics scored the session as low risk because login time, geolocation, and MFA all matched baseline.',
+          'The anomaly was volume: 14.3 GB exported through an approved analytics pipeline over six sessions. UEBA finally flagged the account when transfer rate exceeded the 99th percentile by 280%.',
+          'Investigation confirmed deliberate collection ahead of departure to a competitor. Legal hold and HR proceedings followed within 48 hours.'
+        ],
+        findings: ['Behavioral baselines without volume context produce false negatives', 'Approved tooling can launder exfil if quotas are unenforced', 'Peer group comparison delayed detection by 9 days'],
+        recommendations: ['Add byte-volume thresholds to privileged analytics roles', 'Implement just-in-time elevation for bulk export APIs', 'Cross-reference HR departure pipeline with high-volume access'],
+        rule: 'rule=privileged-export-volume baseline=99th pct window=7d action=CREATE CASE'
+      },
+      {
+        id: 'M7-2023-022', date: '2023-05-03', classification: 'CONFIDENTIAL',
+        title: 'API Key Harvest — Shadow Rotation Gap',
+        narrative: [
+          'Rotated API keys lived in Vault, CI variables, and two Kubernetes secrets — but a fourth copy persisted in a deprecated Lambda environment on us-east-1. Attackers harvested the stale key from a public GitHub commit in a personal fork.',
+          'Abuse began as low-and-slow enumeration until rate limits tripped on the payment gateway integration. Correlation fired twelve hours after first abuse, limited by API gateway log delivery batching.',
+          'The key had been marked rotated in the CMDB but never revoked in the orphaned Lambda.'
+        ],
+        findings: ['CMDB rotation status did not propagate to all runtime environments', 'GitHub secret scanning was disabled on personal forks', 'Rate limit alert was the first high-fidelity signal'],
+        recommendations: ['Bind key revocation to CMDB rotation webhooks', 'Enable org-wide secret scanning including forks', 'Reduce API gateway log batch interval to 60 seconds'],
+        rule: 'rule=api-key-abuse-rate-limit threshold=500/min action=BLOCK KEY'
+      },
+      {
+        id: 'M7-2024-001', date: '2024-01-16', classification: 'TOP SECRET',
+        title: 'Zero-Day Exploitation — Edge Appliance RCE',
+        narrative: [
+          'No signature. No IOC. A nation-state affiliate exploited a same-day vulnerability in the perimeter SSL VPN appliance. Initial access occurred at machine speed: exploit, shell, credential dump, and lateral movement to the identity provider in under nine minutes.',
+          'Meridian-7 caught the chain via playbook-driven isolation triggers — impossible travel on service accounts combined with anomalous Kerberos ticket sizes. Playbooks written after the 2019 supply chain incident contained the blast radius to two subnets.',
+          'Vendor patch landed T+36 hours. Forensic imaging preserved memory artifacts confirming a previously unknown exploit chain.'
+        ],
+        findings: ['Signature-based IDS contributed zero pre-patch detections', 'Kerberos ticket anomaly rule fired T+7 minutes', 'Playbook isolation prevented crown-jewel access'],
+        recommendations: ['Maintain hot isolation playbooks for edge appliances', 'Deploy Kerberos anomaly baselines on all domain controllers', 'Subscribe to vendor same-day advisory feed with auto-ticket'],
+        rule: 'rule=kerberos-anomaly-lateral threshold=1 window=5m action=ISOLATE SUBNET'
+      },
+      {
+        id: 'M7-2018-112', date: '2018-09-27', classification: 'TOP SECRET',
+        title: 'Nation-State APT — Long-Dwell Reconnaissance',
+        narrative: [
+          'APT28-affiliated operators maintained persistence in the research division for eleven months using compromised contractor credentials and weekly-only C2 beacons to mimic software update traffic.',
+          'Discovery occurred when Meridian-7 deployed enhanced TLS inspection and flagged JA3 hash mismatches on outbound 443 sessions to a cloud storage provider in a non-standard region.',
+          'Exfiltration was minimal — the objective was intellectual property mapping for a subsequent campaign that was disrupted pre-execution.'
+        ],
+        findings: ['Weekly beaconing evaded daily threshold rules', 'Contractor account had no expiration policy', 'TLS fingerprinting was decisive after deployment'],
+        recommendations: ['Mandate 90-day contractor credential expiry', 'Deploy JA3/JA4 anomaly detection on egress proxies', 'Hunt for long-dwell low-frequency beacons quarterly'],
+        rule: 'rule=apt-beacon-ja3-anomaly window=30d action=ALERT CRIT hunt=mandatory'
+      },
+      {
+        id: 'M7-2021-044', date: '2021-11-02', classification: 'CONFIDENTIAL',
+        title: 'Credential Stuffing Campaign — Customer Portal',
+        narrative: [
+          'Between 02:00 and 05:00 UTC, 1.2 million authentication attempts hit the customer portal from 43,000 residential IPs. Success rate was 0.03% — enough to compromise 360 accounts with reused passwords.',
+          'WAF rate rules triggered but were tuned too permissively after a prior false-positive outage. The SIEM correlation rule on auth.success following auth.failure from disparate ASNs finally escalated at T+4 hours.',
+          'Mandatory password reset and MFA enrollment for affected accounts completed within 72 hours.'
+        ],
+        findings: ['WAF thresholds prioritized availability over security', 'Successful logins from new ASNs lacked geo velocity checks', 'Compromised accounts accessed payment methods before lockout'],
+        recommendations: ['Tighten WAF auth endpoint rate limits with SIEM feedback loop', 'Alert on auth.success from ASN not seen in 30-day baseline', 'Force MFA on any account with stuffing-pattern precursors'],
+        rule: 'rule=credential-stuffing-asn-velocity threshold=5 window=10m action=FORCE MFA'
+      },
+      {
+        id: 'M7-2020-088', date: '2020-08-11', classification: 'SECRET',
+        title: 'BGP Hijack — Traffic Redirection via Prefix Announcement',
+        narrative: [
+          'A upstream provider error caused Meridian-7\'s /22 announcement to be superseded by a more-specific /24 originated from an AS in Eastern Europe. For twenty-three minutes, VPN and API traffic routed through an unknown transit path.',
+          'Meridian-7\'s RPKI monitoring integration fired ROV failures within ninety seconds, but on-call escalation lagged because the alert route was misconfigured to a deprecated PagerDuty service.',
+          'No evidence of active interception was found, but the incident validated the case for RPKI ROA enforcement on all owned prefixes.'
+        ],
+        findings: ['RPKI alert fired correctly but escalation path was stale', 'More-specific prefix hijack bypassed standard BGP monitoring', 'Twenty-three minutes of anomalous routing affected 12% of sessions'],
+        recommendations: ['Audit all critical alert escalation paths quarterly', 'Enforce RPKI ROA maxLength on owned prefixes', 'Correlate BGP updates with VPN session anomaly spikes'],
+        rule: 'rule=bgp-rpki-failure action=ALERT CRIT escalate=netops-immediate'
+      },
+      {
+        id: 'M7-2019-067', date: '2019-06-03', classification: 'SECRET',
+        title: 'DNS Cache Poisoning — Resolver Compromise',
+        narrative: [
+          'Internal recursive resolvers were poisoned via a compromised management interface on an aging BIND deployment. Attackers injected A records for update.meridian-internal.net pointing to a sinkhole server serving a trojanized agent package.',
+          'Detection came from a mismatch between internal DNS responses and external resolver answers — a threat hunt query written after a conference briefing on DNS integrity.',
+          'Fourteen hosts retrieved the malicious package before DNSSEC validation was enforced on all internal zones.'
+        ],
+        findings: ['Legacy resolver management port exposed to operations VLAN', 'Internal vs external DNS answer divergence was the key signal', 'Package retrieval correlated with new process execution within 2 minutes'],
+        recommendations: ['Disable resolver management interfaces from production VLANs', 'Continuously compare internal/external DNS responses for critical zones', 'Require DNSSEC validation on all internal forwarders'],
+        rule: 'rule=dns-answer-divergence critical-zones=internal action=ALERT HIGH'
+      },
+      {
+        id: 'M7-2022-033', date: '2022-08-19', classification: 'CONFIDENTIAL',
+        title: 'Watering Hole — Industry Conference Site',
+        narrative: [
+          'A niche cybersecurity conference registration site was compromised to serve a fingerprinted exploit kit targeting visitors from Fortune 500 IP ranges. Three Meridian-7 analysts visiting the site from corporate VPN were affected.',
+          'The exploit required Chrome versions 103-105 with a specific V8 bug. EDR blocked shellcode execution on two workstations; the third lacked the current EDR sensor due to a pending reboot from patch Tuesday.',
+          'The compromised site shared hosting with fourteen other domains, expanding the investigation scope significantly.'
+        ],
+        findings: ['One analyst workstation missed EDR sensor update by 6 days', 'Watering hole targeted corporate egress IP ranges specifically', 'Browser exploit succeeded only on unpatched V8 builds'],
+        recommendations: ['Enforce EDR sensor currency with network quarantine for stale agents', 'Block newly registered domains at proxy for research staff', 'Deploy browser isolation for threat intel team browsing'],
+        rule: 'rule=edr-sensor-stale threshold=48h action=QUARANTINE VLAN'
+      },
+      {
+        id: 'M7-2021-019', date: '2021-04-07', classification: 'CONFIDENTIAL',
+        title: 'Physical USB Drop — Parking Lot Vector',
+        narrative: [
+          'Security guards recovered six USB drives labeled "2021 Compensation Review" from the executive parking level. Two devices were inserted into unlocked workstations before the security bulletin circulated.',
+          'Autorun was disabled, but a HID-emulating device on one USB triggered a keystroke injection sequence that downloaded a second-stage payload from a paste site. DLP blocked the outbound connection; the SIEM caught anomalous keyboard input timing.',
+          'Social engineering pretext matched an internal memo theme from a leaked all-hands summary.'
+        ],
+        findings: ['HID USB emulation bypassed traditional autorun controls', 'Keyboard input timing anomaly detected pre-download', 'Leaked all-hands content informed social engineering theme'],
+        recommendations: ['Deploy USB device class restrictions on all endpoints', 'Alert on anomalous keystroke burst patterns', 'Restrict physical access to executive parking with badge logs'],
+        rule: 'rule=hid-keystroke-injection-burst action=BLOCK USB CLASS'
+      },
+      {
+        id: 'M7-2023-011', date: '2023-02-28', classification: 'TOP SECRET',
+        title: 'Spear Phishing — Executive Wire Fraud Attempt',
+        narrative: [
+          'The CFO received a crafted email thread reconstructing an ongoing acquisition discussion with accurate participant names and partial message history harvested from a compromised legal counsel mailbox.',
+          'The wire transfer request for $2.4M was flagged by the finance SIEM integration when the destination account differed from any vendor in the ERP system, despite passing SPF and DKIM on the attacker\'s relay.',
+          'Legal counsel compromise was discovered via mailbox rule forwarding all sent items to an external address — a rule created six weeks prior.'
+        ],
+        findings: ['SPF/DKIM pass on relayed thread reconstruction', 'ERP vendor mismatch was the decisive fraud signal', 'Hidden mailbox forwarding rule predated the wire request by 6 weeks'],
+        recommendations: ['Alert on mailbox forwarding rules to external domains', 'Require dual approval for wire transfers above $500K', 'Correlate email thread reconstruction with new sender domains'],
+        rule: 'rule=wire-fraud-erp-vendor-mismatch action=HOLD TRANSFER notify=CFO'
+      },
+      {
+        id: 'M7-2022-041', date: '2022-10-05', classification: 'SECRET',
+        title: 'OAuth Token Theft — Consent Phishing',
+        narrative: [
+          'Users authorized a malicious Azure AD application named "Meridian Productivity Suite" that requested Mail.Read, Files.Read.All, and offline_access scopes. The app mimicked a legitimate vendor integration with a homoglyph domain in the consent URL.',
+          'Detection occurred when the app began bulk downloading SharePoint libraries at 03:00 UTC — activity scored by UEBA as anomalous for the affected accounts\' historical patterns.',
+          'Twenty-two accounts granted consent before the app registration was disabled at the tenant level.'
+        ],
+        findings: ['Homoglyph domain bypassed casual visual inspection', 'Bulk SharePoint download at off-hours triggered UEBA', 'Consent phishing bypassed password-based MFA entirely'],
+        recommendations: ['Restrict user consent to admin-approved apps only', 'Alert on new OAuth grants requesting Mail.Read + Files.Read.All', 'Deploy homoglyph detection on consent URLs'],
+        rule: 'rule=oauth-consent-scope-anomaly scopes=Mail.Read,Files.Read.All action=REVOKE TOKEN'
+      },
+      {
+        id: 'M7-2023-028', date: '2023-08-14', classification: 'SECRET',
+        title: 'Container Escape — Privileged Pod Exploit',
+        narrative: [
+          'A developer deployed a CI test pod with privileged: true and hostPID: true against cluster policy. An attacker who had compromised the CI pipeline executed a container escape via cgroups release_agent manipulation.',
+          'Runtime security on the node flagged an unexpected process executing from the host mount namespace. The SIEM correlated the process event with the preceding kubectl apply from a service account not authorized for privileged workloads.',
+          'Host forensics confirmed root access on the worker node; all pods on the node were evicted and the AMI was rebuilt.'
+        ],
+        findings: ['CI service account had excessive RBAC permissions', 'Privileged pod policy exception was never revoked after testing', 'Container escape detected in 4 minutes via runtime sensor'],
+        recommendations: ['Enforce OPA/Gatekeeper deny on privileged pods in production', 'Alert on kubectl apply with privileged from CI accounts', 'Deploy runtime escape detection on all worker nodes'],
+        rule: 'rule=k8s-privileged-pod-ci-origin action=ALERT CRIT auto-evict=true'
+      },
+      {
+        id: 'M7-2024-012', date: '2024-04-02', classification: 'TOP SECRET',
+        title: 'Kubernetes Cluster Compromise — Exposed Dashboard',
+        narrative: [
+          'A misconfigured load balancer exposed the Kubernetes dashboard to the internet on port 443 with default credentials still set on a break-glass admin account. Shodan indexing occurred within four hours of the misconfiguration.',
+          'Attackers deployed cryptocurrency miners across four namespaces before the SIEM detected anomalous CPU requests and unauthorized DaemonSet creation. The cluster autoscaler amplified the compute cost impact.',
+          'Total cloud spend spike of $47,000 over a weekend was the financial trigger for executive escalation.'
+        ],
+        findings: ['Break-glass credentials were never rotated after cluster provisioning', 'Dashboard exposed via LB misconfiguration outside Terraform', 'DaemonSet creation by unknown SA was first technical signal'],
+        recommendations: ['Disable dashboard in production clusters entirely', 'Alert on DaemonSet creation from non-system service accounts', 'Implement cloud spend anomaly detection with 2-hour SLA'],
+        rule: 'rule=k8s-unauthorized-daemonset action=ALERT CRIT integration=cluster-isolate'
+      },
+      {
+        id: 'M7-2020-055', date: '2020-12-18', classification: 'CONFIDENTIAL',
+        title: 'BEC Wire Transfer — Vendor Impersonation',
+        narrative: [
+          'Accounts payable received a forged invoice from a lookalike domain differing by one character from a legitimate logistics vendor. The email passed DMARC because the attacker used a compromised partner mailbox to originate the message.',
+          'Meridian-7 flagged the anomaly when the bank account on the invoice did not match any record in the vendor master file, despite the email originating from a DMARC-passing domain.',
+          'Payment was halted mid-processing. Partner mailbox compromise was confirmed via threat intel sharing with the logistics firm.'
+        ],
+        findings: ['DMARC pass on compromised partner origin', 'Invoice bank account mismatch detected via ERP integration', 'Lookalike domain registered 48 hours before invoice'],
+        recommendations: ['Verify all payment detail changes via out-of-band phone call', 'Alert on new domain registrations similar to tier-1 vendors', 'Integrate ERP vendor bank account validation on all AP workflows'],
+        rule: 'rule=bec-vendor-bank-account-drift action=HOLD PAYMENT'
+      },
+      {
+        id: 'M7-2023-035', date: '2023-11-09', classification: 'CONFIDENTIAL',
+        title: 'MFA Fatigue — Push Notification Bombing',
+        narrative: [
+          'An attacker with a valid username and password from a prior breach spammed MFA push notifications to a helpdesk supervisor\'s phone between 01:00 and 01:47 UTC. The supervisor eventually approved one request to silence the alerts.',
+          'Meridian-7 detected the compromise via impossible travel: successful auth from Romania four minutes after a legitimate session from Virginia. The MFA approval count — 34 pushes in 47 minutes — became a new correlation signal.',
+          'Session was terminated and all privileged tokens revoked within 12 minutes of the approval.'
+        ],
+        findings: ['MFA push bombing exploited human fatigue at off-hours', '34 push approvals in 47 minutes is a quantifiable signal', 'Password was valid from unrelated prior third-party breach'],
+        recommendations: ['Deploy number-matching MFA for all privileged accounts', 'Alert on greater than 10 MFA pushes to single user in 15 minutes', 'Block auth from countries not in user\'s historical profile'],
+        rule: 'rule=mfa-push-bombing threshold=10 window=15m action=BLOCK AUTH'
+      },
+      {
+        id: 'M7-2021-058', date: '2021-09-15', classification: 'CONFIDENTIAL',
+        title: 'SQL Injection — Legacy Reporting Portal',
+        narrative: [
+          'A legacy PHP reporting portal, excluded from the annual pen test scope due to planned decommission, was hit by automated SQL injection via the sort parameter. The attacker extracted 8,400 user records including bcrypt password hashes.',
+          'WAF signatures were outdated for the portal\'s custom encoding scheme. Detection came from database audit logs showing UNION queries from the web service account — an account that should only execute parameterized stored procedures.',
+          'Portal was taken offline within two hours. Decommission timeline was accelerated from Q2 to immediate.'
+        ],
+        findings: ['Legacy app excluded from security testing scope', 'Web service DB account had excessive SELECT privileges', 'Database audit logging was the sole detection source'],
+        recommendations: ['Remove all legacy apps from pen test exclusions', 'Restrict web service accounts to stored procedure execution only', 'Alert on UNION keyword in application DB query logs'],
+        rule: 'rule=sqli-union-db-audit action=ALERT HIGH block=source-ip'
+      },
+      {
+        id: 'M7-2022-019', date: '2022-05-27', classification: 'CONFIDENTIAL',
+        title: 'Cryptomining Outbreak — East-West Propagation',
+        narrative: [
+          'A Tomcat deserialization vulnerability on a staging server was exploited to deploy XMRig. The miner propagated via stolen service credentials to fourteen production-adjacent hosts before CPU threshold alerts fired.',
+          'Staging environments lacked the production SIEM forwarder agent — a cost-saving measure reversed immediately after this incident. Production detection occurred only when east-west traffic to a public pool on port 3333 was blocked by a newly deployed IDS rule.',
+          'Estimated electricity and cloud compute waste: $12,400 over nine days.'
+        ],
+        findings: ['Staging servers lacked SIEM agent coverage', 'Service credential reuse enabled east-west spread', 'Port 3333 outbound to mining pools was unblocked'],
+        recommendations: ['Mandate SIEM agents on all environments including staging', 'Block outbound mining pool ports at egress firewall', 'Alert on sustained CPU above 85% for more than 30 minutes'],
+        rule: 'rule=cryptomine-cpu-sustained threshold=85% window=30m action=ISOLATE HOST'
+      },
+      {
+        id: 'M7-2023-019', date: '2023-07-22', classification: 'SECRET',
+        title: 'Tor Exit Exfiltration — Anonymized Data Staging',
+        narrative: [
+          'An insider staged 6.7 GB of intellectual property on a personal cloud drive, then used Tor Browser from a corporate workstation to verify upload completion through an exit node. NetFlow showed TLS to known Tor guard nodes.',
+          'DLP blocked the initial upload attempt to the personal drive, but a second attempt succeeded via an allowed business collaboration platform abused as a staging area.',
+          'Tor exit connection from corporate workstation was the evidentiary signal that triggered legal proceedings.'
+        ],
+        findings: ['Collaboration platform allowed uploads DLP flagged elsewhere', 'Tor guard node connections visible in NetFlow metadata', 'Insider used approved tool to launder exfil path'],
+        recommendations: ['Block Tor guard/bridge IPs at corporate egress', 'Unify DLP policies across all cloud storage integrations', 'Alert on Tor-related TLS SNI from managed endpoints'],
+        rule: 'rule=tor-exit-corporate-egress action=ALERT CRIT isolate=workstation'
+      },
+      {
+        id: 'M7-2024-008', date: '2024-03-11', classification: 'SECRET',
+        title: 'Double Extortion Ransomware — Data Leak Site Posting',
+        narrative: [
+          'Ransomware operators exfiltrated 340 GB before encryption and posted a proof archive on a leak site when Meridian-7 refused negotiation. The encryption phase was contained to three file servers; exfil had occurred over five nights via scheduled tasks.',
+          'Scheduled task creation at 02:00 UTC across multiple hosts was the hunting query that revealed the pre-encryption staging. NDR detected the exfil volume but below the threshold calibrated for backup windows.',
+          'Recovery from clean backups took 36 hours. Legal and PR teams managed leak site takedown via threat intel retainer.'
+        ],
+        findings: ['Scheduled task creation at uniform off-hours across hosts', 'Exfil volume masked by overlapping backup traffic', 'Leak site posting preceded encryption by 72 hours'],
+        recommendations: ['Alert on identical scheduled tasks created on more than 3 hosts in 24h', 'Separate exfil detection thresholds for backup vs business hours', 'Pre-negotiate leak site monitoring with threat intel provider'],
+        rule: 'rule=ransomware-scheduled-task-spray threshold=3 window=24h action=ALERT CRIT'
+      },
+      {
+        id: 'M7-2022-027', date: '2022-07-04', classification: 'SECRET',
+        title: 'Privilege Abuse — Domain Admin Impersonation',
+        narrative: [
+          'A helpdesk technician used a cached Domain Admin credential from a legacy RDP session on a jump box to access HR systems outside any approved ticket. The action violated separation of duties but used technically valid credentials.',
+          'Meridian-7 UEBA flagged the session because the technician\'s role had never previously accessed the HR admin console, and the access occurred on a US holiday when HR staff were absent.',
+          'Investigation revealed a pattern of three similar accesses over two months, each justified post-hoc with forged ticket numbers.'
+        ],
+        findings: ['Cached DA credentials on jump box violated tiering policy', 'Role-based access anomaly detected via UEBA', 'Forged ticket numbers discovered in retrospective audit'],
+        recommendations: ['Enforce credential guard on all tier-0 accounts', 'Alert when helpdesk roles access HR/finance admin consoles', 'Require live ticket API validation for privileged access'],
+        rule: 'rule=privilege-role-anomaly tier0-cached action=ALERT HIGH revoke=session'
+      },
+      {
+        id: 'M7-2021-072', date: '2021-12-30', classification: 'CONFIDENTIAL',
+        title: 'DDoS Distraction — SYN Flood During Lateral Movement',
+        narrative: [
+          'A volumetric SYN flood against the public API gateway peaked at 180 Gbps during the final week of December. While network operations focused on scrubbing center failover, attackers moved laterally from a compromised API microservice to the payment processing subnet.',
+          'The DDoS was a distraction: attack bandwidth correlated with lateral SMB traffic but the SOC war room was split across two incidents. Unified timeline view in Meridian-7 finally correlated the events when an analyst overlaid NetFlow with DDoS mitigation logs.',
+          'Payment subnet isolation prevented transaction data access. The microservice vulnerability was a known Log4j instance on an unpatched container.'
+        ],
+        findings: ['DDoS and lateral movement occurred simultaneously by design', 'SOC split attention delayed lateral movement detection by 2 hours', 'Log4j patch was pending on one container for 19 days'],
+        recommendations: ['Maintain unified timeline during concurrent incidents', 'Auto-escalate lateral movement alerts during active DDoS', 'Enforce patch SLA of 72 hours for critical CVEs on external-facing services'],
+        rule: 'rule=ddos-lateral-movement-correlation action=ALERT CRIT mode=unified-timeline'
+      }
+    ];
+
+    var root = document.getElementById('archive-root');
+    var overlay = document.getElementById('overlay');
+    var docInner = document.getElementById('doc-inner');
+    var docScroll = document.getElementById('doc-scroll');
+    var activeDrawer = null;
+    var lenisInstance = null;
+    var lenisRaf = null;
+    var openedDocs = {};
+
+    var scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0618);
+    scene.fog = new THREE.Fog(0x0a0618, 8, 25);
+
+    var camera = new THREE.PerspectiveCamera(68, root.clientWidth / root.clientHeight, 0.08, 60);
+    camera.position.set(0, 1.6, 6);
+
+    var renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(root.clientWidth, root.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    root.appendChild(renderer.domElement);
+
+    scene.add(new THREE.AmbientLight(0x6366f1, 0.28));
+    var dirLight = new THREE.DirectionalLight(0xc4b5fd, 0.55);
+    dirLight.position.set(0, 5, 2);
+    dirLight.castShadow = true;
+    scene.add(dirLight);
+
+    var floorCanvas = document.createElement('canvas');
+    floorCanvas.width = 512;
+    floorCanvas.height = 512;
+    var fctx = floorCanvas.getContext('2d');
+    fctx.fillStyle = '#0f0d24';
+    fctx.fillRect(0, 0, 512, 512);
+    fctx.strokeStyle = 'rgba(99,102,241,0.22)';
+    fctx.lineWidth = 1;
+    for (var g = 0; g <= 512; g += 32) {
+      fctx.beginPath(); fctx.moveTo(g, 0); fctx.lineTo(g, 512); fctx.stroke();
+      fctx.beginPath(); fctx.moveTo(0, g); fctx.lineTo(512, g); fctx.stroke();
+    }
+    var floorTex = new THREE.CanvasTexture(floorCanvas);
+    floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping;
+    floorTex.repeat.set(8, 16);
+    var floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(14, 28),
+      new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.85, metalness: 0.1 })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    var ceiling = new THREE.Mesh(
+      new THREE.PlaneGeometry(14, 28),
+      new THREE.MeshStandardMaterial({ color: 0x080614, roughness: 1 })
+    );
+    ceiling.rotation.x = Math.PI / 2;
+    ceiling.position.y = 3.2;
+    scene.add(ceiling);
+
+    var wallMat = new THREE.MeshStandardMaterial({ color: 0x120e2a, roughness: 0.95 });
+    var backWall = new THREE.Mesh(new THREE.PlaneGeometry(14, 3.2), wallMat);
+    backWall.position.set(0, 1.6, -8);
+    scene.add(backWall);
+    var frontWall = backWall.clone();
+    frontWall.position.z = 8;
+    frontWall.rotation.y = Math.PI;
+    scene.add(frontWall);
+
+    var lightPositions = [-4, -1.5, 1.5, 4];
+    lightPositions.forEach(function (lx) {
+      var housing = new THREE.Mesh(
+        new THREE.BoxGeometry(1.4, 0.08, 0.5),
+        new THREE.MeshStandardMaterial({ color: 0x1e1b4b, emissive: 0x312e81, emissiveIntensity: 0.3 })
+      );
+      housing.position.set(lx, 3.05, 0);
+      scene.add(housing);
+      var glow = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.2, 0.4),
+        new THREE.MeshBasicMaterial({ color: 0xc4b5fd, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending })
+      );
+      glow.position.set(lx, 3.0, 0);
+      glow.rotation.x = Math.PI / 2;
+      scene.add(glow);
+      var spot = new THREE.SpotLight(0xc4b5fd, 1.2, 12, Math.PI / 4, 0.4, 1.5);
+      spot.position.set(lx, 2.95, 0);
+      spot.target.position.set(lx, 0, 0);
+      scene.add(spot);
+      scene.add(spot.target);
     });
-    addEventListener('resize',function(){cam.aspect=root.clientWidth/root.clientHeight;cam.updateProjectionMatrix();renderer.setSize(root.clientWidth,root.clientHeight);});
-    function animate(){
-      var spd=0.04;
-      if(keys['w']||keys['arrowup'])cam.position.z-=spd;
-      if(keys['s']||keys['arrowdown'])cam.position.z+=spd;
-      if(keys['a']||keys['arrowleft'])cam.position.x-=spd;
-      if(keys['d']||keys['arrowright'])cam.position.x+=spd;
-      cam.position.x=Math.max(-4,Math.min(4,cam.position.x));cam.position.z=Math.max(1.5,Math.min(6,cam.position.z));
-      requestAnimationFrame(animate);renderer.render(scene,cam);
-    } animate();
+
+    var drawerMeshes = [];
+    var cabMat = new THREE.MeshStandardMaterial({ color: 0x1e1b4b, roughness: 0.7, metalness: 0.15 });
+    var drawerBodyMat = new THREE.MeshStandardMaterial({ color: 0x252350, roughness: 0.65, metalness: 0.2 });
+    var handleMat = new THREE.MeshStandardMaterial({ color: 0xc4b5fd, roughness: 0.35, metalness: 0.55, emissive: 0x6366f1, emissiveIntensity: 0.15 });
+
+    var zPositions = [-5.5, -2.8, -0.1, 2.6];
+    var docIdx = 0;
+
+    function buildCabinet(side, col) {
+      var x = side * 2.35;
+      var z = zPositions[col];
+      var cabGroup = new THREE.Group();
+      cabGroup.position.set(x, 0, z);
+      if (side < 0) cabGroup.rotation.y = Math.PI / 2;
+      else cabGroup.rotation.y = -Math.PI / 2;
+
+      var shell = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2, 0.6), cabMat);
+      shell.position.y = 1;
+      shell.castShadow = true;
+      cabGroup.add(shell);
+
+      var drawerH = 0.58;
+      var gap = 0.06;
+      for (var d = 0; d < 3; d++) {
+        var drawerGroup = new THREE.Group();
+        var yBase = 0.35 + d * (drawerH + gap);
+        var body = new THREE.Mesh(new THREE.BoxGeometry(1.05, drawerH - 0.04, 0.52), drawerBodyMat);
+        body.position.y = yBase + drawerH / 2;
+        drawerGroup.add(body);
+        var handle = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.07, 0.08), handleMat);
+        handle.position.set(0, yBase + drawerH / 2, 0.28);
+        handle.userData.isHandle = true;
+        drawerGroup.add(handle);
+        var label = docIdx;
+        drawerGroup.userData.docId = label;
+        drawerGroup.userData.openOffset = 0;
+        drawerGroup.userData.side = side;
+        handle.userData.docId = label;
+        handle.userData.parentDrawer = drawerGroup;
+        drawerMeshes.push(handle);
+        drawerMeshes.push(body);
+        body.userData.docId = label;
+        body.userData.parentDrawer = drawerGroup;
+        cabGroup.add(drawerGroup);
+        docIdx++;
+      }
+      scene.add(cabGroup);
+    }
+
+    for (var col = 0; col < 4; col++) {
+      buildCabinet(-1, col);
+      buildCabinet(1, col);
+    }
+
+    var keys = {};
+    var yaw = 0;
+    var pitch = 0;
+    var looking = false;
+    var lookStart = { x: 0, y: 0 };
+    var velocity = new THREE.Vector3();
+    var direction = new THREE.Vector3();
+    var moveSpeed = 2.8;
+
+    window.addEventListener('keydown', function (e) { keys[e.key.toLowerCase()] = true; });
+    window.addEventListener('keyup', function (e) { keys[e.key.toLowerCase()] = false; });
+
+    renderer.domElement.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    renderer.domElement.addEventListener('mousedown', function (e) {
+      if (e.button === 2) {
+        looking = true;
+        lookStart.x = e.clientX;
+        lookStart.y = e.clientY;
+        document.getElementById('look-hint').classList.remove('visible');
+      }
+    });
+    window.addEventListener('mouseup', function () { looking = false; });
+    window.addEventListener('mousemove', function (e) {
+      if (!looking) return;
+      var dx = e.clientX - lookStart.x;
+      var dy = e.clientY - lookStart.y;
+      lookStart.x = e.clientX;
+      lookStart.y = e.clientY;
+      yaw -= dx * 0.0022;
+      pitch -= dy * 0.0022;
+      pitch = Math.max(-0.6, Math.min(0.6, pitch));
+    });
+
+    setTimeout(function () {
+      document.getElementById('look-hint').classList.add('visible');
+      setTimeout(function () { document.getElementById('look-hint').classList.remove('visible'); }, 3200);
+    }, 800);
+
+    var raycaster = new THREE.Raycaster();
+    var mouse = new THREE.Vector2();
+
+    function renderDocument(docId) {
+      var doc = DOCUMENTS[docId];
+      if (!doc) return;
+      var cls = doc.classification.toLowerCase().replace(/\s+/g, '');
+      var stampClass = cls === 'topsecret' ? 'topsecret' : cls === 'secret' ? 'secret' : 'confidential';
+      docInner.innerHTML =
+        '<div class="stamp ' + stampClass + '">' + doc.classification + '</div>' +
+        '<h2 id="doc-title">' + doc.title + '</h2>' +
+        '<div class="doc-date">INCIDENT ' + doc.id + ' · FILED ' + doc.date + '</div>' +
+        doc.narrative.map(function (p) { return '<p>' + p + '</p>'; }).join('') +
+        '<h3>KEY FINDINGS</h3><ul>' + doc.findings.map(function (f) { return '<li>' + f + '</li>'; }).join('') + '</ul>' +
+        '<h3>RECOMMENDATIONS</h3><ul>' + doc.recommendations.map(function (r) { return '<li>' + r + '</li>'; }).join('') + '</ul>' +
+        '<div class="rule-block">SIEM RULE DEPLOYED: ' + doc.rule + '</div>';
+    }
+
+    function openDrawer(drawerGroup) {
+      if (activeDrawer && activeDrawer !== drawerGroup) closeDrawer(activeDrawer, false);
+      activeDrawer = drawerGroup;
+      var docId = drawerGroup.userData.docId;
+      if (typeof gsap !== 'undefined') {
+        gsap.to(drawerGroup.position, { z: 0.32, duration: 0.4, ease: 'power2.out' });
+      } else {
+        drawerGroup.position.z = 0.32;
+      }
+      drawerGroup.userData.openOffset = 0.32;
+      renderDocument(docId);
+      overlay.classList.add('show');
+      openedDocs[docId] = true;
+      if (Object.keys(openedDocs).length >= 3) SiemCore.AchievementSystem.check('archive_explorer');
+      initLenis();
+    }
+
+    function closeDrawer(drawerGroup, hideOverlay) {
+      if (!drawerGroup) return;
+      if (typeof gsap !== 'undefined') {
+        gsap.to(drawerGroup.position, { z: 0, duration: 0.38, ease: 'power2.in' });
+      } else {
+        drawerGroup.position.z = 0;
+      }
+      drawerGroup.userData.openOffset = 0;
+      if (hideOverlay !== false) {
+        overlay.classList.remove('show');
+        activeDrawer = null;
+        destroyLenis();
+      }
+    }
+
+    function initLenis() {
+      destroyLenis();
+      if (typeof Lenis === 'undefined') return;
+      docScroll.scrollTop = 0;
+      lenisInstance = new Lenis({
+        wrapper: docScroll,
+        content: docInner,
+        smoothWheel: true,
+        duration: 1.1
+      });
+      function raf(t) {
+        lenisInstance.raf(t);
+        lenisRaf = requestAnimationFrame(raf);
+      }
+      lenisRaf = requestAnimationFrame(raf);
+    }
+
+    function destroyLenis() {
+      if (lenisRaf) cancelAnimationFrame(lenisRaf);
+      lenisRaf = null;
+      if (lenisInstance) { lenisInstance.destroy(); lenisInstance = null; }
+    }
+
+    function closeOverlay() {
+      if (activeDrawer) closeDrawer(activeDrawer, true);
+      else overlay.classList.remove('show');
+    }
+
+    document.getElementById('doc-close').addEventListener('click', closeOverlay);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeOverlay(); });
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeOverlay();
+    });
+
+    renderer.domElement.addEventListener('click', function (e) {
+      if (e.button !== 0) return;
+      var rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      var hits = raycaster.intersectObjects(drawerMeshes, false);
+      if (hits.length) {
+        var obj = hits[0].object;
+        var drawer = obj.userData.parentDrawer;
+        if (drawer) openDrawer(drawer);
+      }
+    });
+
+    var clock = new THREE.Clock();
+
+    function updateMovement(dt) {
+      direction.set(0, 0, 0);
+      if (keys['w'] || keys['arrowup']) direction.z -= 1;
+      if (keys['s'] || keys['arrowdown']) direction.z += 1;
+      if (keys['a'] || keys['arrowleft']) direction.x -= 1;
+      if (keys['d'] || keys['arrowright']) direction.x += 1;
+      if (direction.lengthSq() > 0) {
+        direction.normalize();
+        var sinY = Math.sin(yaw);
+        var cosY = Math.cos(yaw);
+        var forward = new THREE.Vector3(sinY, 0, cosY);
+        var right = new THREE.Vector3(cosY, 0, -sinY);
+        velocity.copy(forward.multiplyScalar(-direction.z).add(right.multiplyScalar(direction.x)));
+        velocity.multiplyScalar(moveSpeed * dt);
+        camera.position.add(velocity);
+      }
+      camera.position.x = Math.max(-1.8, Math.min(1.8, camera.position.x));
+      camera.position.z = Math.max(-6.5, Math.min(6.5, camera.position.z));
+      camera.position.y = 1.6;
+      camera.rotation.order = 'YXZ';
+      camera.rotation.y = yaw;
+      camera.rotation.x = pitch;
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      var dt = Math.min(clock.getDelta(), 0.05);
+      if (!overlay.classList.contains('show')) updateMovement(dt);
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', function () {
+      camera.aspect = root.clientWidth / root.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(root.clientWidth, root.clientHeight);
+    });
   })();
   </script>
   <div id="deck-nav-root"></div>

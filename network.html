@@ -7,7 +7,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <meta name="description" content="45-node threat graph with packet capture and live event engine." />
+  <meta name="description" content="45-node threat graph with packet capture, live propagation engine, and starfield telemetry overlay." />
   <meta property="og:title" content="The Ghost Network — HABIBI-SIEM" />
   <meta property="og:description" content="45-node threat graph with packet capture and live event engine." />
   <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/network-og.png" />
@@ -15,68 +15,1474 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="The Ghost Network — HABIBI-SIEM" />
   <meta name="twitter:description" content="45-node threat graph with packet capture and live event engine." />
-  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/network-og.png" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/network-og.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Ghost Network — Meridian-7</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/palette.css" />
   <link rel="stylesheet" href="assets/deck-nav.css" />
   <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:#020617;color:#e2e8f0;font-family:system-ui,sans-serif;overflow:hidden}
-    #hdr{position:fixed;top:0;left:0;right:0;height:40px;display:flex;align-items:center;gap:12px;padding:0 12px;background:rgba(15,23,42,.95);border-bottom:1px solid rgba(56,189,248,.2);font:600 10px/1 monospace;letter-spacing:2px;z-index:5}
-    #starfield{position:fixed;inset:40px 320px 0 0;pointer-events:none;z-index:0}
-    #graph{position:fixed;inset:40px 320px 0 0;z-index:1}#drawer{position:fixed;top:40px;right:0;width:320px;bottom:0;background:rgba(15,23,42,.96);border-left:1px solid rgba(56,189,248,.15);padding:16px;font-size:12px;overflow:auto;z-index:2}
-    #drawer h3{font-size:11px;letter-spacing:2px;color:#38bdf8;margin-bottom:8px}
-    .muted{color:#64748b}.btn{font:inherit;padding:6px 10px;margin-top:8px;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.35);color:#e2e8f0;cursor:pointer}
-    #packet-modal{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:50;padding:24px}
-    #packet-modal.on{display:flex}
-    #packet-body{max-width:640px;width:100%;background:#0f172a;border:1px solid #334155;font:10px/1.5 Consolas,monospace;color:#34d399;padding:16px;max-height:70vh;overflow:auto;white-space:pre-wrap}
+    :root {
+      --bg-deep: #020617;
+      --bg-violet: #0a0618;
+      --blue: #38bdf8;
+      --green: #39ff14;
+      --indigo: #6366f1;
+      --violet: #c4b5fd;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --emerald: #34d399;
+      --ink: #e2e8f0;
+      --muted: #64748b;
+      --line: rgba(56, 189, 248, 0.22);
+      --panel: rgba(10, 6, 24, 0.94);
+      --drawer-w: 340px;
+      --hdr-h: 52px;
+      --ticker-h: 36px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at 18% 12%, rgba(99, 102, 241, 0.12), transparent 38%), var(--bg-deep);
+      color: var(--ink);
+      font-family: "IBM Plex Mono", Consolas, monospace;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.08) 0px,
+        rgba(0, 0, 0, 0.08) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      opacity: 0.35;
+    }
+
+    #top-hdr {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--hdr-h);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      z-index: 20;
+      backdrop-filter: blur(4px);
+    }
+
+    #brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2.4px;
+      text-transform: uppercase;
+      color: var(--blue);
+      min-width: 280px;
+    }
+
+    #brand-led {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px rgba(57, 255, 20, 0.75);
+      animation: ledPulse 2.4s ease infinite;
+    }
+
+    @keyframes ledPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.55; transform: scale(0.88); }
+    }
+
+    #stats-strip {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      flex: 1;
+    }
+
+    .stat-val {
+      color: var(--violet);
+      font-weight: 600;
+    }
+
+    .stat-val.threat {
+      color: var(--red);
+      text-shadow: 0 0 8px rgba(248, 113, 113, 0.55);
+    }
+
+    #controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .ctrl-btn {
+      font: inherit;
+      font-size: 9px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 7px 12px;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      background: rgba(56, 189, 248, 0.08);
+      color: var(--ink);
+      cursor: pointer;
+      transition: background 220ms ease, border-color 220ms ease, box-shadow 220ms ease, color 220ms ease;
+    }
+
+    .ctrl-btn:hover:not(:disabled) {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: rgba(56, 189, 248, 0.65);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    }
+
+    .ctrl-btn:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+
+    .ctrl-btn.active {
+      border-color: rgba(57, 255, 20, 0.55);
+      background: rgba(57, 255, 20, 0.1);
+      color: var(--green);
+      box-shadow: 0 0 10px rgba(57, 255, 20, 0.25);
+    }
+
+    .ctrl-btn.danger {
+      border-color: rgba(248, 113, 113, 0.45);
+      background: rgba(248, 113, 113, 0.1);
+    }
+
+    #speed-indicator {
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--amber);
+      min-width: 72px;
+      text-align: center;
+    }
+
+    #stage-wrap {
+      position: fixed;
+      top: var(--hdr-h);
+      left: 0;
+      right: var(--drawer-w);
+      bottom: var(--ticker-h);
+      overflow: hidden;
+    }
+
+    #starfield {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    #graph-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    #legend {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      z-index: 4;
+      padding: 10px 12px;
+      background: rgba(2, 6, 23, 0.82);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      font-size: 9px;
+      letter-spacing: 0.8px;
+      min-width: 168px;
+      backdrop-filter: blur(3px);
+    }
+
+    #legend h4 {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--blue);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+      color: var(--muted);
+    }
+
+    .legend-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .legend-icon {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    #tooltip {
+      position: fixed;
+      pointer-events: none;
+      z-index: 30;
+      padding: 6px 10px;
+      background: rgba(10, 6, 24, 0.96);
+      border: 1px solid rgba(196, 181, 253, 0.35);
+      font-size: 10px;
+      letter-spacing: 0.6px;
+      opacity: 0;
+      transform: translate(-50%, -120%);
+      transition: opacity 180ms ease;
+      white-space: nowrap;
+      box-shadow: 0 0 14px rgba(99, 102, 241, 0.25);
+    }
+
+    #tooltip.visible {
+      opacity: 1;
+    }
+
+    #tooltip .tip-name {
+      color: var(--violet);
+      font-weight: 600;
+    }
+
+    #tooltip .tip-ip {
+      color: var(--blue);
+      margin-top: 2px;
+    }
+
+    #drawer {
+      position: fixed;
+      top: var(--hdr-h);
+      right: 0;
+      width: var(--drawer-w);
+      bottom: var(--ticker-h);
+      background: var(--panel);
+      border-left: 1px solid rgba(56, 189, 248, 0.18);
+      z-index: 15;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #drawer-head {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.14);
+    }
+
+    #drawer-head h2 {
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      color: var(--blue);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    #drawer-head p {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.8px;
+    }
+
+    #drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px 18px;
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    #drawer-empty {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      padding-top: 24px;
+      text-align: center;
+    }
+
+    .detail-block {
+      margin-bottom: 14px;
+    }
+
+    .detail-label {
+      font-size: 8px;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .detail-value {
+      color: var(--ink);
+      word-break: break-all;
+    }
+
+    .detail-value.highlight {
+      color: var(--amber);
+      font-weight: 600;
+    }
+
+    .threat-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      font-size: 9px;
+      letter-spacing: 1px;
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      color: var(--emerald);
+      background: rgba(52, 211, 153, 0.08);
+    }
+
+    .threat-badge.compromised {
+      border-color: rgba(248, 113, 113, 0.55);
+      color: var(--red);
+      background: rgba(248, 113, 113, 0.12);
+      box-shadow: 0 0 10px rgba(248, 113, 113, 0.35);
+      animation: threatPulse 1.6s ease infinite;
+    }
+
+    .threat-badge.isolated {
+      border-color: rgba(100, 116, 139, 0.5);
+      color: var(--muted);
+      background: rgba(100, 116, 139, 0.12);
+    }
+
+    @keyframes threatPulse {
+      0%, 100% { box-shadow: 0 0 8px rgba(248, 113, 113, 0.35); }
+      50% { box-shadow: 0 0 16px rgba(248, 113, 113, 0.65); }
+    }
+
+    #conn-list {
+      list-style: none;
+      max-height: 120px;
+      overflow-y: auto;
+      border: 1px solid rgba(56, 189, 248, 0.12);
+      background: rgba(2, 6, 23, 0.55);
+    }
+
+    #conn-list li {
+      padding: 5px 8px;
+      font-size: 10px;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.08);
+      color: var(--violet);
+      cursor: pointer;
+      transition: background 180ms ease;
+    }
+
+    #conn-list li:hover {
+      background: rgba(99, 102, 241, 0.12);
+    }
+
+    #conn-list li:last-child {
+      border-bottom: none;
+    }
+
+    #event-log-local {
+      font-size: 9px;
+      line-height: 1.6;
+      color: var(--muted);
+      border-left: 2px solid rgba(56, 189, 248, 0.25);
+      padding-left: 8px;
+      max-height: 110px;
+      overflow-y: auto;
+    }
+
+    #event-log-local .ev-threat {
+      color: var(--red);
+    }
+
+    #drawer-actions {
+      padding: 12px 16px 16px;
+      border-top: 1px solid rgba(56, 189, 248, 0.14);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .drawer-btn {
+      font: inherit;
+      font-size: 9px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      padding: 9px 12px;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--violet);
+      cursor: pointer;
+      transition: background 220ms ease, box-shadow 220ms ease;
+    }
+
+    .drawer-btn:hover {
+      background: rgba(99, 102, 241, 0.22);
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.25);
+    }
+
+    #ticker-strip {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--ticker-h);
+      background: rgba(3, 10, 4, 0.96);
+      border-top: 1px solid rgba(57, 255, 20, 0.22);
+      overflow: hidden;
+      z-index: 25;
+      display: flex;
+      align-items: center;
+    }
+
+    #ticker-label {
+      flex-shrink: 0;
+      padding: 0 12px;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--green);
+      border-right: 1px solid rgba(57, 255, 20, 0.2);
+      height: 100%;
+      display: flex;
+      align-items: center;
+      background: rgba(57, 255, 20, 0.06);
+    }
+
+    #ticker-track {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      height: 100%;
+    }
+
+    #ticker-inner {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      white-space: nowrap;
+      will-change: transform;
+    }
+
+    .ticker-item {
+      display: inline-flex;
+      align-items: center;
+      padding: 0 28px;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      color: rgba(226, 232, 240, 0.88);
+      border-right: 1px solid rgba(57, 255, 20, 0.08);
+      height: 100%;
+    }
+
+    .ticker-item .sev-high {
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    .ticker-item .sev-med {
+      color: var(--amber);
+    }
+
+    .ticker-item .sev-info {
+      color: var(--blue);
+    }
+
+    #packet-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.92);
+      z-index: 60;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      backdrop-filter: blur(4px);
+    }
+
+    #packet-modal.open {
+      display: flex;
+    }
+
+    #packet-panel {
+      width: min(920px, 96vw);
+      max-height: 82vh;
+      background: rgba(10, 6, 24, 0.98);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      box-shadow: 0 0 40px rgba(56, 189, 248, 0.12);
+      display: flex;
+      flex-direction: column;
+    }
+
+    #packet-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.18);
+    }
+
+    #packet-head h3 {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--blue);
+      text-transform: uppercase;
+    }
+
+    #packet-close {
+      font: inherit;
+      background: transparent;
+      border: 1px solid rgba(248, 113, 113, 0.4);
+      color: var(--red);
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 9px;
+      letter-spacing: 1px;
+    }
+
+    #packet-table-wrap {
+      overflow: auto;
+      flex: 1;
+    }
+
+    #packet-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+      letter-spacing: 0.3px;
+    }
+
+    #packet-table th {
+      position: sticky;
+      top: 0;
+      background: rgba(2, 6, 23, 0.98);
+      text-align: left;
+      padding: 8px 10px;
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+      text-transform: uppercase;
+    }
+
+    #packet-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.06);
+      white-space: nowrap;
+    }
+
+    #packet-table tr.proto-tcp td { background: rgba(56, 189, 248, 0.06); }
+    #packet-table tr.proto-udp td { background: rgba(52, 211, 153, 0.06); }
+    #packet-table tr.proto-icmp td { background: rgba(251, 191, 36, 0.06); }
+    #packet-table tr.proto-dns td { background: rgba(196, 181, 253, 0.08); }
+
+    .node-shape {
+      cursor: pointer;
+      transition: filter 220ms ease, opacity 220ms ease;
+    }
+
+    .node-shape:hover {
+      filter: brightness(1.25);
+    }
+
+    .node-shape.isolated {
+      opacity: 0.38;
+    }
+
+    .node-shape.compromised {
+      filter: drop-shadow(0 0 6px rgba(248, 113, 113, 0.85));
+    }
+
+    .link-line {
+      stroke: rgba(56, 189, 248, 0.18);
+      stroke-width: 1;
+      transition: stroke 220ms ease;
+    }
+
+    .link-line.threat-path {
+      stroke: rgba(248, 113, 113, 0.45);
+      stroke-width: 1.5;
+    }
+
+    .packet-dot {
+      pointer-events: none;
+    }
+
+    @media (max-width: 960px) {
+      :root { --drawer-w: 280px; }
+      #brand { min-width: 180px; font-size: 8px; }
+      #stats-strip { display: none; }
+    }
   </style>
 </head>
 <body>
-  <div id="hdr">GHOST NETWORK · 45 NODES · EVENT ENGINE <button class="btn" id="btn-audio" style="margin-left:auto">Ambient Audio</button></div>
-  <canvas id="starfield"></canvas>
-  <svg id="graph"></svg>
-  <aside id="drawer"><h3>NODE DETAIL</h3><p class="muted" id="drawer-body">Click a node to inspect.</p><button class="btn" id="btn-capture">Capture Packets</button></aside>
-  <div id="packet-modal"><div id="packet-body" aria-label="Wireshark-style packet capture"></div></div>
+  <header id="top-hdr">
+    <div id="brand">
+      <span id="brand-led" aria-hidden="true"></span>
+      <span>Meridian-7 · Ghost Network</span>
+    </div>
+    <div id="stats-strip">
+      <span>NODES <span class="stat-val" id="stat-nodes">45</span></span>
+      <span>EDGES <span class="stat-val" id="stat-edges">0</span></span>
+      <span>COMPROMISED <span class="stat-val threat" id="stat-threat">0</span></span>
+      <span>PACKETS/S <span class="stat-val" id="stat-pps">0</span></span>
+      <span id="clock-utc">UTC --:--:--</span>
+    </div>
+    <div id="controls">
+      <span id="speed-indicator">SPEED: NORMAL</span>
+      <button type="button" class="ctrl-btn" id="btn-isolate" disabled>Isolate</button>
+      <button type="button" class="ctrl-btn" id="btn-reset">Reset</button>
+      <button type="button" class="ctrl-btn" id="btn-speed">Speed</button>
+      <button type="button" class="ctrl-btn" id="btn-audio">Ambient Audio</button>
+    </div>
+  </header>
+
+  <div id="stage-wrap">
+    <canvas id="starfield" aria-hidden="true"></canvas>
+    <svg id="graph-svg" role="img" aria-label="Network topology force graph"></svg>
+    <aside id="legend" aria-label="Node type legend">
+      <h4>Node Types</h4>
+      <div class="legend-row"><svg class="legend-icon" viewBox="-8 -8 16 16"><rect x="-6" y="-6" width="12" height="12" fill="#6366f1"/></svg><span>Server</span></div>
+      <div class="legend-row"><svg class="legend-icon" viewBox="-8 -8 16 16"><circle r="6" fill="#38bdf8"/></svg><span>Workstation</span></div>
+      <div class="legend-row"><svg class="legend-icon" viewBox="-8 -8 16 16"><polygon points="0,-7 7,0 0,7 -7,0" fill="#fbbf24"/></svg><span>Router</span></div>
+      <div class="legend-row"><svg class="legend-icon" viewBox="-8 -8 16 16"><polygon points="-6,-4 0,-7 6,-4 6,4 0,7 -6,4" fill="#f87171"/></svg><span>Firewall</span></div>
+      <div class="legend-row"><svg class="legend-icon" viewBox="-8 -8 16 16"><polygon points="0,-7 6,6 -6,6" fill="#34d399"/></svg><span>Sensor</span></div>
+    </aside>
+  </div>
+
+  <div id="tooltip" aria-hidden="true"><div class="tip-name"></div><div class="tip-ip"></div></div>
+
+  <aside id="drawer">
+    <div id="drawer-head">
+      <h2>Node Inspector</h2>
+      <p>Select a node to view telemetry, connections, and local events.</p>
+    </div>
+    <div id="drawer-body">
+      <div id="drawer-empty">Click any node on the graph to inspect host telemetry and capture packets from its interface.</div>
+    </div>
+    <div id="drawer-actions">
+      <button type="button" class="drawer-btn" id="btn-capture" disabled>Capture Packets</button>
+    </div>
+  </aside>
+
+  <div id="ticker-strip">
+    <div id="ticker-label">LIVE</div>
+    <div id="ticker-track"><div id="ticker-inner"></div></div>
+  </div>
+
+  <div id="packet-modal" role="dialog" aria-modal="true" aria-labelledby="packet-title">
+    <div id="packet-panel">
+      <div id="packet-head">
+        <h3 id="packet-title">Wireshark Capture — Interface eth0</h3>
+        <button type="button" id="packet-close">Close</button>
+      </div>
+      <div id="packet-table-wrap">
+        <table id="packet-table">
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Time</th>
+              <th>Source</th>
+              <th>Destination</th>
+              <th>Protocol</th>
+              <th>Length</th>
+              <th>Info</th>
+            </tr>
+          </thead>
+          <tbody id="packet-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <script src="assets/siem-core.js"></script>
   <script src="assets/palette.js"></script>
   <script>
-  (function(){
-    SiemCore.bootPage('network'); SiemCore.AchievementSystem.check('visit_network');
-    var stars=[],sf=document.getElementById('starfield'),sctx=sf.getContext('2d');
-    function resizeStar(){sf.width=innerWidth-320;sf.height=innerHeight-40;stars=[];for(var i=0;i<120;i++)stars.push({x:Math.random()*sf.width,y:Math.random()*sf.height,z:Math.random()});} resizeStar(); addEventListener('resize',resizeStar);
-    function drawStars(){sctx.fillStyle='rgba(2,6,23,0.35)';sctx.fillRect(0,0,sf.width,sf.height);stars.forEach(function(s){sctx.fillStyle='rgba(148,163,184,'+(0.2+s.z)+')';sctx.fillRect(s.x,s.y,1+s.z,1);});requestAnimationFrame(drawStars);} drawStars();
-    var nodes=[],links=[],sel=null,packets=[];
-    for(var i=0;i<45;i++) nodes.push({id:'n'+i,label:'host-'+i,group:i%5,type:['server','workstation','router','firewall','sensor'][i%5],ip:'10.'+(i%255)+'.'+(i%16)+'.'+(i%200+10)});
-    for(var j=0;j<60;j++){var a=nodes[Math.floor(Math.random()*45)],b=nodes[Math.floor(Math.random()*45)];if(a!==b)links.push({source:a.id,target:b.id});}
-    var svg=d3.select('#graph'),w=innerWidth-320,h=innerHeight-40;
-    svg.attr('width',w).attr('height',h);
-    var g=svg.append('g');
-    var sim=d3.forceSimulation(nodes).force('link',d3.forceLink(links).id(function(d){return d.id;}).distance(80)).force('charge',d3.forceManyBody(-120)).force('center',d3.forceCenter(w/2,h/2));
-    var link=g.selectAll('line').data(links).join('line').attr('stroke','rgba(56,189,248,0.2)').attr('stroke-width',1);
-    var node=g.selectAll('circle').data(nodes).join('circle').attr('r',8).attr('fill','#6366f1').style('cursor','pointer')
-      .on('click',function(ev,d){sel=d;document.getElementById('drawer-body').innerHTML='<strong>'+d.label+'</strong><br>Type: '+d.type+'<br>IP: '+d.ip+'<br>Group: '+d.group;});
-    node.append('title').text(function(d){return d.label;});
-    sim.on('tick',function(){link.attr('x1',function(d){return d.source.x;}).attr('y1',function(d){return d.source.y;}).attr('x2',function(d){return d.target.x;}).attr('y2',function(d){return d.target.y;});node.attr('cx',function(d){return d.x;}).attr('cy',function(d){return d.y;});});
-    SiemCore.EventEngine.subscribe(function(){node.attr('fill',function(d){return d===sel?'#fbbf24':'#6366f1';});if(Math.random()<0.3&&links.length){var L=links[Math.floor(Math.random()*links.length)];packets.push({src:L.source.label||L.source.id,dst:L.target.label||L.target.id,proto:['TCP','UDP','ICMP'][Math.floor(Math.random()*3)],len:Math.floor(Math.random()*1400+64)});if(packets.length>50)packets.shift();}});
-    SiemCore.EventEngine.start(2000);
-    document.getElementById('btn-capture').onclick=function(){
-      var body=document.getElementById('packet-body');
-      body.textContent=packets.slice(-12).map(function(p,i){return (i+1)+' '+p.proto+' '+p.src+' → '+p.dst+' len='+p.len;}).join('\n')||'No packets captured yet.';
-      document.getElementById('packet-modal').classList.add('on');
+  (function () {
+    'use strict';
+
+    SiemCore.bootPage('network');
+    SiemCore.AchievementSystem.check('visit_network');
+
+    var TYPE_COLORS = {
+      server: '#6366f1',
+      workstation: '#38bdf8',
+      router: '#fbbf24',
+      firewall: '#f87171',
+      sensor: '#34d399'
     };
-    document.getElementById('packet-modal').onclick=function(e){if(e.target.id==='packet-modal')e.target.classList.remove('on');};
-    var ambient=null;
-    document.getElementById('btn-audio').onclick=function(){
-      if(typeof Tone==='undefined')return;
-      Tone.start().then(function(){
-        if(ambient){ambient.stop();ambient=null;document.getElementById('btn-audio').textContent='Ambient Audio';return;}
-        ambient=new Tone.Oscillator(110,'sine').toDestination();ambient.volume.value=-28;ambient.start();
-        document.getElementById('btn-audio').textContent='Stop Audio';
+
+    var TYPE_LABELS = {
+      server: 'SERVER',
+      workstation: 'WORKSTATION',
+      router: 'ROUTER',
+      firewall: 'FIREWALL',
+      sensor: 'SENSOR'
+    };
+
+    var ZONES = ['DMZ', 'INTERNAL', 'OT', 'CLOUD', 'EDGE'];
+    var HOST_PREFIX = ['core', 'app', 'db', 'ws', 'fw', 'rtr', 'ids', 'log', 'auth', 'proxy'];
+    var ALERT_RULES = [
+      'brute-force', 'lateral-move', 'dns-tunnel', 'port-scan', 'c2-beacon',
+      'priv-escalation', 'data-staging', 'malware-drop', 'credential-dump', 'exfil-dns'
+    ];
+    var PACKET_INFOS = {
+      TCP: ['SYN', 'SYN, ACK', 'ACK', 'PSH, ACK', 'FIN, ACK', 'RST'],
+      UDP: ['DNS query', 'DHCP discover', 'NTP request', 'SNMP get', 'Syslog'],
+      ICMP: ['Echo request', 'Echo reply', 'Time exceeded', 'Dest unreachable'],
+      DNS: ['Standard query A', 'Standard query AAAA', 'Response A', 'Response CNAME']
+    };
+
+    var speedModes = [
+      { label: 'SLOW', interval: 8000 },
+      { label: 'NORMAL', interval: 4000 },
+      { label: 'FAST', interval: 2000 }
+    ];
+    var speedIndex = 1;
+
+    var state = {
+      nodes: [],
+      links: [],
+      selected: null,
+      packets: [],
+      tickerEvents: [],
+      propagationTimer: null,
+      packetTimer: null,
+      ambientOsc: null,
+      audioOn: false,
+      mouseX: 0.5,
+      mouseY: 0.5,
+      ppsCounter: 0,
+      ppsDisplay: 0,
+      captureBaseTime: Date.now()
+    };
+
+    var starCanvas = document.getElementById('starfield');
+    var starCtx = starCanvas.getContext('2d');
+    var stars = [];
+    var svg = d3.select('#graph-svg');
+    var graphRoot = svg.append('g').attr('class', 'graph-root');
+    var linkLayer = graphRoot.append('g').attr('class', 'links');
+    var packetLayer = graphRoot.append('g').attr('class', 'packets');
+    var nodeLayer = graphRoot.append('g').attr('class', 'nodes');
+    var simulation = null;
+    var zoomBehavior = null;
+    var stageW = 0;
+    var stageH = 0;
+
+    function pad(n) {
+      return n < 10 ? '0' + n : String(n);
+    }
+
+    function utcNow() {
+      var d = new Date();
+      return pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds());
+    }
+
+    function randomIp(octetBase) {
+      return '10.' + Math.floor(Math.random() * 40 + octetBase) + '.' +
+        Math.floor(Math.random() * 250 + 1) + '.' + Math.floor(Math.random() * 200 + 10);
+    }
+
+    function buildNodeCatalog() {
+      var types = ['server', 'workstation', 'router', 'firewall', 'sensor'];
+      var list = [];
+      var i;
+      for (i = 0; i < 45; i += 1) {
+        var type = types[i % 5];
+        var zone = ZONES[i % ZONES.length];
+        var prefix = HOST_PREFIX[i % HOST_PREFIX.length];
+        var num = pad((i % 20) + 1);
+        list.push({
+          id: 'n' + i,
+          name: prefix + '-' + num + '.' + zone.toLowerCase(),
+          label: prefix + '-' + num,
+          type: type,
+          zone: zone,
+          ip: randomIp(i % 8),
+          compromised: false,
+          isolated: false,
+          events: [],
+          perimeter: zone === 'DMZ' || zone === 'EDGE'
+        });
+      }
+      return list;
+    }
+
+    function seedEvents(node) {
+      var templates = [
+        'ingest heartbeat ok · 847 rules active',
+        'auth success user=svc_backup src=' + node.ip,
+        'dns query resolved meridian-7.internal',
+        'tcp session established dst=10.0.0.1:443',
+        'file integrity check passed /var/log/auth.log',
+        'kernel audit syscall=connect pid=' + (1000 + Math.floor(Math.random() * 8000)),
+        'suricata alert sid=2024811 msg="ET POLICY DNS Query"',
+        'syslog forwarder batch=128 events'
+      ];
+      var out = [];
+      var e;
+      for (e = 0; e < 5; e += 1) {
+        out.push('[' + utcNow() + '] ' + templates[(e + node.id.charCodeAt(1)) % templates.length]);
+      }
+      node.events = out;
+    }
+
+    function buildLinks(nodes) {
+      var links = [];
+      var seen = {};
+      var targetCount = 68;
+      var attempts = 0;
+
+      function key(a, b) {
+        return a < b ? a + '|' + b : b + '|' + a;
+      }
+
+      function addLink(sourceId, targetId) {
+        var k = key(sourceId, targetId);
+        if (seen[k] || sourceId === targetId) return false;
+        seen[k] = true;
+        links.push({ source: sourceId, target: targetId, threat: false });
+        return true;
+      }
+
+      var backbone = nodes.filter(function (n) {
+        return n.type === 'router' || n.type === 'firewall';
       });
-    };
+      var i;
+      for (i = 0; i < backbone.length - 1; i += 1) {
+        addLink(backbone[i].id, backbone[i + 1].id);
+      }
+
+      nodes.forEach(function (node, idx) {
+        var neighbor = nodes[(idx + 3) % nodes.length];
+        addLink(node.id, neighbor.id);
+        if (idx % 4 === 0) addLink(node.id, nodes[(idx + 7) % nodes.length].id);
+      });
+
+      while (links.length < targetCount && attempts < 500) {
+        attempts += 1;
+        var a = nodes[Math.floor(Math.random() * nodes.length)];
+        var b = nodes[Math.floor(Math.random() * nodes.length)];
+        addLink(a.id, b.id);
+      }
+
+      return links;
+    }
+
+    function getAdjacency(links) {
+      var map = {};
+      links.forEach(function (l) {
+        var s = typeof l.source === 'object' ? l.source.id : l.source;
+        var t = typeof l.target === 'object' ? l.target.id : l.target;
+        if (!map[s]) map[s] = [];
+        if (!map[t]) map[t] = [];
+        if (map[s].indexOf(t) === -1) map[s].push(t);
+        if (map[t].indexOf(s) === -1) map[t].push(s);
+      });
+      return map;
+    }
+
+    function drawNodeShape(selection) {
+      selection.each(function (d) {
+        var g = d3.select(this);
+        g.selectAll('*').remove();
+        var color = TYPE_COLORS[d.type] || '#6366f1';
+        var cls = 'node-shape' + (d.isolated ? ' isolated' : '') + (d.compromised ? ' compromised' : '');
+
+        if (d.type === 'server') {
+          g.append('rect')
+            .attr('class', cls)
+            .attr('x', -8).attr('y', -8)
+            .attr('width', 16).attr('height', 16)
+            .attr('fill', color)
+            .attr('stroke', 'rgba(226,232,240,0.35)')
+            .attr('stroke-width', 1);
+        } else if (d.type === 'workstation') {
+          g.append('circle')
+            .attr('class', cls)
+            .attr('r', 8)
+            .attr('fill', color)
+            .attr('stroke', 'rgba(226,232,240,0.35)')
+            .attr('stroke-width', 1);
+        } else if (d.type === 'router') {
+          g.append('polygon')
+            .attr('class', cls)
+            .attr('points', '0,-9 9,0 0,9 -9,0')
+            .attr('fill', color)
+            .attr('stroke', 'rgba(226,232,240,0.35)')
+            .attr('stroke-width', 1);
+        } else if (d.type === 'firewall') {
+          g.append('polygon')
+            .attr('class', cls)
+            .attr('points', '-8,-5 0,-9 8,-5 8,5 0,9 -8,5')
+            .attr('fill', color)
+            .attr('stroke', 'rgba(226,232,240,0.35)')
+            .attr('stroke-width', 1);
+        } else {
+          g.append('polygon')
+            .attr('class', cls)
+            .attr('points', '0,-9 8,7 -8,7')
+            .attr('fill', color)
+            .attr('stroke', 'rgba(226,232,240,0.35)')
+            .attr('stroke-width', 1);
+        }
+
+        if (d.compromised) {
+          g.append('circle')
+            .attr('r', 12)
+            .attr('fill', 'none')
+            .attr('stroke', 'rgba(248,113,113,0.55)')
+            .attr('stroke-width', 1.5)
+            .attr('class', 'pulse-ring');
+        }
+      });
+    }
+
+    function resizeStage() {
+      var drawerW = 340;
+      if (window.innerWidth <= 960) drawerW = 280;
+      stageW = window.innerWidth - drawerW;
+      stageH = window.innerHeight - 52 - 36;
+      svg.attr('width', stageW).attr('height', stageH);
+      starCanvas.width = stageW;
+      starCanvas.height = stageH;
+      if (simulation) {
+        simulation.force('center', d3.forceCenter(stageW / 2, stageH / 2));
+        simulation.alpha(0.3).restart();
+      }
+    }
+
+    function initStarfield() {
+      stars = [];
+      var i;
+      for (i = 0; i < 150; i += 1) {
+        stars.push({
+          x: Math.random() * stageW,
+          y: Math.random() * stageH,
+          z: Math.random() * 0.8 + 0.2,
+          twinkle: Math.random() * Math.PI * 2
+        });
+      }
+    }
+
+    function renderStarfield() {
+      starCtx.fillStyle = 'rgba(2, 6, 23, 0.42)';
+      starCtx.fillRect(0, 0, stageW, stageH);
+      var parallaxX = (state.mouseX - 0.5) * 24;
+      var parallaxY = (state.mouseY - 0.5) * 18;
+      var i;
+      for (i = 0; i < stars.length; i += 1) {
+        var s = stars[i];
+        s.twinkle += 0.015;
+        var alpha = 0.25 + s.z * 0.55 + Math.sin(s.twinkle) * 0.12;
+        var sx = s.x + parallaxX * s.z;
+        var sy = s.y + parallaxY * s.z;
+        if (sx < 0) sx += stageW;
+        if (sx > stageW) sx -= stageW;
+        if (sy < 0) sy += stageH;
+        if (sy > stageH) sy -= stageH;
+        starCtx.fillStyle = 'rgba(196, 181, 253, ' + alpha + ')';
+        var size = 0.6 + s.z * 1.6;
+        starCtx.fillRect(sx, sy, size, size);
+      }
+      requestAnimationFrame(renderStarfield);
+    }
+
+    function updateStats() {
+      var compromised = state.nodes.filter(function (n) { return n.compromised; }).length;
+      document.getElementById('stat-nodes').textContent = String(state.nodes.length);
+      document.getElementById('stat-edges').textContent = String(state.links.length);
+      document.getElementById('stat-threat').textContent = String(compromised);
+      document.getElementById('stat-pps').textContent = String(state.ppsDisplay);
+      document.getElementById('clock-utc').textContent = 'UTC ' + utcNow();
+    }
+
+    function pushTicker(message, severity) {
+      var item = { text: message, severity: severity || 'info', ts: Date.now() };
+      state.tickerEvents.unshift(item);
+      if (state.tickerEvents.length > 40) state.tickerEvents.pop();
+      renderTicker();
+    }
+
+    function renderTicker() {
+      var inner = document.getElementById('ticker-inner');
+      inner.innerHTML = '';
+      var doubled = state.tickerEvents.concat(state.tickerEvents);
+      doubled.forEach(function (ev) {
+        var span = document.createElement('span');
+        span.className = 'ticker-item';
+        var sevClass = ev.severity === 'high' ? 'sev-high' : ev.severity === 'med' ? 'sev-med' : 'sev-info';
+        span.innerHTML = '<span class="' + sevClass + '">' + ev.text + '</span>';
+        inner.appendChild(span);
+      });
+      var totalWidth = inner.scrollWidth / 2;
+      var duration = Math.max(28, totalWidth / 40);
+      inner.style.animation = 'none';
+      void inner.offsetWidth;
+      inner.style.animation = 'tickerScroll ' + duration + 's linear infinite';
+    }
+
+    var tickerStyle = document.createElement('style');
+    tickerStyle.textContent = '@keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }';
+    document.head.appendChild(tickerStyle);
+
+    function showTooltip(event, node) {
+      var tip = document.getElementById('tooltip');
+      tip.querySelector('.tip-name').textContent = node.name;
+      tip.querySelector('.tip-ip').textContent = node.ip + ' · ' + TYPE_LABELS[node.type];
+      tip.style.left = event.clientX + 'px';
+      tip.style.top = event.clientY + 'px';
+      tip.classList.add('visible');
+    }
+
+    function hideTooltip() {
+      document.getElementById('tooltip').classList.remove('visible');
+    }
+
+    function getConnectedNodes(node) {
+      var adj = getAdjacency(state.links);
+      var ids = adj[node.id] || [];
+      return ids.map(function (id) {
+        return state.nodes.find(function (n) { return n.id === id; });
+      }).filter(Boolean);
+    }
+
+    function renderDrawer(node) {
+      var body = document.getElementById('drawer-body');
+      var statusClass = node.isolated ? 'isolated' : node.compromised ? 'compromised' : '';
+      var statusText = node.isolated ? 'ISOLATED' : node.compromised ? 'COMPROMISED' : 'CLEAN';
+      var connected = getConnectedNodes(node);
+      var connHtml = connected.map(function (c) {
+        return '<li data-node="' + c.id + '">' + c.name + ' · ' + c.ip + '</li>';
+      }).join('');
+
+      var eventsHtml = node.events.map(function (ev) {
+        var cls = ev.indexOf('alert') !== -1 || ev.indexOf('suricata') !== -1 ? 'ev-threat' : '';
+        return '<div class="' + cls + '">' + ev + '</div>';
+      }).join('');
+
+      body.innerHTML =
+        '<div class="detail-block"><div class="detail-label">Hostname</div><div class="detail-value highlight">' + node.name + '</div></div>' +
+        '<div class="detail-block"><div class="detail-label">IPv4 Address</div><div class="detail-value">' + node.ip + '</div></div>' +
+        '<div class="detail-block"><div class="detail-label">Asset Type</div><div class="detail-value">' + TYPE_LABELS[node.type] + ' · Zone ' + node.zone + '</div></div>' +
+        '<div class="detail-block"><div class="detail-label">Threat Status</div><span class="threat-badge ' + statusClass + '">' + statusText + '</span></div>' +
+        '<div class="detail-block"><div class="detail-label">Connected Nodes (' + connected.length + ')</div><ul id="conn-list">' + (connHtml || '<li>No active adjacency</li>') + '</ul></div>' +
+        '<div class="detail-block"><div class="detail-label">Last 5 Events</div><div id="event-log-local">' + eventsHtml + '</div></div>';
+
+      body.querySelectorAll('#conn-list li[data-node]').forEach(function (li) {
+        li.addEventListener('click', function () {
+          var target = state.nodes.find(function (n) { return n.id === li.getAttribute('data-node'); });
+          if (target) selectNode(target);
+        });
+      });
+
+      document.getElementById('btn-isolate').disabled = node.isolated;
+      document.getElementById('btn-capture').disabled = false;
+    }
+
+    function selectNode(node) {
+      state.selected = node;
+      renderDrawer(node);
+      refreshGraphVisuals();
+    }
+
+    function refreshGraphVisuals() {
+      nodeLayer.selectAll('g.node').call(drawNodeShape);
+      linkLayer.selectAll('line').attr('class', function (d) {
+        var s = d.source.compromised || d.target.compromised;
+        return 'link-line' + (s ? ' threat-path' : '');
+      });
+    }
+
+    function addNodeEvent(node, message) {
+      node.events.unshift('[' + utcNow() + '] ' + message);
+      if (node.events.length > 5) node.events.pop();
+      if (state.selected && state.selected.id === node.id) renderDrawer(node);
+    }
+
+    function spawnPacket(link, isThreat) {
+      var src = typeof link.source === 'object' ? link.source : state.nodes.find(function (n) { return n.id === link.source; });
+      var tgt = typeof link.target === 'object' ? link.target : state.nodes.find(function (n) { return n.id === link.target; });
+      if (!src || !tgt) return;
+
+      var protos = isThreat ? ['TCP', 'DNS'] : ['TCP', 'UDP', 'ICMP', 'DNS'];
+      var proto = protos[Math.floor(Math.random() * protos.length)];
+      var infoList = PACKET_INFOS[proto];
+      var info = infoList[Math.floor(Math.random() * infoList.length)];
+
+      state.packets.push({
+        link: link,
+        t: 0,
+        speed: 0.008 + Math.random() * 0.012,
+        threat: isThreat,
+        proto: proto,
+        srcIp: src.ip,
+        dstIp: tgt.ip,
+        len: 64 + Math.floor(Math.random() * 1400),
+        info: info
+      });
+
+      if (state.packets.length > 80) state.packets.shift();
+      state.ppsCounter += 1;
+    }
+
+    function tickPackets() {
+      packetLayer.selectAll('circle.packet-dot').remove();
+      var active = [];
+      var i;
+      for (i = 0; i < state.packets.length; i += 1) {
+        var p = state.packets[i];
+        p.t += p.speed;
+        if (p.t >= 1) continue;
+        var sx = p.link.source.x;
+        var sy = p.link.source.y;
+        var tx = p.link.target.x;
+        var ty = p.link.target.y;
+        var x = sx + (tx - sx) * p.t;
+        var y = sy + (ty - sy) * p.t;
+        active.push({ x: x, y: y, threat: p.threat });
+      }
+
+      packetLayer.selectAll('circle.packet-dot')
+        .data(active)
+        .join('circle')
+        .attr('class', 'packet-dot')
+        .attr('cx', function (d) { return d.x; })
+        .attr('cy', function (d) { return d.y; })
+        .attr('r', 2.2)
+        .attr('fill', function (d) { return d.threat ? '#f87171' : '#38bdf8'; })
+        .attr('opacity', 0.85);
+    }
+
+    function propagateThreat() {
+      var compromised = state.nodes.filter(function (n) { return n.compromised && !n.isolated; });
+      if (!compromised.length) return;
+
+      var source = compromised[Math.floor(Math.random() * compromised.length)];
+      var adj = getAdjacency(state.links);
+      var neighbors = (adj[source.id] || []).map(function (id) {
+        return state.nodes.find(function (n) { return n.id === id; });
+      }).filter(function (n) { return n && !n.compromised && !n.isolated; });
+
+      if (!neighbors.length) return;
+
+      var target = neighbors[Math.floor(Math.random() * neighbors.length)];
+      target.compromised = true;
+      addNodeEvent(target, 'CRITICAL lateral propagation from ' + source.name);
+      addNodeEvent(source, 'outbound threat transfer dst=' + target.ip);
+
+      var link = state.links.find(function (l) {
+        var s = typeof l.source === 'object' ? l.source.id : l.source;
+        var t = typeof l.target === 'object' ? l.target.id : l.target;
+        return (s === source.id && t === target.id) || (s === target.id && t === source.id);
+      });
+      if (link) spawnPacket(link, true);
+
+      var rule = ALERT_RULES[Math.floor(Math.random() * ALERT_RULES.length)];
+      pushTicker('[' + utcNow() + '] ALERT src=' + source.ip + ' dst=' + target.ip + ' rule=' + rule + ' sev=HIGH', 'high');
+      refreshGraphVisuals();
+      updateStats();
+
+      if (typeof Tone !== 'undefined' && state.audioOn) {
+        try {
+          var blip = new Tone.Oscillator(880, 'sine').toDestination();
+          blip.volume.value = -22;
+          blip.start();
+          blip.stop('+0.08');
+        } catch (_) { /* audio unavailable */ }
+      }
+    }
+
+    function schedulePropagation() {
+      if (state.propagationTimer) clearInterval(state.propagationTimer);
+      state.propagationTimer = setInterval(propagateThreat, speedModes[speedIndex].interval);
+    }
+
+    function resetNetwork() {
+      state.nodes.forEach(function (n) {
+        n.compromised = false;
+        n.isolated = false;
+        seedEvents(n);
+      });
+
+      var perimeterWs = state.nodes.filter(function (n) {
+        return n.type === 'workstation' && n.perimeter;
+      });
+      if (perimeterWs.length) {
+        perimeterWs[0].compromised = true;
+        addNodeEvent(perimeterWs[0], 'initial foothold detected · phishing attachment');
+      }
+
+      state.packets = [];
+      state.selected = null;
+      document.getElementById('drawer-body').innerHTML = '<div id="drawer-empty">Click any node on the graph to inspect host telemetry and capture packets from its interface.</div>';
+      document.getElementById('btn-isolate').disabled = true;
+      document.getElementById('btn-capture').disabled = true;
+      refreshGraphVisuals();
+      updateStats();
+      pushTicker('[' + utcNow() + '] NETWORK reset · baseline restored · monitoring resumed', 'info');
+    }
+
+    function isolateSelected() {
+      if (!state.selected || state.selected.isolated) return;
+      state.selected.isolated = true;
+      state.selected.compromised = false;
+      addNodeEvent(state.selected, 'node quarantined by analyst action');
+      pushTicker('[' + utcNow() + '] ISOLATE host=' + state.selected.ip + ' action=quarantine sev=MED', 'med');
+      renderDrawer(state.selected);
+      refreshGraphVisuals();
+      updateStats();
+    }
+
+    function buildCaptureRows(node) {
+      var rows = [];
+      var base = state.captureBaseTime;
+      var protos = ['TCP', 'UDP', 'ICMP', 'DNS'];
+      var peers = getConnectedNodes(node);
+      var r;
+      for (r = 0; r < 15; r += 1) {
+        var proto = protos[r % protos.length];
+        var peer = peers[r % Math.max(peers.length, 1)] || node;
+        var offsetMs = r * 137 + Math.floor(Math.random() * 90);
+        var secs = Math.floor(offsetMs / 1000);
+        var ms = offsetMs % 1000;
+        var timeStr = '00:00:' + pad(secs) + '.' + String(ms).padStart(3, '0');
+        var outward = r % 2 === 0;
+        var src = outward ? node.ip : peer.ip;
+        var dst = outward ? peer.ip : node.ip;
+        var infoList = PACKET_INFOS[proto];
+        rows.push({
+          no: r + 1,
+          time: timeStr,
+          src: src,
+          dst: dst,
+          proto: proto,
+          len: 64 + Math.floor(Math.random() * 1400),
+          info: infoList[Math.floor(Math.random() * infoList.length)]
+        });
+      }
+      return rows;
+    }
+
+    function openPacketModal() {
+      if (!state.selected) return;
+      var tbody = document.getElementById('packet-tbody');
+      var rows = buildCaptureRows(state.selected);
+      tbody.innerHTML = rows.map(function (row) {
+        return '<tr class="proto-' + row.proto.toLowerCase() + '">' +
+          '<td>' + row.no + '</td>' +
+          '<td>' + row.time + '</td>' +
+          '<td>' + row.src + '</td>' +
+          '<td>' + row.dst + '</td>' +
+          '<td>' + row.proto + '</td>' +
+          '<td>' + row.len + '</td>' +
+          '<td>' + row.info + '</td></tr>';
+      }).join('');
+      document.getElementById('packet-title').textContent = 'Wireshark Capture — ' + state.selected.name + ' · eth0';
+      document.getElementById('packet-modal').classList.add('open');
+      pushTicker('[' + utcNow() + '] PCAP capture started iface=eth0 host=' + state.selected.ip + ' rows=15', 'info');
+    }
+
+    function closePacketModal() {
+      document.getElementById('packet-modal').classList.remove('open');
+    }
+
+    function initGraph() {
+      state.nodes = buildNodeCatalog();
+      state.nodes.forEach(seedEvents);
+      state.links = buildLinks(state.nodes);
+
+      simulation = d3.forceSimulation(state.nodes)
+        .force('link', d3.forceLink(state.links).id(function (d) { return d.id; }).distance(72).strength(0.55))
+        .force('charge', d3.forceManyBody().strength(-140))
+        .force('center', d3.forceCenter(stageW / 2, stageH / 2))
+        .force('collision', d3.forceCollide(18));
+
+      zoomBehavior = d3.zoom()
+        .scaleExtent([0.35, 3.2])
+        .on('zoom', function (event) {
+          graphRoot.attr('transform', event.transform);
+        });
+
+      svg.call(zoomBehavior);
+
+      var linkSel = linkLayer.selectAll('line')
+        .data(state.links)
+        .join('line')
+        .attr('class', 'link-line');
+
+      var nodeSel = nodeLayer.selectAll('g.node')
+        .data(state.nodes, function (d) { return d.id; })
+        .join('g')
+        .attr('class', 'node')
+        .call(d3.drag()
+          .on('start', function (event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+          })
+          .on('drag', function (event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+          })
+          .on('end', function (event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+          }))
+        .on('click', function (event, d) {
+          event.stopPropagation();
+          selectNode(d);
+        })
+        .on('mouseenter', function (event, d) { showTooltip(event, d); })
+        .on('mousemove', function (event, d) { showTooltip(event, d); })
+        .on('mouseleave', hideTooltip);
+
+      nodeSel.call(drawNodeShape);
+
+      simulation.on('tick', function () {
+        linkSel
+          .attr('x1', function (d) { return d.source.x; })
+          .attr('y1', function (d) { return d.source.y; })
+          .attr('x2', function (d) { return d.target.x; })
+          .attr('y2', function (d) { return d.target.y; });
+        nodeSel.attr('transform', function (d) { return 'translate(' + d.x + ',' + d.y + ')'; });
+        tickPackets();
+      });
+
+      resetNetwork();
+      document.getElementById('stat-edges').textContent = String(state.links.length);
+    }
+
+    function toggleSpeed() {
+      speedIndex = (speedIndex + 1) % speedModes.length;
+      document.getElementById('speed-indicator').textContent = 'SPEED: ' + speedModes[speedIndex].label;
+      schedulePropagation();
+    }
+
+    function toggleAmbientAudio() {
+      if (typeof Tone === 'undefined') return;
+      Tone.start().then(function () {
+        if (state.audioOn) {
+          if (state.ambientOsc) {
+            state.ambientOsc.stop();
+            state.ambientOsc.dispose();
+            state.ambientOsc = null;
+          }
+          state.audioOn = false;
+          document.getElementById('btn-audio').classList.remove('active');
+          document.getElementById('btn-audio').textContent = 'Ambient Audio';
+          return;
+        }
+        state.ambientOsc = new Tone.Oscillator(82, 'sine').toDestination();
+        state.ambientOsc.volume.value = -32;
+        var lfo = new Tone.LFO(0.08, 28, 56).start();
+        lfo.connect(state.ambientOsc.frequency);
+        state.ambientOsc.start();
+        state.audioOn = true;
+        document.getElementById('btn-audio').classList.add('active');
+        document.getElementById('btn-audio').textContent = 'Stop Audio';
+      }).catch(function () { /* gesture required */ });
+    }
+
+    function seedTicker() {
+      var seeds = [
+        'ingest pipeline ok · 847 rules active · eps=12400',
+        'suricata reload complete · sid=2024811 enabled',
+        'threat-intel feed sync · 12847 IOCs loaded',
+        'auth gateway heartbeat src=10.0.0.1 status=online',
+        'dns resolver anomaly threshold armed window=5m'
+      ];
+      seeds.forEach(function (s, idx) {
+        pushTicker('[' + utcNow() + '] ' + s, idx === 0 ? 'info' : 'med');
+      });
+    }
+
+    document.getElementById('btn-isolate').addEventListener('click', isolateSelected);
+    document.getElementById('btn-reset').addEventListener('click', resetNetwork);
+    document.getElementById('btn-speed').addEventListener('click', toggleSpeed);
+    document.getElementById('btn-audio').addEventListener('click', toggleAmbientAudio);
+    document.getElementById('btn-capture').addEventListener('click', openPacketModal);
+    document.getElementById('packet-close').addEventListener('click', closePacketModal);
+    document.getElementById('packet-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'packet-modal') closePacketModal();
+    });
+
+    document.addEventListener('mousemove', function (e) {
+      state.mouseX = e.clientX / window.innerWidth;
+      state.mouseY = e.clientY / window.innerHeight;
+    });
+
+    window.addEventListener('resize', function () {
+      resizeStage();
+      initStarfield();
+    });
+
+    setInterval(function () {
+      state.ppsDisplay = state.ppsCounter;
+      state.ppsCounter = 0;
+      updateStats();
+    }, 1000);
+
+    setInterval(function () {
+      if (!state.links.length) return;
+      var randomLink = state.links[Math.floor(Math.random() * state.links.length)];
+      var threat = randomLink.source.compromised || randomLink.target.compromised ||
+        (typeof randomLink.source === 'object' ? randomLink.source : {}).compromised;
+      var srcNode = typeof randomLink.source === 'object' ? randomLink.source : state.nodes.find(function (n) { return n.id === randomLink.source; });
+      var tgtNode = typeof randomLink.target === 'object' ? randomLink.target : state.nodes.find(function (n) { return n.id === randomLink.target; });
+      var isThreat = threat || (srcNode && srcNode.compromised) || (tgtNode && tgtNode.compromised);
+      spawnPacket(randomLink, !!isThreat);
+    }, 280);
+
+    if (typeof SiemCore !== 'undefined' && SiemCore.EventEngine) {
+      SiemCore.EventEngine.subscribe(function () {
+        if (Math.random() < 0.22) {
+          var rule = ALERT_RULES[Math.floor(Math.random() * ALERT_RULES.length)];
+          var host = state.nodes[Math.floor(Math.random() * state.nodes.length)];
+          pushTicker('[' + utcNow() + '] ALERT src=' + host.ip + ' rule=' + rule + ' sev=MED', 'med');
+        }
+      });
+      SiemCore.EventEngine.start(3000);
+    }
+
+    resizeStage();
+    initStarfield();
+    renderStarfield();
+    initGraph();
+    seedTicker();
+    schedulePropagation();
+    updateStats();
+    setInterval(updateStats, 1000);
   })();
   </script>
   <div id="deck-nav-root"></div>
