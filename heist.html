@@ -736,17 +736,17 @@
 
     function tileColor(t, tx, ty) {
       var flick = (tx + ty) % 2;
-      if (t === T.WALL) return rgb(15, 20, 38);
-      if (t === T.PERIM) return flick ? rgb(18, 28, 42) : rgb(16, 26, 40);
-      if (t === T.NET) return flick ? rgb(20, 32, 48) : rgb(18, 30, 46);
-      if (t === T.CORE) return flick ? rgb(24, 18, 36) : rgb(22, 16, 34);
-      if (t === T.SENS) return rgb(48, 28, 36);
-      if (t === T.CHK) return rgb(28, 36, 28);
-      if (t === T.WIRE) return rgb(12, 40, 44);
-      if (t === T.D443) return rgb(0, 80, 120);
-      if (t === T.D4444 || t === T.D8888) return rgb(80, 20, 40);
-      if (t === T.EXIT) return rgb(0, 180, 140);
-      return rgb(30, 30, 30);
+      if (t === T.WALL) return rgb(28, 36, 58);
+      if (t === T.PERIM) return flick ? rgb(32, 48, 68) : rgb(28, 44, 64);
+      if (t === T.NET) return flick ? rgb(36, 56, 78) : rgb(32, 52, 74);
+      if (t === T.CORE) return flick ? rgb(44, 32, 62) : rgb(40, 28, 58);
+      if (t === T.SENS) return rgb(72, 38, 52);
+      if (t === T.CHK) return rgb(42, 58, 42);
+      if (t === T.WIRE) return rgb(18, 62, 72);
+      if (t === T.D443) return rgb(0, 110, 150);
+      if (t === T.D4444 || t === T.D8888) return rgb(110, 28, 58);
+      if (t === T.EXIT) return rgb(0, 200, 150);
+      return rgb(48, 48, 48);
     }
 
     function drawPixelTile(x, y, t, tx, ty) {
@@ -928,14 +928,14 @@
     onUpdate(function () {
       if (!state.player || state.paused || state.gameOver) return;
       var p = state.player;
-      var sprint = keyIsDown('shift') || touchKeys.sprint;
+      var sprint = isKeyDown('shift') || touchKeys.sprint;
       var spd = sprint ? 155 : 95;
       var mx = 0;
       var my = 0;
-      if (keyIsDown('left') || keyIsDown('a') || touchKeys.left) mx -= 1;
-      if (keyIsDown('right') || keyIsDown('d') || touchKeys.right) mx += 1;
-      if (keyIsDown('up') || keyIsDown('w') || touchKeys.up) my -= 1;
-      if (keyIsDown('down') || keyIsDown('s') || touchKeys.down) my += 1;
+      if (isKeyDown('left') || isKeyDown('a') || touchKeys.left) mx -= 1;
+      if (isKeyDown('right') || isKeyDown('d') || touchKeys.right) mx += 1;
+      if (isKeyDown('up') || isKeyDown('w') || touchKeys.up) my -= 1;
+      if (isKeyDown('down') || isKeyDown('s') || touchKeys.down) my += 1;
       if (mx !== 0 || my !== 0) {
         var len = Math.sqrt(mx * mx + my * my) || 1;
         mx /= len;
@@ -1056,7 +1056,7 @@
         }
       });
 
-      if (keyIsDown('e')) {
+      if (isKeyDown('e')) {
         if (nearTerminal && !state.modalType) {
           openModal(nearTerminal.kind === 'password' ? 'password' : 'sql');
         } else if (nearSoar && state.alarmCountdown !== null) {
@@ -1128,11 +1128,18 @@
       document.querySelector('.lvl-btn[data-lvl="1"]').click();
     });
 
-    addEventListener('resize', function () {
-      resizeCanvas(host.clientWidth, host.clientHeight);
+    onError(function (err) {
+      console.error('heist runtime error', err);
+      showLoadError('Heist runtime error: ' + (err && err.message ? err.message : 'unknown') + '. Refresh to retry.');
     });
 
-    startLevel(0);
+    onResize(function () {
+      if (state.player) camPos(state.player.pos);
+    });
+
+    requestAnimationFrame(function () {
+      startLevel(0);
+    });
   })();
   </script>
   <script src="assets/deck-nav.js?v=15.2.0-exp-nav"></script>
