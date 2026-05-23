@@ -165,7 +165,7 @@
       justify-content: center;
       flex-direction: column;
       gap: 12px;
-      z-index: 30;
+      z-index: 200;
       background: #000;
       letter-spacing: 2px;
       font-size: 11px;
@@ -206,6 +206,34 @@
       font-size: 9px;
       color: rgba(57, 255, 20, 0.7);
       letter-spacing: 2.5px;
+    }
+
+    #boot-hint {
+      margin-top: 6px;
+      font-size: 9px;
+      color: rgba(57, 255, 20, 0.45);
+      letter-spacing: 1.5px;
+      animation: bootHintPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes bootHintPulse {
+      0%, 100% { opacity: 0.45; }
+      50% { opacity: 0.85; }
+    }
+
+    #boot-error {
+      display: none;
+      max-width: 420px;
+      padding: 12px 16px;
+      border: 1px solid rgba(248, 113, 113, 0.45);
+      color: #f87171;
+      font-size: 10px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    #boot-error.show {
+      display: block;
     }
 
     .xterm {
@@ -249,6 +277,8 @@
     </div>
     <div id="boot-bar"><div id="boot-fill"></div></div>
     <div id="boot-sub">SECURE SHELL INITIALIZATION · v15.2.0</div>
+    <div id="boot-hint">Click anywhere or press Enter to connect</div>
+    <div id="boot-error" role="alert"></div>
   </div>
 
   <header id="shell-header">
@@ -283,6 +313,10 @@
       var clockEl = document.getElementById("utc-clock");
       var bootLayer = document.getElementById("term-boot");
       var bootFill = document.getElementById("boot-fill");
+      var bootHint = document.getElementById("boot-hint");
+      var bootError = document.getElementById("boot-error");
+      var bootStarted = false;
+      var bootDone = false;
       var livePill = document.getElementById("live-pill");
 
       var term = null;
@@ -1405,6 +1439,12 @@
       }
 
       function initTerminal() {
+        if (typeof Terminal !== "function") {
+          throw new Error("xterm.js failed to load from CDN");
+        }
+        if (typeof FitAddon === "undefined" || !FitAddon.FitAddon) {
+          throw new Error("xterm fit addon failed to load");
+        }
         term = new Terminal({
           cursorBlink: true,
           fontFamily: '"IBM Plex Mono", Consolas, monospace',
@@ -1452,27 +1492,59 @@
       }
 
       function startBoot() {
+        if (bootStarted || bootDone) {
+          return;
+        }
+        bootStarted = true;
+        if (bootHint) {
+          bootHint.textContent = "Establishing secure session…";
+        }
         bootProgress(function () {
-          bootLayer.classList.add("hidden");
-          initTerminal();
-          writeMotd();
-          renderPrompt();
-          addEventListener("resize", resizeTerminal);
+          try {
+            initTerminal();
+            writeMotd();
+            renderPrompt();
+            addEventListener("resize", resizeTerminal);
+            bootLayer.classList.add("hidden");
+            bootDone = true;
+          } catch (err) {
+            console.error("terminal boot failed", err);
+            bootStarted = false;
+            if (bootHint) {
+              bootHint.hidden = true;
+            }
+            if (bootError) {
+              bootError.textContent = (err && err.message ? err.message : "Terminal failed to start") + ". Refresh the page or check your network/blockers.";
+              bootError.classList.add("show");
+            }
+          }
         });
       }
 
       bootLayer.addEventListener("click", function () {
-        if (!bootLayer.classList.contains("hidden")) {
+        if (!bootDone) {
           startBoot();
         }
       });
 
       bootLayer.addEventListener("keydown", function (evt) {
-        if ((evt.key === "Enter" || evt.key === " ") && !bootLayer.classList.contains("hidden")) {
+        if (!bootDone && (evt.key === "Enter" || evt.key === " ")) {
           evt.preventDefault();
           startBoot();
         }
       });
+
+      document.addEventListener("keydown", function (evt) {
+        if (!bootDone && !bootLayer.classList.contains("hidden")) {
+          startBoot();
+        }
+      }, { once: false });
+
+      setTimeout(function () {
+        if (!bootDone) {
+          startBoot();
+        }
+      }, 700);
 
       updateClock();
       setInterval(updateClock, 1000);
