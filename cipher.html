@@ -681,8 +681,8 @@
         </div>
         <div class="chamber-meta"><span class="meta-chip">LAYER 01</span><span class="meta-chip">SHIFT CIPHER</span><span class="meta-chip">DIFF: LOW</span></div>
         <p class="chamber-desc">Classical shift cipher. The perimeter access token was encoded with a fixed offset of three positions forward in the Latin alphabet.</p>
-        <div class="cipher-display" id="alpha-cipher">PHULGLDA</div>
-        <input type="text" class="chamber-input" id="alpha-in" placeholder="PHULGLDA" autocomplete="off" spellcheck="false" />
+        <div class="cipher-display" id="alpha-cipher">PHULGLDQ</div>
+        <input type="text" class="chamber-input" id="alpha-in" placeholder="PHULGLDQ" autocomplete="off" spellcheck="false" />
         <button type="button" class="solve-btn" data-chamber="alpha">Decrypt Chamber</button>
         <div class="chamber-status" id="alpha-status">LOCKED</div>
       </article>
@@ -904,7 +904,7 @@ Analyst clearance: MERIDIAN-VAULT-7 · session logged to /var/log/siem/vault-aud
     function validateAnswer(chamber, raw) {
       var val = String(raw || '').trim();
       if (chamber === 'alpha') {
-        return normalizeAlpha(val) === 'MERIDIAN' || caesarDec('PHULGLDA', 3) === normalizeAlpha(val);
+        return normalizeAlpha(val) === 'MERIDIAN' || caesarDec('PHULGLDQ', 3) === normalizeAlpha(val);
       }
       if (chamber === 'beta') {
         return normalizeAlpha(val) === 'MERIDIAN';
