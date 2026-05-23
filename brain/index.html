@@ -1538,14 +1538,21 @@
     showCard(false);
     lastHover = null;
     const hadNode = !!(camFocus && camFocus.node);
-    const pv = camPivot();
-    const zoomed = camAnim.scale > 1.02 || Math.hypot(camAnim.x - pv.x, camAnim.y - pv.y) > 12;
+    const zoomed = camAnim.scale > 1.02 || Math.hypot(camAnim.x, camAnim.y) > 8;
     if (!hadNode && !zoomed) {
       camFocus = null;
       return;
     }
     nodeFocusReleasedAt = performance.now();
     ensureWormholeCentered();
+  }
+
+  function resetPeripheralFx() {
+    if (window.siemDeckFeatures && window.siemDeckFeatures.resetArchitectZoom) {
+      window.siemDeckFeatures.resetArchitectZoom();
+    }
+    if (window.siemWebCorruption) window.siemWebCorruption.reset();
+    if (window.siemFogBurst) window.siemFogBurst.reset();
   }
 
   /** Keep the wormhole anchored at screen center after dismiss / empty clicks. */
@@ -1557,25 +1564,32 @@
     camFocus = null;
     camTween = stopTween(camTween);
     shakeOff.x = shakeOff.y = shakeOff.mag = 0;
-    focusWorldPoint(pv.x, pv.y, W / 2, H / 2, 1, {
-      ease: opts.ease != null ? opts.ease : 0.052,
-      easeS: opts.easeS != null ? opts.easeS : 0.036,
-    });
+    camParallax.x = camParallax.y = camParallax.tx = camParallax.ty = 0;
+    resetPeripheralFx();
+    if (opts.animate) {
+      focusWorldPoint(pv.x, pv.y, W / 2, H / 2, 1, {
+        ease: opts.ease != null ? opts.ease : 0.052,
+        easeS: opts.easeS != null ? opts.easeS : 0.036,
+      });
+    } else {
+      camAnim.x = 0;
+      camAnim.y = 0;
+      camAnim.scale = 1;
+      camX = 0;
+      camY = 0;
+      camScale = 1;
+    }
     if (opts.resetWormholeFx !== false) tweenWormhole({ heat: 0, spinMul: 1 }, 420);
     lastInput = performance.now();
   }
 
-  /** Benign empty-canvas click — no corruption FX, restore center if drifted. */
+  /** Benign empty-canvas click — snap view back to wormhole core. */
   function dismissEmptyCanvasClick() {
     showCard(false);
     lastHover = null;
     comparePick = null;
     nodeFocusReleasedAt = performance.now();
-    const pv = camPivot();
-    const drift = Math.hypot(camAnim.x - pv.x, camAnim.y - pv.y);
-    if (drift > 2 || camAnim.scale > 1.008 || camFocus || throatView || shakeOff.mag > 0.01) {
-      ensureWormholeCentered();
-    }
+    ensureWormholeCentered({ animate: false });
   }
 
   function applyCameraToCtx(c, parallax, shake) {
@@ -1793,7 +1807,7 @@
   function isAlertMode() { return filter && ALERT_RE.test(filter); }
 
   function recenterWormhole() {
-    ensureWormholeCentered({ ease: 0.045, easeS: 0.032 });
+    ensureWormholeCentered({ animate: true, ease: 0.045, easeS: 0.032 });
     resetClickFx();
     pulseRecenterBtn();
     recenterFlash = 30;
@@ -2217,18 +2231,24 @@
   canvas.addEventListener('dblclick', (e) => {
     e.preventDefault();
     suppressCanvasClickUntil = performance.now() + 380;
-    webCorruptClick(e.clientX, e.clientY, '#f472b6', 'collapse');
+    mx = e.clientX;
+    my = e.clientY;
+    pickHover();
     const wh = wormholeScreen();
-    if (Math.hypot(e.clientX - wh.sx, e.clientY - wh.sy) < wh.hitR) {
+    if (Math.hypot(mx - wh.sx, my - wh.sy) < wh.r * 0.85) {
+      flashClickAt(mx, my);
       throatView = true;
-      focusWorldPoint(whX(), whY(), W / 2, H / 2, 1.22, { ease: 0.042, easeS: 0.032 });
-      wormhole.heat = 1;
-      wormhole.spinMul = 3;
-      throatT = 120;
+      focusWorldPoint(whX(), whY(), W / 2, H / 2, 1.18, { ease: 0.042, easeS: 0.032 });
+      wormhole.heat = Math.min(1, wormhole.heat + 0.35);
+      throatT = 90;
       lastInput = performance.now();
-    } else if (hover) {
-      frameNode(hover);
+      return;
     }
+    if (hover) {
+      frameNode(hover);
+      return;
+    }
+    dismissEmptyCanvasClick();
   });
 
   function drawNebula() {
@@ -2969,7 +2989,7 @@
   <script src="../assets/siem-core.js"></script>
   <script src="../assets/palette.js"></script>
   <script src="../assets/deck-nav.js?v=15.2.0-exp-nav"></script>
-  <script src="../assets/deck-features-v2.js?v=15.0.1-evidence-tab"></script>
+  <script src="../assets/deck-features-v2.js?v=15.9.0-center-fix"></script>
   <script>SiemCore.bootPage('brain'); SiemCore.AchievementSystem.check('visit_brain');
   (function () {
     function wireExperienceLinks() {

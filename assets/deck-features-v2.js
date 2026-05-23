@@ -244,10 +244,15 @@
   }
 
   /* ── 3 Architect Zoom ── */
+  function resetArchitectZoom() {
+    architectScale = 1;
+  }
+
   function hookArchitectZoom() {
     const canvas = deck.getCanvas && deck.getCanvas();
     if (!canvas) return;
     canvas.addEventListener('dblclick', function (e) {
+      if (!e.altKey) return;
       const h = deck.getHover && deck.getHover();
       if (h) return;
       const wh = deck.wormholeHit && deck.wormholeHit(e.clientX, e.clientY);
@@ -620,6 +625,7 @@
     toggleEvidence: toggleEvidence,
     toggleConstellation: toggleConstellation,
     stopMission: stopMission,
+    resetArchitectZoom: resetArchitectZoom,
   };
 
   function boot() {
