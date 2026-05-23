@@ -348,6 +348,14 @@
   addEventListener('pageshow', function () {
     resetWipeLayer();
   });
+  addEventListener('DOMContentLoaded', function () {
+    var layer = document.getElementById('deck-nav-wipe');
+    if (layer && layer.classList.contains('active')) resetWipeLayer();
+  });
+  setTimeout(function () {
+    var layer = document.getElementById('deck-nav-wipe');
+    if (layer && layer.classList.contains('active') && !wiping && !navigating) resetWipeLayer();
+  }, 1200);
   const page = document.documentElement.getAttribute('data-deck-page');
   if (page) {
     if (document.readyState === 'loading') {

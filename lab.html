@@ -447,6 +447,7 @@
       align-items: center;
       justify-content: center;
       z-index: 100;
+      pointer-events: none;
       transition: opacity 320ms ease, visibility 320ms ease;
     }
 
@@ -464,6 +465,25 @@
       border-radius: 6px;
       text-align: center;
       box-shadow: 0 0 32px rgba(56, 189, 248, 0.15);
+      pointer-events: auto;
+    }
+
+    #tutorial-begin {
+      margin-top: 16px;
+      font: inherit;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      padding: 10px 18px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      color: var(--blue);
+      border-radius: 4px;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    #tutorial-begin:hover {
+      background: rgba(56, 189, 248, 0.22);
     }
 
     #tutorial-card h2 {
@@ -593,6 +613,7 @@
       <p>Fire a payload to begin detection monitoring.</p>
       <p>Select an attack pattern from the sidebar, inject it into the vulnerable app, and watch Meridian-7 SIEM rules trigger in the monitor.</p>
       <p class="hint">After 3 hits of the same attack type, a correlation rule will escalate.</p>
+      <button type="button" id="tutorial-begin">Begin lab</button>
     </div>
   </div>
 
@@ -792,6 +813,14 @@
       tutorialDismissed = true;
       document.getElementById('tutorial-overlay').classList.add('hidden');
     }
+
+    document.getElementById('tutorial-begin').addEventListener('click', dismissTutorial);
+    document.getElementById('tutorial-card').addEventListener('click', dismissTutorial);
+    document.addEventListener('keydown', function (e) {
+      if (!tutorialDismissed && (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ')) {
+        dismissTutorial();
+      }
+    });
 
     function writeAlert(type, payloadText) {
       var meta = RULE_MAP[type] || RULE_MAP.other;
