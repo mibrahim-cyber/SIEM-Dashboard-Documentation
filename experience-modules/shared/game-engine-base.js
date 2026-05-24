@@ -96,13 +96,21 @@
   GameEngineBase.prototype.start = function (updateFn) {
     var self = this;
     this._running = true;
+    this._updateFn = updateFn;
     function loop() {
       if (!self._running) return;
       requestAnimationFrame(loop);
       var dt = Math.min(self.clock.getDelta(), 0.05);
-      if (updateFn) updateFn(dt);
+      if (self._updateFn) self._updateFn(dt);
       if (self.physics && self.physicsEnabled) self.physics.step(dt);
       self.renderer.render(self.scene, self.camera);
+    }
+    if (!this._visibilityBound) {
+      this._visibilityBound = true;
+      document.addEventListener('visibilitychange', function () {
+        self._running = !document.hidden;
+        if (self._running) loop();
+      });
     }
     loop();
   };

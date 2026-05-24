@@ -83,7 +83,7 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       transition: opacity 0.4s ease-out; cursor: pointer;
     }
-    #boot.hide { opacity: 0; pointer-events: none; }
+    #boot.hide { opacity: 0; pointer-events: none; visibility: hidden; }
     #boot span {
       font: 600 11px/1 'Consolas', 'Courier New', monospace; letter-spacing: 8px;
       color: #c4b5fd; text-transform: uppercase;
@@ -1736,6 +1736,7 @@
     if (bootDone) return;
     bootDone = true;
     bootEl.classList.add('hide');
+    bootEl.setAttribute('aria-hidden', 'true');
     document.querySelectorAll('#bar > *').forEach((el) => { el.style.opacity = ''; el.style.transform = ''; });
   }
 
@@ -2061,7 +2062,7 @@
   } catch (err) { console.error(err); }
   setTimeout(() => {
     if (!bootDone) dismissBoot();
-  }, 1200);
+  }, 800);
   bootEl.addEventListener('click', dismissBoot);
   addEventListener('resize', resize);
 
@@ -2983,6 +2984,9 @@
   };
 
   window.siemDeckResetFx = resetClickFx;
+
+  window.deckSiteRoot = deckSiteRoot;
+  window.deckAssetUrl = deckAssetUrl;
 
   draw();
 })();

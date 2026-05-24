@@ -164,7 +164,13 @@
   GameShell.prototype.rebuildScene = function () {
     if (this.engine.clearPhysics) this.engine.clearPhysics();
     while (this.engine.scene.children.length > 3) {
-      this.engine.scene.remove(this.engine.scene.children[this.engine.scene.children.length - 1]);
+      var obj = this.engine.scene.children[this.engine.scene.children.length - 1];
+      this.engine.scene.remove(obj);
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) {
+        if (Array.isArray(obj.material)) obj.material.forEach(function (m) { if (m && m.dispose) m.dispose(); });
+        else if (obj.material.dispose) obj.material.dispose();
+      }
     }
     if (this.config.buildScene) this.config.buildScene(this.engine, this.state.currentLevel, this);
   };

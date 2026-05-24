@@ -36,18 +36,23 @@
 
   function getFailureFeedback(gameId, levelNum, errorType, attemptCount) {
     var bank = FEEDBACK_BANK[gameId];
-    if (!bank) return null;
+    var fallback = 'Review the current objective and try a different approach for level ' + levelNum + '.';
+    if (!bank) return fallback;
     var levelBank = bank['level' + levelNum];
-    if (!levelBank || !levelBank[errorType]) return null;
+    if (!levelBank || !levelBank[errorType]) return fallback;
     var entry = levelBank[errorType];
-    if (attemptCount >= 2) return entry.second || entry.first;
-    if (attemptCount >= 1) return entry.first;
-    return null;
+    if (attemptCount >= 2) return entry.second || entry.first || fallback;
+    if (attemptCount >= 1) return entry.first || fallback;
+    return fallback;
   }
 
   function getRealWorldConnection(gameId, levelNum) {
     var conn = REAL_WORLD[gameId];
-    return conn && conn['level' + levelNum] ? conn['level' + levelNum] : '';
+    var fallback = 'This scenario mirrors real SOC workflows documented in NIST CSF and MITRE ATT&CK playbooks.';
+    if (!conn) return fallback;
+    if (conn['level' + levelNum]) return conn['level' + levelNum];
+    if (levelNum > 1 && conn['level' + (levelNum - 1)]) return conn['level' + (levelNum - 1)];
+    return conn.level1 || fallback;
   }
 
   function showConceptCheckModal(question) {

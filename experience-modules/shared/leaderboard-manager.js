@@ -7,7 +7,23 @@
   var KEY = 'habibi-leaderboards-v1';
   var PENDING_KEY = 'habibi-leaderboards-pending-v1';
   var MAX = 10;
-  var BASE = '/experience-modules/leaderboards/';
+
+  function leaderboardsBase() {
+    if (global.SiemCore && global.SiemCore.resolveSiteHref) {
+      return global.SiemCore.resolveSiteHref('experience-modules/leaderboards/');
+    }
+    var path = (location.pathname || '/').replace(/\\/g, '/');
+    var marker = '/experience-modules/';
+    var idx = path.indexOf(marker);
+    if (idx !== -1) {
+      var rest = path.slice(idx + marker.length);
+      var parts = rest.split('/').filter(Boolean);
+      if (parts.length && /\.[a-z0-9]+$/i.test(parts[parts.length - 1])) parts.pop();
+      return '../'.repeat(parts.length + 1) + 'experience-modules/leaderboards/';
+    }
+    if (path.indexOf('/brain/') !== -1) return '../experience-modules/leaderboards/';
+    return 'experience-modules/leaderboards/';
+  }
 
   function load() {
     try {
@@ -95,7 +111,7 @@
 
   function syncFromGitHub(gameId, challengeId, storyPath) {
     var k = boardKey(gameId, challengeId, storyPath);
-    var url = BASE + fileName(gameId, challengeId, storyPath);
+    var url = leaderboardsBase() + fileName(gameId, challengeId, storyPath);
     return fetch(url).then(function (res) {
       if (!res.ok) return getTop(gameId, challengeId, storyPath);
       return res.json().then(function (remote) {
@@ -112,7 +128,7 @@
   }
 
   function syncAllFromManifest() {
-    return fetch(BASE + 'manifest.json').then(function (res) {
+    return fetch(leaderboardsBase() + 'manifest.json').then(function (res) {
       if (!res.ok) return [];
       return res.json();
     }).then(function (manifest) {
@@ -128,12 +144,14 @@
 
   function exportPendingJson() {
     var pending = loadPending();
-    var blob = new Blob([JSON.stringify({ pending: pending, exported: new Date().toISOString() }, null, 2)], { type: 'application/json' });
+    var json = JSON.stringify({ pending: pending, exported: new Date().toISOString() }, null, 2);
+    var blob = new Blob([json], { type: 'application/json' });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'habibi-leaderboard-export-' + Date.now() + '.json';
     a.click();
     URL.revokeObjectURL(a.href);
+    return json;
   }
 
   function getTop(gameId, challengeId, storyPath) {
@@ -141,15 +159,20 @@
     return data[boardKey(gameId, challengeId, storyPath)] || [];
   }
 
+  function paintLeaderboardRows(container, rows) {
+    if (!rows.length) {
+      container.innerHTML = '<p class="lb-empty">No scores yet — be first.</p>';
+      return;
+    }
+    container.innerHTML = rows.map(function (r, i) {
+      return '<div class="lb-row"><span>#' + (i + 1) + '</span><span>' + escapeHtml(r.playerName) + '</span><span>' + r.score + '</span><span>' + r.date + '</span></div>';
+    }).join('');
+  }
+
   function renderList(container, gameId, challengeId, storyPath) {
+    paintLeaderboardRows(container, getTop(gameId, challengeId, storyPath));
     syncFromGitHub(gameId, challengeId, storyPath).then(function (rows) {
-      if (!rows.length) {
-        container.innerHTML = '<p class="lb-empty">No scores yet — be first.</p>';
-        return;
-      }
-      container.innerHTML = rows.map(function (r, i) {
-        return '<div class="lb-row"><span>#' + (i + 1) + '</span><span>' + escapeHtml(r.playerName) + '</span><span>' + r.score + '</span><span>' + r.date + '</span></div>';
-      }).join('');
+      paintLeaderboardRows(container, rows);
     });
   }
 
@@ -165,7 +188,7 @@
     syncAllFromManifest: syncAllFromManifest,
     exportPendingJson: exportPendingJson,
     MAX: MAX,
-    BASE: BASE
+    leaderboardsBase: leaderboardsBase
   };
 
   if (typeof document !== 'undefined') {

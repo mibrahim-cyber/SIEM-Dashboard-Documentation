@@ -718,7 +718,7 @@ DioGuide.prototype.checkHoverDistance = function () {
   var cx = rect.left + rect.width / 2;
   var cy = rect.top + rect.height / 2;
   var dist = Math.hypot(this.lastMouseX - cx, this.lastMouseY - cy);
-  if (dist < 80) this.dodge();
+  if (dist < 60) this.dodge();
 };
 
 DioGuide.prototype.dodge = function () {

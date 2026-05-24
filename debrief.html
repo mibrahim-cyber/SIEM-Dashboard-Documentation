@@ -23,7 +23,16 @@
     .nist-grid div { border: 1px solid #334155; padding: 10px; font-size: 10px; background: #0a0618; }
     .debrief-scores { list-style: none; padding: 0; }
     .debrief-scores li { padding: 4px 0; border-bottom: 1px solid #1e293b; }
-    @media print { body { background: #fff; color: #000; } }
+    @media print {
+      body { background: #fff !important; color: #000 !important; padding: 12px; }
+      .debrief-wrap { max-width: 100%; }
+      .debrief-header h1, .debrief-section h2, .debrief-table th { color: #000 !important; }
+      .debrief-section p, .debrief-section li, .debrief-table td { color: #222 !important; }
+      .debrief-table th { background: #eee !important; }
+      .debrief-table tr.pending td { opacity: 1; color: #666 !important; }
+      .nist-grid div { background: #f5f5f5 !important; border-color: #ccc !important; }
+      #deck-nav-root, #dio-guide { display: none !important; }
+    }
   </style>
 </head>
 <body>
