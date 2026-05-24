@@ -64,18 +64,18 @@ def draw_dio_pose(
     g = blank()
     ox, oy = offset_x, offset_y
 
-    # --- Hair: side volume + rear crown (face draws on top — no floating dome) ---
-    rect(g, 11 + ox, 1 + oy, 20 + ox, 2 + oy, "HAIR_MID")
-    rect(g, 10 + ox, 2 + oy, 21 + ox, 4 + oy, "HAIR_BRIGHT")
-    rect(g, 9 + ox, 3 + oy, 22 + ox, 6 + oy, "HAIR_MID")
-    rect(g, 5 + ox, 5 + oy, 10 + ox, 16 + oy, "HAIR_MID")
-    rect(g, 21 + ox, 5 + oy, 26 + ox, 16 + oy, "HAIR_MID")
-    rect(g, 6 + ox, 7 + oy, 11 + ox, 18 + oy, "HAIR_DARK")
-    rect(g, 20 + ox, 7 + oy, 25 + ox, 18 + oy, "HAIR_DARK")
-    rect(g, 12 + ox, 8 + oy, 19 + ox, 9 + oy, "HAIR_MID")
-    rect(g, 13 + ox, 9 + oy, 18 + ox, 10 + oy, "HAIR_BRIGHT")
+    # --- Hair: crown + side volume anchored to scalp (face draws on top) ---
+    rect(g, 12 + ox, 3 + oy, 19 + ox, 4 + oy, "HAIR_MID")
+    rect(g, 11 + ox, 4 + oy, 20 + ox, 5 + oy, "HAIR_BRIGHT")
+    rect(g, 10 + ox, 5 + oy, 21 + ox, 7 + oy, "HAIR_MID")
+    rect(g, 9 + ox, 6 + oy, 22 + ox, 10 + oy, "HAIR_MID")  # scalp bridge — no center gap
+    rect(g, 6 + ox, 7 + oy, 11 + ox, 15 + oy, "HAIR_MID")
+    rect(g, 20 + ox, 7 + oy, 25 + ox, 15 + oy, "HAIR_MID")
+    rect(g, 7 + ox, 9 + oy, 11 + ox, 16 + oy, "HAIR_DARK")
+    rect(g, 20 + ox, 9 + oy, 24 + ox, 16 + oy, "HAIR_DARK")
+    rect(g, 11 + ox, 8 + oy, 20 + ox, 10 + oy, "HAIR_BRIGHT")  # fringe under crown
     if head_back:
-        rect(g, 8 + ox, 0 + oy, 23 + ox, 7 + oy, "HAIR_BRIGHT")
+        rect(g, 9 + ox, 1 + oy, 22 + ox, 6 + oy, "HAIR_BRIGHT")
 
     # --- Heart headband + 2x2 green gem ---
     band_y = 11 + oy

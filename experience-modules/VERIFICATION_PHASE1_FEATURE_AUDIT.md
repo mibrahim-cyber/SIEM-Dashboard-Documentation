@@ -1,6 +1,6 @@
 # Verification Pass 1 — Feature Audit
-**Passed:** 135
-**Issues:** 0
+**Passed:** 130
+**Issues:** 5
 
 ## OK
 - shared/progression-manager.js
@@ -20,7 +20,7 @@
 - game1-terminal contains `achievementId`
 - game2-breach/index.html
 - game2-breach/game.js
-- game2-breach line count >= 400 — 401 lines
+- game2-breach line count >= 400 — 954 lines
 - game2-breach contains `HabibiGameShell`
 - game2-breach contains `levels:`
 - game2-breach contains `buildScene`
@@ -30,7 +30,7 @@
 - game2-breach contains `achievementId`
 - game3-network/index.html
 - game3-network/game.js
-- game3-network line count >= 400 — 401 lines
+- game3-network line count >= 400 — 844 lines
 - game3-network contains `HabibiGameShell`
 - game3-network contains `levels:`
 - game3-network contains `buildScene`
@@ -40,7 +40,7 @@
 - game3-network contains `achievementId`
 - game4-cipher/index.html
 - game4-cipher/game.js
-- game4-cipher line count >= 400 — 401 lines
+- game4-cipher line count >= 400 — 912 lines
 - game4-cipher contains `HabibiGameShell`
 - game4-cipher contains `levels:`
 - game4-cipher contains `buildScene`
@@ -50,7 +50,7 @@
 - game4-cipher contains `achievementId`
 - game5-simulation/index.html
 - game5-simulation/game.js
-- game5-simulation line count >= 400 — 401 lines
+- game5-simulation line count >= 400 — 747 lines
 - game5-simulation contains `HabibiGameShell`
 - game5-simulation contains `levels:`
 - game5-simulation contains `buildScene`
@@ -60,7 +60,7 @@
 - game5-simulation contains `achievementId`
 - game6-intercept/index.html
 - game6-intercept/game.js
-- game6-intercept line count >= 400 — 401 lines
+- game6-intercept line count >= 400 — 720 lines
 - game6-intercept contains `HabibiGameShell`
 - game6-intercept contains `levels:`
 - game6-intercept contains `buildScene`
@@ -70,7 +70,7 @@
 - game6-intercept contains `achievementId`
 - game7-forge/index.html
 - game7-forge/game.js
-- game7-forge line count >= 400 — 401 lines
+- game7-forge line count >= 400 — 757 lines
 - game7-forge contains `HabibiGameShell`
 - game7-forge contains `levels:`
 - game7-forge contains `buildScene`
@@ -80,7 +80,7 @@
 - game7-forge contains `achievementId`
 - game8-archive/index.html
 - game8-archive/game.js
-- game8-archive line count >= 400 — 401 lines
+- game8-archive line count >= 400 — 761 lines
 - game8-archive contains `HabibiGameShell`
 - game8-archive contains `levels:`
 - game8-archive contains `buildScene`
@@ -90,53 +90,53 @@
 - game8-archive contains `achievementId`
 - game9-heist/index.html
 - game9-heist/game.js
-- game9-heist line count >= 400 — 401 lines
+- game9-heist line count >= 400 — 669 lines
 - game9-heist contains `HabibiGameShell`
 - game9-heist contains `levels:`
 - game9-heist contains `buildScene`
-- game9-heist contains `branch:`
 - game9-heist contains `skills:`
 - game9-heist contains `epilogue: true`
 - game9-heist contains `achievementId`
 - game10-lab/index.html
 - game10-lab/game.js
-- game10-lab line count >= 400 — 401 lines
+- game10-lab line count >= 400 — 540 lines
 - game10-lab contains `HabibiGameShell`
 - game10-lab contains `levels:`
 - game10-lab contains `buildScene`
-- game10-lab contains `branch:`
 - game10-lab contains `skills:`
 - game10-lab contains `epilogue: true`
 - game10-lab contains `achievementId`
 - game11-cartography/index.html
 - game11-cartography/game.js
-- game11-cartography line count >= 400 — 401 lines
+- game11-cartography line count >= 400 — 406 lines
 - game11-cartography contains `HabibiGameShell`
 - game11-cartography contains `levels:`
 - game11-cartography contains `buildScene`
-- game11-cartography contains `branch:`
 - game11-cartography contains `skills:`
 - game11-cartography contains `epilogue: true`
 - game11-cartography contains `achievementId`
 - game12-memorial/index.html
 - game12-memorial/game.js
-- game12-memorial line count >= 400 — 401 lines
+- game12-memorial line count >= 400 — 652 lines
 - game12-memorial contains `HabibiGameShell`
 - game12-memorial contains `levels:`
 - game12-memorial contains `buildScene`
-- game12-memorial contains `branch:`
 - game12-memorial contains `skills:`
 - game12-memorial contains `epilogue: true`
 - game12-memorial contains `achievementId`
 - game13-resonance/index.html
 - game13-resonance/game.js
-- game13-resonance line count >= 400 — 401 lines
+- game13-resonance line count >= 400 — 703 lines
 - game13-resonance contains `HabibiGameShell`
 - game13-resonance contains `levels:`
 - game13-resonance contains `buildScene`
-- game13-resonance contains `branch:`
 - game13-resonance contains `skills:`
 - game13-resonance contains `epilogue: true`
 - game13-resonance contains `achievementId`
 
 ## Issues
+- game9-heist contains `branch:`
+- game10-lab contains `branch:`
+- game11-cartography contains `branch:`
+- game12-memorial contains `branch:`
+- game13-resonance contains `branch:`

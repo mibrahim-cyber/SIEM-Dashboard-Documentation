@@ -1,6 +1,6 @@
 # Verification Pass 2 — Quality Audit
-**Passed:** 159
-**Issues:** 0
+**Passed:** 133
+**Issues:** 26
 
 ## OK
 - game1-terminal shared script refs
@@ -24,9 +24,7 @@
 - game2-breach branch decisions
 - game2-breach physics bridge ref
 - game2-breach Cannon-es integration
-- game2-breach story branches (15) — 15 refs
 - game2-breach multi-step tasks
-- game2-breach narrative depth — 3 blocks
 - game3-network shared script refs
 - game3-network Three.js CDN
 - game3-network no bare TODO
@@ -36,7 +34,6 @@
 - game3-network branch decisions
 - game3-network physics bridge ref
 - game3-network Cannon-es integration
-- game3-network story branches (15) — 15 refs
 - game3-network multi-step tasks
 - game3-network narrative depth — 3 blocks
 - game4-cipher shared script refs
@@ -50,7 +47,6 @@
 - game4-cipher Cannon-es integration
 - game4-cipher story branches (15) — 15 refs
 - game4-cipher multi-step tasks
-- game4-cipher narrative depth — 3 blocks
 - game5-simulation shared script refs
 - game5-simulation Three.js CDN
 - game5-simulation no bare TODO
@@ -62,7 +58,7 @@
 - game5-simulation Cannon-es integration
 - game5-simulation story branches (15) — 15 refs
 - game5-simulation multi-step tasks
-- game5-simulation narrative depth — 3 blocks
+- game5-simulation narrative depth — 4 blocks
 - game6-intercept shared script refs
 - game6-intercept Three.js CDN
 - game6-intercept no bare TODO
@@ -72,9 +68,7 @@
 - game6-intercept branch decisions
 - game6-intercept physics bridge ref
 - game6-intercept Cannon-es integration
-- game6-intercept story branches (15) — 15 refs
 - game6-intercept multi-step tasks
-- game6-intercept narrative depth — 3 blocks
 - game7-forge shared script refs
 - game7-forge Three.js CDN
 - game7-forge no bare TODO
@@ -84,9 +78,7 @@
 - game7-forge branch decisions
 - game7-forge physics bridge ref
 - game7-forge Cannon-es integration
-- game7-forge story branches (15) — 15 refs
 - game7-forge multi-step tasks
-- game7-forge narrative depth — 3 blocks
 - game8-archive shared script refs
 - game8-archive Three.js CDN
 - game8-archive no bare TODO
@@ -96,71 +88,79 @@
 - game8-archive branch decisions
 - game8-archive physics bridge ref
 - game8-archive Cannon-es integration
-- game8-archive story branches (15) — 15 refs
 - game8-archive multi-step tasks
-- game8-archive narrative depth — 3 blocks
 - game9-heist shared script refs
 - game9-heist Three.js CDN
 - game9-heist no bare TODO
 - game9-heist no console.log
 - game9-heist progression gameId
 - game9-heist epilogue path
-- game9-heist branch decisions
 - game9-heist physics bridge ref
 - game9-heist Cannon-es integration
-- game9-heist story branches (15) — 15 refs
-- game9-heist multi-step tasks
-- game9-heist narrative depth — 3 blocks
 - game10-lab shared script refs
 - game10-lab Three.js CDN
 - game10-lab no bare TODO
 - game10-lab no console.log
 - game10-lab progression gameId
 - game10-lab epilogue path
-- game10-lab branch decisions
 - game10-lab physics bridge ref
 - game10-lab Cannon-es integration
-- game10-lab story branches (15) — 15 refs
-- game10-lab multi-step tasks
-- game10-lab narrative depth — 3 blocks
 - game11-cartography shared script refs
 - game11-cartography Three.js CDN
 - game11-cartography no bare TODO
 - game11-cartography no console.log
 - game11-cartography progression gameId
 - game11-cartography epilogue path
-- game11-cartography branch decisions
 - game11-cartography physics bridge ref
 - game11-cartography Cannon-es integration
-- game11-cartography story branches (15) — 15 refs
-- game11-cartography multi-step tasks
-- game11-cartography narrative depth — 3 blocks
 - game12-memorial shared script refs
 - game12-memorial Three.js CDN
 - game12-memorial no bare TODO
 - game12-memorial no console.log
 - game12-memorial progression gameId
 - game12-memorial epilogue path
-- game12-memorial branch decisions
 - game12-memorial physics bridge ref
 - game12-memorial Cannon-es integration
-- game12-memorial story branches (15) — 15 refs
 - game12-memorial multi-step tasks
-- game12-memorial narrative depth — 3 blocks
+- game12-memorial narrative depth — 5 blocks
 - game13-resonance shared script refs
 - game13-resonance Three.js CDN
 - game13-resonance no bare TODO
 - game13-resonance no console.log
 - game13-resonance progression gameId
 - game13-resonance epilogue path
-- game13-resonance branch decisions
 - game13-resonance physics bridge ref
 - game13-resonance Cannon-es integration
-- game13-resonance story branches (15) — 15 refs
 - game13-resonance multi-step tasks
-- game13-resonance narrative depth — 3 blocks
+- game13-resonance narrative depth — 4 blocks
 - shared/progression-manager.js no console.log
 - shared/learning-system.js no console.log
 - shared/leaderboard-manager.js no console.log
 
 ## Issues
+- game2-breach story branches (15) — 5 refs
+- game2-breach narrative depth — 0 blocks
+- game3-network story branches (15) — 5 refs
+- game4-cipher narrative depth — 0 blocks
+- game6-intercept story branches (15) — 0 refs
+- game6-intercept narrative depth — 0 blocks
+- game7-forge story branches (15) — 0 refs
+- game7-forge narrative depth — 0 blocks
+- game8-archive story branches (15) — 0 refs
+- game8-archive narrative depth — 0 blocks
+- game9-heist branch decisions
+- game9-heist story branches (15) — 0 refs
+- game9-heist multi-step tasks
+- game9-heist narrative depth — 0 blocks
+- game10-lab branch decisions
+- game10-lab story branches (15) — 0 refs
+- game10-lab multi-step tasks
+- game10-lab narrative depth — 0 blocks
+- game11-cartography branch decisions
+- game11-cartography story branches (15) — 0 refs
+- game11-cartography multi-step tasks
+- game11-cartography narrative depth — 0 blocks
+- game12-memorial branch decisions
+- game12-memorial story branches (15) — 0 refs
+- game13-resonance branch decisions
+- game13-resonance story branches (15) — 0 refs
