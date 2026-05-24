@@ -55,7 +55,6 @@ def draw_dio_pose(
     arm_spread: bool = False,
     crouch: int = 0,
     cape_side: int = 0,
-    hair_shift: int = 0,
     chest_expand: int = 0,
     weight_left: bool = False,
     head_back: bool = False,
@@ -64,22 +63,25 @@ def draw_dio_pose(
     """Draw JoJo Dio at 32x48 — massive hair, heart gem, purple coat, anime jawline."""
     g = blank()
     ox, oy = offset_x, offset_y
-    hs = hair_shift
 
-    # --- Hair (~top 40%: rows 0-18) ---
-    rect(g, 8 + ox + hs, 0 + oy, 23 + ox + hs, 1 + oy, "HAIR_BRIGHT")
-    rect(g, 6 + ox + hs, 1 + oy, 25 + ox + hs, 2 + oy, "HAIR_BRIGHT")
-    rect(g, 5 + ox + hs, 2 + oy, 26 + ox + hs, 4 + oy, "HAIR_MID")
-    rect(g, 4 + ox + hs, 3 + oy, 27 + ox + hs, 6 + oy, "HAIR_MID")
-    rect(g, 3 + ox + hs, 5 + oy, 5 + ox + hs, 12 + oy, "HAIR_MID")
-    rect(g, 26 + ox + hs, 5 + oy, 28 + ox + hs, 12 + oy, "HAIR_MID")
-    rect(g, 6 + ox + hs, 5 + oy, 25 + ox + hs, 10 + oy, "HAIR_BRIGHT")
-    rect(g, 7 + ox + hs, 7 + oy, 9 + ox + hs, 14 + oy, "HAIR_DARK")
-    rect(g, 22 + ox + hs, 7 + oy, 24 + ox + hs, 14 + oy, "HAIR_DARK")
-    rect(g, 8 + ox + hs, 10 + oy, 10 + ox + hs, 16 + oy, "HAIR_SHADOW")
-    rect(g, 21 + ox + hs, 10 + oy, 23 + ox + hs, 16 + oy, "HAIR_SHADOW")
-    rect(g, 10 + ox + hs, 4 + oy, 21 + ox + hs, 8 + oy, "HAIR_BRIGHT")
-    rect(g, 11 + ox + hs, 8 + oy, 20 + ox + hs, 12 + oy, "HAIR_MID")
+    # --- Hair (single connected silhouette — fringe meets headband, no floating dome) ---
+    rect(g, 8 + ox, 0 + oy, 23 + ox, 1 + oy, "HAIR_BRIGHT")
+    rect(g, 6 + ox, 1 + oy, 25 + ox, 2 + oy, "HAIR_BRIGHT")
+    rect(g, 5 + ox, 2 + oy, 26 + ox, 4 + oy, "HAIR_MID")
+    rect(g, 4 + ox, 3 + oy, 27 + ox, 8 + oy, "HAIR_MID")
+    rect(g, 5 + ox, 5 + oy, 26 + ox, 10 + oy, "HAIR_BRIGHT")
+    rect(g, 6 + ox, 6 + oy, 25 + ox, 11 + oy, "HAIR_MID")
+    rect(g, 7 + ox, 8 + oy, 24 + ox, 12 + oy, "HAIR_MID")
+    rect(g, 8 + ox, 12 + oy, 23 + ox, 14 + oy, "HAIR_BRIGHT")
+    rect(g, 9 + ox, 14 + oy, 22 + ox, 15 + oy, "HAIR_MID")
+    rect(g, 10 + ox, 15 + oy, 21 + ox, 16 + oy, "HAIR_MID")
+    rect(g, 3 + ox, 4 + oy, 7 + ox, 17 + oy, "HAIR_MID")
+    rect(g, 24 + ox, 4 + oy, 28 + ox, 17 + oy, "HAIR_MID")
+    rect(g, 4 + ox, 6 + oy, 9 + ox, 16 + oy, "HAIR_DARK")
+    rect(g, 22 + ox, 6 + oy, 27 + ox, 16 + oy, "HAIR_DARK")
+    rect(g, 6 + ox, 10 + oy, 10 + ox, 18 + oy, "HAIR_SHADOW")
+    rect(g, 21 + ox, 10 + oy, 25 + ox, 18 + oy, "HAIR_SHADOW")
+    rect(g, 11 + ox, 11 + oy, 20 + ox, 13 + oy, "HAIR_BRIGHT")
     if head_back:
         rect(g, 5 + ox, 0 + oy, 27 + ox, 6 + oy, "HAIR_BRIGHT")
         rect(g, 4 + ox, 6 + oy, 28 + ox, 14 + oy, "HAIR_MID")
@@ -224,7 +226,7 @@ def draw_walk_frame(step: int) -> list[list[str | None]]:
     leg = step % 4
     cape = -1 if step < 4 else 1
     bounce = -1 if step % 2 else 0
-    g = draw_dio_pose(offset_y=bounce, cape_side=cape, hair_shift=1 if step % 2 else 0)
+    g = draw_dio_pose(offset_y=bounce, cape_side=cape, offset_x=1 if step % 2 else 0)
     ly = 38 + bounce
     if leg == 0:
         rect(g, 9, ly, 13, 47, "COAT_DARK")
@@ -269,7 +271,7 @@ def draw_za_frame(step: int) -> list[list[str | None]]:
     if step == 0:
         return draw_dio_pose(arm_spread=True, cape_side=-1)
     if step == 1:
-        g = draw_dio_pose(offset_y=-2, arm_spread=True, hair_shift=2)
+        g = draw_dio_pose(offset_y=-2, arm_spread=True, offset_x=2)
         rect(g, 5, 0, 26, 4, "HAIR_BRIGHT")
         apply_outline(g)
         return g
@@ -285,7 +287,7 @@ def draw_za_frame(step: int) -> list[list[str | None]]:
             if 0 <= nx < W and 0 <= ny < H:
                 g[ny][nx] = "GOLD_BRIGHT"
         return g
-    return draw_dio_pose(chest_expand=0, hair_shift=0)
+    return draw_dio_pose(chest_expand=0)
 
 
 def grid_to_js_rows(grid: list[list[str | None]], indent: str = "    ") -> str:
@@ -307,9 +309,9 @@ def build_frames() -> dict[str, list[list[list[str | None]]]]:
 
     frames["IDLE_FRAMES"] = [
         draw_dio_pose(),
-        draw_dio_pose(chest_expand=1, hair_shift=1),
+        draw_dio_pose(chest_expand=1, offset_x=1),
         draw_dio_pose(),
-        draw_dio_pose(weight_left=True, hair_shift=-1, cape_side=-1),
+        draw_dio_pose(weight_left=True, offset_x=-1, cape_side=-1),
     ]
 
     frames["WALK_FRAMES"] = [draw_walk_frame(i) for i in range(8)]
