@@ -134,15 +134,31 @@
 /* Landing — Dio is the only way to start */
 #dio-guide.dio-landing {
   width: auto;
-  max-width: min(520px, 94vw);
+  max-width: min(580px, 96vw);
+  bottom: 24px !important;
 }
 
 #dio-guide.dio-landing .dio-panel {
-  transform: scale(1.05);
+  transform: scale(1.12);
+  transform-origin: bottom center;
+}
+
+#dio-guide.dio-landing .dio-avatar canvas {
+  width: 120px;
+  height: 160px;
 }
 
 #dio-guide.dio-landing #dio-speech {
-  width: min(360px, 78vw);
+  width: min(380px, 82vw);
+}
+
+#dio-guide.dio-landing .dio-next-btn,
+#dio-guide.dio-landing #dio-next-btn {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
 body.dio-start-only .orbit-field,
@@ -150,7 +166,11 @@ body.dio-start-only .enter-portal-wrap,
 body.dio-start-only .hud-center,
 body.dio-start-only .hud-bottom,
 body.dio-start-only .map-link,
-body.dio-start-only .warning-placard {
+body.dio-start-only .warning-placard,
+body.landing-dio-mode .orbit-field,
+body.landing-dio-mode .enter-portal-wrap,
+body.landing-dio-mode .hud-center {
+  display: none !important;
   opacity: 0 !important;
   pointer-events: none !important;
   visibility: hidden !important;

@@ -746,10 +746,29 @@
   text-transform: uppercase; opacity: 0.85;
  }
  #hero.hidden-hero { opacity: 0; visibility: hidden; transition: opacity 0.4s; }
+
+ /* Landing: Dio is the ONLY start — hide deck clutter immediately */
+ body.landing-dio-mode .orbit-field,
+ body.landing-dio-mode .enter-portal-wrap,
+ body.landing-dio-mode .hud-center,
+ body.landing-dio-mode .hud-bottom,
+ body.landing-dio-mode .warning-placard,
+ body.landing-dio-mode .enter-portal-hint {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+ }
+ body.landing-dio-mode #hero {
+  background: radial-gradient(ellipse at center top, rgba(10,0,32,0.4) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 40;
+ }
+ body.landing-dio-mode #hero .hero-content { pointer-events: none; padding-top: 10vh; }
+ body.landing-dio-mode #dio-guide { z-index: 100000; }
  </style>
   <link rel="stylesheet" href="experience-modules/shared/dio-guide.css" />
 </head>
-<body>
+<body class="landing-dio-mode dio-start-only">
  <section id="hero">
   <canvas id="hero-network-canvas" aria-hidden="true"></canvas>
   <div class="hero-content">
@@ -766,7 +785,7 @@
     <div class="stat"><span class="stat-num">3D</span><span class="stat-label">Three.js + Physics</span></div>
    </div>
    <div class="hero-progress" id="hero-progress">Loading progress…</div>
-   <p class="hero-dio-hint">DIO will guide you — speak with him below</p>
+   <p class="hero-dio-hint">↓ Press BEGIN in Dio's panel below ↓</p>
   </div>
  </section>
  <div class="letterbox" aria-hidden="true"></div>
