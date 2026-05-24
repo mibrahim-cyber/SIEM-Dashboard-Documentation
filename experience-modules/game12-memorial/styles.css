@@ -1,7 +1,16 @@
 :root {
-  --accent: #e2e8f0;
-  --accent-dim: #e2e8f055;
+  --bg: #080408;
+  --accent: #c084fc;
+  --accent-dim: #c084fc55;
   --text-soft: #94a3b8;
 }
-body { background: #0a0618; color: #e2e8f0; }
-#action-panel { border-color: var(--accent-dim); }
+html, body { background: var(--bg); color: var(--accent); }
+#hud-top { border-bottom-color: var(--accent-dim); color: var(--accent); }
+#action-panel, #terminal-panel { border-color: var(--accent-dim); }
+#action-btns button, .act-btn, #branch-btns button, #btn-continue {
+  border-color: var(--accent-dim);
+  color: var(--accent);
+}
+#skill-sidebar { border-left-color: var(--accent-dim); }
+#skill-sidebar h4 { color: var(--accent); }
+.lb-row span:last-child { color: var(--accent); }

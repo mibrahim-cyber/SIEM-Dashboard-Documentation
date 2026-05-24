@@ -1,7 +1,16 @@
 :root {
-  --accent: #60a5fa;
-  --accent-dim: #60a5fa55;
+  --bg: #040816;
+  --accent: #818cf8;
+  --accent-dim: #818cf855;
   --text-soft: #94a3b8;
 }
-body { background: #020818; color: #60a5fa; }
-#action-panel { border-color: var(--accent-dim); }
+html, body { background: var(--bg); color: var(--accent); }
+#hud-top { border-bottom-color: var(--accent-dim); color: var(--accent); }
+#action-panel, #terminal-panel { border-color: var(--accent-dim); }
+#action-btns button, .act-btn, #branch-btns button, #btn-continue {
+  border-color: var(--accent-dim);
+  color: var(--accent);
+}
+#skill-sidebar { border-left-color: var(--accent-dim); }
+#skill-sidebar h4 { color: var(--accent); }
+.lb-row span:last-child { color: var(--accent); }

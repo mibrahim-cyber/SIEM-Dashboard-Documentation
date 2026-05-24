@@ -69,3 +69,35 @@ html, body { height: 100%; overflow: hidden; font-family: "IBM Plex Mono", Conso
 .habibi-learn-opt.selected { border-color: #34d399; color: #34d399; }
 #hud-score { margin-left: 8px; }
 @media (max-width: 900px) { #skill-sidebar { display: none; } }
+
+@media (max-width: 768px) {
+  #canvas-host {
+    width: 100vw !important;
+    height: 55vh !important;
+  }
+  #action-panel, #terminal-panel, #game-ui {
+    font-size: 12px;
+    padding: 8px;
+  }
+  #term-in {
+    font-size: 14px;
+  }
+  #dio-guide {
+    transform: scale(0.75);
+    transform-origin: bottom right;
+  }
+  .act-btn, #action-btns button {
+    min-height: 44px;
+    font-size: 13px;
+  }
+  #skill-list li {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  #canvas-host { height: 45vh !important; }
+  #dio-speech { width: 160px; font-size: 10px; }
+}

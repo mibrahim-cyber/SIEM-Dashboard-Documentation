@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" data-deck-page="debrief">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operation MERIDIAN-7 — Analyst Debrief</title>
+  <link rel="stylesheet" href="assets/palette.css" />
+  <link rel="stylesheet" href="assets/deck-nav.css" />
+  <link rel="stylesheet" href="experience-modules/shared/dio-guide.css" />
+  <style>
+    body { background: #030712; color: #e2e8f0; font-family: "IBM Plex Mono", "Courier New", monospace; margin: 0; padding: 24px; }
+    .debrief-wrap { max-width: 960px; margin: 0 auto; }
+    .debrief-header h1 { font-size: 16px; letter-spacing: 3px; color: #CC66FF; margin-bottom: 24px; border-bottom: 1px solid #334155; padding-bottom: 12px; }
+    .debrief-section { margin-bottom: 28px; }
+    .debrief-section h2 { font-size: 12px; color: #38bdf8; letter-spacing: 2px; margin-bottom: 10px; }
+    .debrief-section p, .debrief-section li { font-size: 11px; line-height: 1.6; color: #94a3b8; }
+    .debrief-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    .debrief-table th, .debrief-table td { border: 1px solid #334155; padding: 8px; text-align: left; }
+    .debrief-table th { color: #CC66FF; background: #0f172a; }
+    .debrief-table tr.done td { color: #34d399; }
+    .debrief-table tr.pending td { opacity: 0.5; }
+    .nist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+    .nist-grid div { border: 1px solid #334155; padding: 10px; font-size: 10px; background: #0a0618; }
+    .debrief-scores { list-style: none; padding: 0; }
+    .debrief-scores li { padding: 4px 0; border-bottom: 1px solid #1e293b; }
+    @media print { body { background: #fff; color: #000; } }
+  </style>
+</head>
+<body>
+  <div class="debrief-wrap">
+    <div id="debrief-content"><p>Loading debrief report…</p></div>
+  </div>
+  <div id="deck-nav-root"></div>
+  <script src="assets/siem-core.js"></script>
+  <script src="assets/palette.js"></script>
+  <script src="experience-modules/shared/narrative-engine.js"></script>
+  <script src="experience-modules/shared/debrief-generator.js"></script>
+  <script src="experience-modules/shared/dio-guide.js"></script>
+  <script src="assets/deck-nav.js"></script>
+  <script>SiemCore.bootPage('debrief');</script>
+</body>
+</html>

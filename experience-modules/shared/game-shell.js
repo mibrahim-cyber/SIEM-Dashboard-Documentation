@@ -186,11 +186,18 @@
   GameShell.prototype.runEpilogue = function () {
     var self = this;
     HabibiLearning.showReflectionModal(this.gameId, this.state.storyChoices, {}).then(function () {
+      HabibiProgression.markLevelComplete(self.gameId, 5, self.state);
+      self.state = HabibiProgression.load(self.gameId);
       HabibiProgression.addAchievement(self.gameId, self.config.achievementId || (self.gameId + '_master'), self.state);
       HabibiProgression.unlockNextGame(self.gameId);
       HabibiProgression.addPlayTime(self.gameId, Math.floor((Date.now() - self.sessionStart) / 1000), self.state);
       self.setTaskText('Epilogue complete. Next module unlocked in progression chain.');
       self.appendOut('\n=== EPILOGUE COMPLETE ===\nNext game unlocked.');
+      try {
+        global.dispatchEvent(new CustomEvent('habibi-game-complete', {
+          detail: { gameId: self.gameId, choices: self.state.storyChoices || {} }
+        }));
+      } catch (_) { /* */ }
     });
   };
 

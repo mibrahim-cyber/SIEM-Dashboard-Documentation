@@ -1,7 +1,7 @@
 /**
  * Meridian-7 service worker — offline cache for core assets
  */
-const CACHE = 'meridian7-v16.4';
+const CACHE = 'meridian7-v17.0';
 const PRECACHE = [
   '/',
   '/index.html',
@@ -25,7 +25,12 @@ const PRECACHE = [
   '/resonance.html',
   '/motd.html',
   '/trophy.html',
+  '/debrief.html',
   '/read.html',
+  '/experience-modules/shared/dio-guide.js',
+  '/experience-modules/shared/dio-guide.css',
+  '/experience-modules/shared/narrative-engine.js',
+  '/experience-modules/shared/debrief-generator.js',
   '/favicon.ico',
   '/favicon-32.png',
   '/apple-touch-icon.png',
