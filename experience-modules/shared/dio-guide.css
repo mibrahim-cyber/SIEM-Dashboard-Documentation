@@ -120,52 +120,38 @@
 }
 
 #dio-guide.dio-landing {
-  max-width: min(560px, 96vw);
-  bottom: 24px !important;
+  max-width: min(720px, 98vw);
+  bottom: 80px !important;
 }
 
 #dio-guide.dio-landing .dio-panel {
-  transform: scale(1.1);
+  transform: scale(1.55);
   transform-origin: bottom center;
 }
 
 #dio-guide.dio-landing .dio-avatar canvas {
-  width: 128px;
-  height: 192px;
+  width: 160px;
+  height: 240px;
 }
 
 #dio-guide.dio-landing #dio-speech {
-  width: min(360px, 82vw);
+  width: min(400px, 78vw);
+  font-size: 12px;
 }
 
 body.dio-start-only .orbit-field,
-body.dio-start-only .enter-portal-wrap,
-body.dio-start-only .hud-center,
-body.dio-start-only .hud-bottom,
-body.dio-start-only .map-link,
-body.dio-start-only .warning-placard,
-body.landing-dio-mode .orbit-field,
-body.landing-dio-mode .enter-portal-wrap,
-body.landing-dio-mode .hud-center {
+body.landing-dio-mode .orbit-field {
   display: none !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
 }
 
-body.dio-start-only #hero {
-  background: radial-gradient(ellipse at center top, rgba(10, 0, 32, 0.35) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 40;
+body.landing-dio-mode.hero-ready .orbit-field {
+  display: block !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
 }
 
-body.dio-start-only #hero .hero-content {
-  pointer-events: none;
-  padding-top: 10vh;
-}
-
-body.dio-start-only #dio-guide,
 body.landing-dio-mode #dio-guide {
-  z-index: 100000;
+  z-index: 100001;
 }
 
 #dio-recruiter-bar {

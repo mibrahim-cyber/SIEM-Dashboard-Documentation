@@ -60874,11 +60874,10 @@ DioGuide.prototype.bindEvents = function () {
 DioGuide.prototype.applyLayout = function () {
   if (this.isLanding) {
     this.container.classList.add('dio-landing');
-    document.body.classList.add('dio-start-only');
     this.container.style.left = '50%';
     this.container.style.right = 'auto';
     this.container.style.top = 'auto';
-    this.container.style.bottom = '28px';
+    this.container.style.bottom = '80px';
     this.x = window.innerWidth / 2;
     this.y = window.innerHeight - 200;
     return;
