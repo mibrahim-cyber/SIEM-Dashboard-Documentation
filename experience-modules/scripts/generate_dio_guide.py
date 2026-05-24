@@ -19,76 +19,94 @@ def rect(grid, x0, y0, x1, y1, key):
                 grid[y][x] = key
 
 
-def draw_base_dio(offset_x=0, offset_y=0, mouth=0, eyes_wide=False, arm_point=False, arm_up=False, crouch=0, cape_side=0):
+def draw_jojo_dio(offset_x=0, offset_y=0, mouth=0, eyes_wide=False, arm_point=False, arm_up=False, crouch=0, cape_side=0):
+    """JoJo Part 3 Dio Brando — spiky hair, heart band, gold jacket, arrogant laugh."""
     g = blank()
-    oy = offset_y
-    ox = offset_x
-    # Hair top
-    rect(g, 7 + ox, 0 + oy, 16 + ox, 4 + oy, "HAIR")
-    rect(g, 6 + ox, 2 + oy, 17 + ox, 5 + oy, "HAIR_DARK")
-    # Heart headband
-    rect(g, 7 + ox, 5 + oy, 16 + ox, 6 + oy, "HEART_BAND")
-    rect(g, 8 + ox, 6 + oy, 15 + ox, 6 + oy, "HEART_PINK")
+    ox, oy = offset_x, offset_y
+    # Spiky blonde hair crown
+    spikes = [
+        (3, 0, 5, 1), (5, 0, 8, 0), (8, 0, 11, 0), (11, 0, 14, 0), (14, 0, 17, 0), (17, 0, 20, 1),
+        (4, 1, 6, 2), (6, 1, 9, 1), (9, 1, 12, 2), (12, 1, 15, 1), (15, 1, 18, 2), (18, 2, 20, 3),
+        (5, 2, 7, 3), (7, 2, 10, 3), (10, 2, 13, 2), (13, 2, 16, 3), (16, 2, 19, 4),
+        (6, 3, 8, 4), (8, 3, 11, 4), (11, 3, 14, 4), (14, 3, 17, 4), (17, 3, 19, 5),
+        (7, 4, 9, 5), (9, 4, 12, 5), (12, 4, 15, 5), (15, 4, 18, 5), (8, 5, 16, 6),
+    ]
+    for i, box in enumerate(spikes):
+        rect(g, box[0] + ox, box[1] + oy, box[2] + ox, box[3] + oy, "HAIR" if i % 2 == 0 else "HAIR_DARK")
+    # Heart headband + green gem
+    rect(g, 6 + ox, 6 + oy, 17 + ox, 7 + oy, "HEART_BAND")
+    rect(g, 10 + ox, 6 + oy, 13 + ox, 7 + oy, "HEART_GREEN")
+    rect(g, 11 + ox, 7 + oy, 12 + ox, 7 + oy, "HEART_PINK")
     # Face
-    rect(g, 8 + ox, 7 + oy, 15 + ox, 13 + oy, "SKIN")
-    rect(g, 8 + ox, 13 + oy, 15 + ox, 14 + oy, "SKIN_DARK")
+    rect(g, 7 + ox, 8 + oy, 16 + ox, 14 + oy, "SKIN")
+    rect(g, 7 + ox, 9 + oy, 9 + ox, 14 + oy, "SHADOW")
+    rect(g, 7 + ox, 10 + oy, 10 + ox, 12 + oy, "SHADOW")
+    rect(g, 14 + ox, 11 + oy, 16 + ox, 13 + oy, "SKIN_DARK")
     # Eyes
     eye_y = 9 + oy
     if eyes_wide:
-        rect(g, 9 + ox, eye_y, 10 + ox, eye_y + 1, "EYE_WHITE")
-        rect(g, 13 + ox, eye_y, 14 + ox, eye_y + 1, "EYE_WHITE")
-        rect(g, 9 + ox, eye_y + 1, 10 + ox, eye_y + 1, "EYE")
-        rect(g, 13 + ox, eye_y + 1, 14 + ox, eye_y + 1, "EYE")
+        rect(g, 10 + ox, eye_y, 11 + ox, eye_y + 1, "EYE_WHITE")
+        rect(g, 14 + ox, eye_y, 15 + ox, eye_y + 1, "EYE_WHITE")
+        rect(g, 10 + ox, eye_y + 1, 11 + ox, eye_y + 1, "EYE")
+        rect(g, 14 + ox, eye_y + 1, 15 + ox, eye_y + 1, "EYE")
     else:
-        rect(g, 9 + ox, eye_y, 10 + ox, eye_y, "EYE_WHITE")
-        rect(g, 13 + ox, eye_y, 14 + ox, eye_y, "EYE_WHITE")
-        rect(g, 9 + ox, eye_y, 10 + ox, eye_y, "EYE_DARK")
-        rect(g, 13 + ox, eye_y, 14 + ox, eye_y, "EYE_DARK")
-        rect(g, 9 + ox, eye_y, 10 + ox, eye_y, "EYE_GLOW")
-        rect(g, 13 + ox, eye_y, 14 + ox, eye_y, "EYE_GLOW")
-    # Mouth states 0=closed 1=slight 2=wide 3=half
+        rect(g, 10 + ox, eye_y, 12 + ox, eye_y, "SHADOW")
+        rect(g, 13 + ox, eye_y, 15 + ox, eye_y, "SHADOW")
+        rect(g, 10 + ox, eye_y + 1, 11 + ox, eye_y + 1, "EYE_GLOW")
+        rect(g, 14 + ox, eye_y + 1, 15 + ox, eye_y + 1, "EYE_GLOW")
+        rect(g, 10 + ox, eye_y + 1, 11 + ox, eye_y + 1, "EYE")
+        rect(g, 14 + ox, eye_y + 1, 15 + ox, eye_y + 1, "EYE")
+    # Mouth — iconic laugh
     mouth_y = 12 + oy
     if mouth == 1:
-        rect(g, 10 + ox, mouth_y, 13 + ox, mouth_y, "SHADOW")
+        rect(g, 10 + ox, mouth_y + 1, 13 + ox, mouth_y + 1, "MOUTH_IN")
     elif mouth == 2:
-        rect(g, 10 + ox, mouth_y, 13 + ox, mouth_y + 1, "SHADOW")
+        rect(g, 9 + ox, mouth_y, 14 + ox, mouth_y + 2, "TEETH")
+        rect(g, 10 + ox, mouth_y, 13 + ox, mouth_y + 1, "MOUTH_IN")
     elif mouth == 3:
-        rect(g, 11 + ox, mouth_y, 12 + ox, mouth_y, "SHADOW")
+        rect(g, 11 + ox, mouth_y + 1, 12 + ox, mouth_y + 1, "SHADOW")
     else:
-        rect(g, 11 + ox, mouth_y, 12 + ox, mouth_y, "SKIN_DARK")
-    # Coat body
+        rect(g, 9 + ox, mouth_y, 14 + ox, mouth_y + 2, "TEETH")
+        rect(g, 10 + ox, mouth_y + 1, 13 + ox, mouth_y + 1, "MOUTH_IN")
+        rect(g, 9 + ox, mouth_y, 14 + ox, mouth_y, "SHADOW")
+    # Gold jacket + black shirt
     chest_y = 15 + oy + crouch
-    rect(g, 6 + ox, chest_y, 17 + ox, 24 + oy + crouch, "COAT")
-    rect(g, 7 + ox, chest_y + 1, 16 + ox, 23 + oy + crouch, "COAT_LIGHT")
-    rect(g, 6 + ox, chest_y, 17 + ox, chest_y + 1, "COAT_GOLD")
-    rect(g, 10 + ox, chest_y + 2, 13 + ox, 20 + oy + crouch, "SHIRT")
+    rect(g, 5 + ox, chest_y, 18 + ox, 24 + oy + crouch, "JACKET")
+    rect(g, 6 + ox, chest_y + 1, 17 + ox, 23 + oy + crouch, "JACKET_DARK")
+    rect(g, 5 + ox, chest_y, 18 + ox, chest_y + 1, "JACKET_GOLD")
+    rect(g, 8 + ox, chest_y + 1, 15 + ox, chest_y + 3, "SHADOW")
+    rect(g, 9 + ox, chest_y + 3, 14 + ox, 21 + oy + crouch, "SHADOW")
+    # Cape
+    if cape_side <= 0:
+        rect(g, 3 + ox, chest_y + 2, 5 + ox, 28 + oy, "CAPE")
+    if cape_side >= 0:
+        rect(g, 18 + ox, chest_y + 2, 20 + ox, 28 + oy, "CAPE")
     # Arms
     if arm_point:
-        rect(g, 17 + ox, 14 + oy + crouch, 22 + ox, 15 + oy + crouch, "COAT")
-        rect(g, 22 + ox, 13 + oy + crouch, 23 + ox, 14 + oy + crouch, "SKIN")
-        rect(g, 4 + ox, 16 + oy + crouch, 6 + ox, 20 + oy + crouch, "COAT")
+        rect(g, 17 + ox, 13 + oy + crouch, 22 + ox, 15 + oy + crouch, "JACKET")
+        rect(g, 22 + ox, 12 + oy + crouch, 23 + ox, 14 + oy + crouch, "SKIN")
+        rect(g, 4 + ox, 16 + oy + crouch, 6 + ox, 20 + oy + crouch, "JACKET")
     elif arm_up:
-        rect(g, 4 + ox, 10 + oy + crouch, 7 + ox, 14 + oy + crouch, "COAT")
-        rect(g, 17 + ox, 10 + oy + crouch, 20 + ox, 14 + oy + crouch, "COAT")
+        rect(g, 3 + ox, 9 + oy + crouch, 7 + ox, 14 + oy + crouch, "JACKET")
+        rect(g, 16 + ox, 9 + oy + crouch, 20 + ox, 14 + oy + crouch, "JACKET")
     else:
-        rect(g, 4 + ox, 16 + oy + crouch, 6 + ox, 22 + oy + crouch, "COAT")
-        rect(g, 17 + ox, 16 + oy + crouch, 19 + ox, 22 + oy + crouch, "COAT")
-    # Cape trail
-    if cape_side < 0:
-        rect(g, 3 + ox, 18 + oy, 5 + ox, 28 + oy, "COAT_DARK" if False else "COAT")
-    elif cape_side > 0:
-        rect(g, 18 + ox, 18 + oy, 20 + ox, 28 + oy, "COAT")
+        rect(g, 4 + ox, 16 + oy + crouch, 6 + ox, 22 + oy + crouch, "JACKET")
+        rect(g, 17 + ox, 16 + oy + crouch, 19 + ox, 22 + oy + crouch, "JACKET")
     # Legs
     leg_y = 25 + oy + crouch
     if crouch > 0:
-        rect(g, 8 + ox, leg_y, 11 + ox, 30 + oy, "COAT")
-        rect(g, 12 + ox, leg_y, 15 + ox, 30 + oy, "COAT")
+        rect(g, 8 + ox, leg_y, 11 + ox, 30 + oy, "JACKET_DARK")
+        rect(g, 12 + ox, leg_y, 15 + ox, 30 + oy, "JACKET_DARK")
     else:
-        rect(g, 8 + ox, leg_y, 10 + ox, 31 + oy, "COAT")
-        rect(g, 13 + ox, leg_y, 15 + ox, 31 + oy, "COAT")
+        rect(g, 8 + ox, leg_y, 10 + ox, 31 + oy, "JACKET_DARK")
+        rect(g, 13 + ox, leg_y, 15 + ox, 31 + oy, "JACKET_DARK")
         rect(g, 8 + ox, 31 + oy, 10 + ox, 31 + oy, "SHADOW")
         rect(g, 13 + ox, 31 + oy, 15 + ox, 31 + oy, "SHADOW")
     return g
+
+
+# alias for frame builders
+draw_base_dio = draw_jojo_dio
 
 
 def draw_walk_frame(step, direction=1):
@@ -203,18 +221,16 @@ STORYLINE_JS = r'''
 var DIO_STORYLINE = {
   'index': {
     enter: [
-      "You have arrived at HABIBI-SIEM. I am DIO. I will guide you.",
-      "This is a Security Operations Centre. 13 trials await you.",
-      "Each game teaches a different skill. Together they tell one story.",
-      "Begin with The Terminal. Click it in the menu, or scroll down to see all 13 challenges.",
-      "Do not keep me waiting."
+      "You have arrived at HABIBI-SIEM. I am DIO BRANDO.",
+      "Operation MERIDIAN-7 — thirteen trials, one connected investigation.",
+      "From first alert to post-mortem. I will guide you through every phase.",
+      "When you are ready, press the button. Do not keep me waiting."
     ],
     tips: [
-      "The top menu shows your overall progress.",
-      "Each module unlocks the next. Start at The Terminal.",
-      "Complete all 13 to unlock the Debrief Report — a summary of every skill you demonstrated."
+      "Each module unlocks the next in sequence.",
+      "Complete all 13 to unlock your Analyst Debrief Report."
     ],
-    nextAction: { label: "Start The Terminal", url: "experience-modules/game1-terminal/index.html" }
+    nextAction: { label: "Begin Operation MERIDIAN-7", url: "experience-modules/game1-terminal/index.html" }
   },
   'game1-terminal': {
     enter: [
@@ -358,6 +374,11 @@ var DIO_PALETTE = {
   HAIR_DARK: '#C8BB20',
   HEART_BAND: '#FF4466',
   HEART_PINK: '#FF88AA',
+  HEART_GREEN: '#44BB55',
+  JACKET: '#F0D030',
+  JACKET_DARK: '#C8A018',
+  JACKET_GOLD: '#FFE860',
+  CAPE: '#2A1048',
   COAT: '#2A1A4A',
   COAT_LIGHT: '#3D2A6A',
   COAT_GOLD: '#C8A020',
@@ -366,6 +387,8 @@ var DIO_PALETTE = {
   EYE_DARK: '#401880',
   EYE_WHITE: '#FFFFFF',
   EYE_GLOW: '#CC66FF',
+  TEETH: '#FFFFFF',
+  MOUTH_IN: '#1A0818',
   SHADOW: '#0A0412',
   TRANSPARENT: null
 };
@@ -462,6 +485,9 @@ function DioGuide() {
   this.levelTrackInterval = null;
   this.lastLevel = null;
   this.gameCompleteShown = false;
+  this.pendingAction = null;
+  this.isLanding = false;
+  this.landingFloat = 0;
 }
 
 DioGuide.prototype.init = function () {
@@ -477,32 +503,47 @@ DioGuide.prototype.init = function () {
   window.addEventListener('habibi-game-complete', function (e) {
     if (e.detail && e.detail.gameId) self.onGameComplete(e.detail.gameId);
   });
+  window.addEventListener('resize', function () { self.applyLayout(); });
 };
 
 DioGuide.prototype.buildDOM = function () {
   this.container = document.createElement('div');
   this.container.id = 'dio-guide';
-  this.canvas = document.createElement('canvas');
-  this.canvas.width = 96;
-  this.canvas.height = 128;
+  this.panel = document.createElement('div');
+  this.panel.className = 'dio-panel';
   this.speechBubble = document.createElement('div');
   this.speechBubble.id = 'dio-speech';
   this.speechText = document.createElement('div');
   this.speechText.id = 'dio-speech-text';
+  this.actionSlot = document.createElement('div');
+  this.actionSlot.id = 'dio-actions';
+  this.actionSlot.className = 'dio-actions';
   var name = document.createElement('div');
   name.className = 'dio-speaker-name';
-  name.textContent = '— DIO —';
+  name.textContent = 'DIO BRANDO';
+  var subtitle = document.createElement('div');
+  subtitle.className = 'dio-speaker-sub';
+  subtitle.textContent = 'Your guide · Operation MERIDIAN-7';
   var tail = document.createElement('div');
   tail.className = 'dio-speech-tail';
+  this.avatarWrap = document.createElement('div');
+  this.avatarWrap.className = 'dio-avatar';
+  this.canvas = document.createElement('canvas');
+  this.canvas.width = 96;
+  this.canvas.height = 128;
   this.speechBubble.appendChild(name);
+  this.speechBubble.appendChild(subtitle);
   this.speechBubble.appendChild(this.speechText);
+  this.speechBubble.appendChild(this.actionSlot);
   this.speechBubble.appendChild(tail);
-  this.container.appendChild(this.speechBubble);
-  this.container.appendChild(this.canvas);
+  this.avatarWrap.appendChild(this.canvas);
+  this.panel.appendChild(this.speechBubble);
+  this.panel.appendChild(this.avatarWrap);
+  this.container.appendChild(this.panel);
   document.body.appendChild(this.container);
   this.sprite = new DioSprite(this.canvas);
   this.sprite.guide = this;
-  this.updatePosition();
+  this.applyLayout();
 };
 
 DioGuide.prototype.bindEvents = function () {
@@ -512,13 +553,35 @@ DioGuide.prototype.bindEvents = function () {
     self.lastMouseY = e.clientY;
     self.checkHoverDistance();
   });
-  this.container.addEventListener('click', function () {
+  this.panel.addEventListener('click', function (e) {
+    if (e.target.closest('#dio-next-btn')) return;
     if (!self.isDodging && !self.recruiterMode) self.advanceDialogue();
   });
 };
 
+DioGuide.prototype.applyLayout = function () {
+  if (this.isLanding) {
+    this.container.classList.add('dio-landing');
+    document.body.classList.add('dio-start-only');
+    this.container.style.left = '50%';
+    this.container.style.right = 'auto';
+    this.container.style.top = 'auto';
+    this.container.style.bottom = '28px';
+    this.x = window.innerWidth / 2;
+    this.y = window.innerHeight - 160;
+    return;
+  }
+  this.container.classList.remove('dio-landing');
+  this.x = Math.min(window.innerWidth - 380, Math.max(16, window.innerWidth * 0.62));
+  this.y = Math.max(80, window.innerHeight - 180);
+  this.container.style.left = this.x + 'px';
+  this.container.style.top = this.y + 'px';
+  this.container.style.bottom = 'auto';
+  this.container.style.right = 'auto';
+};
+
 DioGuide.prototype.checkHoverDistance = function () {
-  if (this.isDodging || this.recruiterMode) return;
+  if (this.isDodging || this.recruiterMode || this.isLanding) return;
   var rect = this.container.getBoundingClientRect();
   var dx = this.lastMouseX - (rect.left + rect.width / 2);
   var dy = this.lastMouseY - (rect.top + rect.height / 2);
@@ -566,7 +629,12 @@ DioGuide.prototype.startLoop = function () {
     lastTime = now;
     self.floatOffset += self.floatDir * dt * 0.04;
     if (Math.abs(self.floatOffset) > 6) self.floatDir *= -1;
-    self.container.style.transform = 'translateY(' + self.floatOffset + 'px)';
+    var floatY = self.floatOffset;
+    if (self.isLanding) {
+      self.container.style.transform = 'translateX(-50%) translateY(' + floatY + 'px)';
+    } else {
+      self.container.style.transform = 'translateY(' + floatY + 'px)';
+    }
     self.sprite.update(dt);
     var anim = self.sprite.animations[self.sprite.currentAnimation];
     self.sprite.drawFrame(anim.frames[self.sprite.currentFrame], 0, 0);
@@ -576,12 +644,9 @@ DioGuide.prototype.startLoop = function () {
 };
 
 DioGuide.prototype.updatePosition = function () {
-  this.container.style.left = this.x + 'px';
-  this.container.style.top = this.y + 'px';
-  var btn = document.getElementById('dio-next-btn');
-  if (btn) {
-    btn.style.left = (this.x - 60) + 'px';
-    btn.style.top = (this.y + 140) + 'px';
+  if (!this.isLanding) {
+    this.container.style.left = this.x + 'px';
+    this.container.style.top = this.y + 'px';
   }
 };
 
@@ -602,10 +667,32 @@ DioGuide.prototype.detectCurrentPage = function () {
     }
   }
   this.storylinePosition = pageMap[filename] || filename || 'index';
+  this.isLanding = this.storylinePosition === 'index' && !this.recruiterMode;
+  this.applyLayout();
   if (DIO_STORYLINE[this.storylinePosition]) {
     var script = DIO_STORYLINE[this.storylinePosition];
-    if (script.enter && !this.recruiterMode) this.queueDialogue(script.enter);
-    if (script.nextAction) this.showNextActionButton(script.nextAction);
+    if (script.nextAction) this.pendingAction = script.nextAction;
+    if (script.enter && !this.recruiterMode) {
+      var lines = script.enter.slice();
+      if (window.HabibiNarrative) {
+        var ctxMap = {
+          'game2-breach': 'the_breach', 'game3-network': 'the_ghost_network',
+          'game4-cipher': 'the_cipher', 'game5-simulation': 'the_simulation',
+          'game6-intercept': 'the_interrogation_room', 'game7-forge': 'the_forge',
+          'game8-archive': 'the_deep_archive', 'game9-heist': 'the_heist',
+          'game10-lab': 'the_lab', 'game11-cartography': 'the_cartography',
+          'game12-memorial': 'the_memorial', 'game13-resonance': 'the_resonance'
+        };
+        var ctxId = ctxMap[this.storylinePosition];
+        if (ctxId) {
+          var ctxLine = HabibiNarrative.getContextForGame(ctxId);
+          if (ctxLine) lines.unshift(ctxLine);
+        }
+      }
+      this.queueDialogue(lines);
+    } else if (script.nextAction && !this.recruiterMode) {
+      this.showNextActionButton(script.nextAction);
+    }
   }
 };
 
@@ -617,8 +704,8 @@ DioGuide.prototype.queueDialogue = function (lines) {
 DioGuide.prototype.advanceDialogue = function () {
   var self = this;
   if (this.dialogueQueue.length === 0) {
-    this.hideSpeechBubble();
     this.sprite.playAnimation('idle');
+    if (this.pendingAction) this.showNextActionButton(this.pendingAction);
     return;
   }
   var line = this.dialogueQueue.shift();
@@ -628,7 +715,10 @@ DioGuide.prototype.advanceDialogue = function () {
   clearTimeout(this.autoAdvanceTimer);
   this.autoAdvanceTimer = setTimeout(function () {
     if (self.dialogueQueue.length > 0) self.advanceDialogue();
-    else self.sprite.playAnimation('idle');
+    else {
+      self.sprite.playAnimation('idle');
+      if (self.pendingAction) self.showNextActionButton(self.pendingAction);
+    }
   }, readTime);
 };
 
@@ -642,14 +732,15 @@ DioGuide.prototype.hideSpeechBubble = function () {
 };
 
 DioGuide.prototype.showNextActionButton = function (action) {
-  var existing = document.getElementById('dio-next-btn');
-  if (existing) existing.remove();
+  if (!this.actionSlot) return;
+  this.actionSlot.innerHTML = '';
   var btn = document.createElement('a');
   btn.href = action.url;
   btn.id = 'dio-next-btn';
-  btn.textContent = '\u25B6 ' + action.label;
-  document.body.appendChild(btn);
-  this.updatePosition();
+  btn.className = 'dio-next-btn';
+  btn.textContent = action.label;
+  this.actionSlot.appendChild(btn);
+  this.speechBubble.style.opacity = '1';
 };
 
 DioGuide.prototype.initLevelTracking = function () {
@@ -681,11 +772,18 @@ DioGuide.prototype.initLevelTracking = function () {
           self.sprite.playAnimation('point');
         }
       }
+      if (data.completedLevels && data.completedLevels.indexOf(5) >= 0 && !self.gameCompleteShown) {
+        self.gameCompleteShown = true;
+        self.onGameComplete(gameId);
+      }
     } catch (err) { /* ignore */ }
   }, 2000);
 };
 
 DioGuide.prototype.onGameComplete = function (gameId) {
+  if (!this._completedGames) this._completedGames = {};
+  if (this._completedGames[gameId]) return;
+  this._completedGames[gameId] = true;
   var map = {
     the_terminal: 'game1-terminal', the_breach: 'game2-breach', the_ghost_network: 'game3-network',
     the_cipher: 'game4-cipher', the_simulation: 'game5-simulation',

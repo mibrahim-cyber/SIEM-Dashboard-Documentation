@@ -740,19 +740,10 @@
   border-radius: 4px;
   margin-bottom: 12px;
  }
- .hero-progress { font-size: 10px; color: #64748b; }
- #hero-dismiss {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  pointer-events: auto;
-  background: transparent;
-  border: 1px solid #334155;
-  color: #94a3b8;
-  font-size: 10px;
-  padding: 6px 10px;
-  cursor: pointer;
-  font-family: var(--font-mono);
+ .hero-progress { font-size: 10px; color: #64748b; margin-top: 8px; }
+ .hero-dio-hint {
+  font-size: 10px; letter-spacing: 2px; color: #a78bfa; margin-top: 16px;
+  text-transform: uppercase; opacity: 0.85;
  }
  #hero.hidden-hero { opacity: 0; visibility: hidden; transition: opacity 0.4s; }
  </style>
@@ -761,7 +752,6 @@
 <body>
  <section id="hero">
   <canvas id="hero-network-canvas" aria-hidden="true"></canvas>
-  <button type="button" id="hero-dismiss">Enter Deck</button>
   <div class="hero-content">
    <div class="hero-tag">OPERATION MERIDIAN-7</div>
    <h1 class="hero-title">HABIBI-SIEM</h1>
@@ -775,8 +765,8 @@
     <div class="stat"><span class="stat-num">5</span><span class="stat-label">NIST CSF Functions</span></div>
     <div class="stat"><span class="stat-num">3D</span><span class="stat-label">Three.js + Physics</span></div>
    </div>
-   <a href="experience-modules/game1-terminal/index.html" class="hero-cta">Begin Operation MERIDIAN-7</a>
    <div class="hero-progress" id="hero-progress">Loading progress…</div>
+   <p class="hero-dio-hint">DIO will guide you — speak with him below</p>
   </div>
  </section>
  <div class="letterbox" aria-hidden="true"></div>
@@ -1283,11 +1273,6 @@
  <script>
  (function () {
   function initHero() {
-   var hero = document.getElementById('hero');
-   var dismiss = document.getElementById('hero-dismiss');
-   if (dismiss && hero) {
-    dismiss.addEventListener('click', function () { hero.classList.add('hidden-hero'); });
-   }
    var prog = document.getElementById('hero-progress');
    if (prog && window.HabibiNarrative) {
     var n = HabibiNarrative.getCompletedCount();
