@@ -45,7 +45,7 @@ def shell(folder, hud_game, page_id, boot_id, is_terminal):
   <link rel="stylesheet" href="../shared/styles-base.css" />
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <link rel="stylesheet" href="../../experience-modules/shared/dio-guide.css" />
+  <link rel="stylesheet" href="../shared/dio-guide.css" />
 </head>
 <body>
 <div id="game-wrapper">
@@ -111,8 +111,8 @@ def shell(folder, hud_game, page_id, boot_id, is_terminal):
 <script src="game.js"></script>
 <script src="../../assets/deck-nav.js"></script>
 <script>SiemCore.bootPage('{boot_id}');</script>
-<script src="../../experience-modules/shared/narrative-engine.js"></script>
-<script src="../../experience-modules/shared/dio-guide.js"></script>
+<script src="../shared/narrative-engine.js"></script>
+<script src="../shared/dio-guide.js"></script>
 </body>
 </html>
 """

@@ -875,7 +875,9 @@ DioGuide.prototype.showNextActionButton = function (action) {
   if (!this.actionSlot) return;
   this.actionSlot.innerHTML = '';
   var btn = document.createElement('a');
-  btn.href = action.url;
+  btn.href = (window.SiemCore && window.SiemCore.resolveSiteHref)
+    ? window.SiemCore.resolveSiteHref(action.url)
+    : action.url;
   btn.id = 'dio-next-btn';
   btn.className = 'dio-next-btn';
   btn.textContent = action.label;

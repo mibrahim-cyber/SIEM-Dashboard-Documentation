@@ -8,7 +8,14 @@
   var REDUCED = Core.REDUCED_MOTION || (matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   function assetPath(rel) {
+    if (Core.resolveSiteHref) return Core.resolveSiteHref(rel);
     if (location.pathname.indexOf('/brain/') !== -1) return '../' + rel;
+    if (location.pathname.indexOf('/experience-modules/') !== -1) {
+      var rest = location.pathname.split('/experience-modules/')[1] || '';
+      var parts = rest.split('/').filter(Boolean);
+      if (parts.length && /\.[a-z0-9]+$/i.test(parts[parts.length - 1])) parts.pop();
+      return '../'.repeat(parts.length + 1) + rel;
+    }
     return rel;
   }
 

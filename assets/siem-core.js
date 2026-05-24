@@ -411,8 +411,7 @@
         { id: 'nav-trophy', label: 'Achievements', href: 'trophy.html', group: 'System', action: 'achievements' },
         { id: 'nav-motd', label: 'Daily Briefing', href: 'motd.html', group: 'System' },
       ];
-      var base = document.documentElement.getAttribute('data-deck-page') === 'brain' ? '../' : '';
-      if (location.pathname.indexOf('/brain/') !== -1) base = '../';
+      var base = siteRootPrefix();
       pages.forEach(function (p) {
         GlobalPalette.register({
           id: p.id,
@@ -450,8 +449,7 @@
   };
 
   function resolveAssetPath(rel) {
-    if (location.pathname.indexOf('/brain/') !== -1) return '../' + rel;
-    return rel;
+    return resolveSiteHref(rel);
   }
 
   function loadQoL() {
@@ -469,6 +467,28 @@
     document.body.appendChild(s);
   }
 
+  /* ── Site-root path resolution (GitHub Pages subpaths + nested games) ── */
+  function siteRootPrefix() {
+    var path = location.pathname.replace(/\\/g, '/');
+    var marker = '/experience-modules/';
+    var idx = path.indexOf(marker);
+    if (idx !== -1) {
+      var rest = path.slice(idx + marker.length);
+      var parts = rest.split('/').filter(Boolean);
+      if (parts.length && /\.[a-z0-9]+$/i.test(parts[parts.length - 1])) parts.pop();
+      return '../'.repeat(parts.length + 1);
+    }
+    if (path.indexOf('/brain/') !== -1) return '../';
+    return '';
+  }
+
+  function resolveSiteHref(target) {
+    if (target == null || target === '') return target;
+    var t = String(target);
+    if (/^(https?:|mailto:|#|data:|javascript:)/i.test(t)) return t;
+    return siteRootPrefix() + t.replace(/^\/+/, '');
+  }
+
   /* ── Page bootstrap ── */
   function bootPage(pageId) {
     GlobalPalette.init();
@@ -482,8 +502,7 @@
   }
 
   function resolveSwPath() {
-    if (location.pathname.indexOf('/brain/') !== -1) return '../sw.js';
-    return 'sw.js';
+    return resolveSiteHref('sw.js');
   }
 
   function injectCoreStyles() {
@@ -528,6 +547,8 @@
     EventEngine: EventEngine,
     CanvasLoop: CanvasLoop,
     bootPage: bootPage,
+    siteRootPrefix: siteRootPrefix,
+    resolveSiteHref: resolveSiteHref,
     REDUCED_MOTION: REDUCED_MOTION,
   };
 })(typeof window !== 'undefined' ? window : this);

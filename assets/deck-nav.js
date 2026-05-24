@@ -23,6 +23,22 @@
 
   const HUB_ROUTE = { file: 'brain/index.html', label: 'Observation Deck' };
 
+  const GAME3D_CHAIN = [
+    { id: 'terminal-3d', file: 'experience-modules/game1-terminal/index.html', label: 'The Terminal' },
+    { id: 'breach-3d', file: 'experience-modules/game2-breach/index.html', label: 'The Breach' },
+    { id: 'network-3d', file: 'experience-modules/game3-network/index.html', label: 'The Ghost Network' },
+    { id: 'cipher-3d', file: 'experience-modules/game4-cipher/index.html', label: 'The Cipher' },
+    { id: 'sim-3d', file: 'experience-modules/game5-simulation/index.html', label: 'The Simulation' },
+    { id: 'intercept-3d', file: 'experience-modules/game6-intercept/index.html', label: 'The Interrogation Room' },
+    { id: 'forge-3d', file: 'experience-modules/game7-forge/index.html', label: 'The Forge' },
+    { id: 'archive-3d', file: 'experience-modules/game8-archive/index.html', label: 'The Deep Archive' },
+    { id: 'heist-3d', file: 'experience-modules/game9-heist/index.html', label: 'The Heist' },
+    { id: 'lab-3d', file: 'experience-modules/game10-lab/index.html', label: 'The Lab' },
+    { id: 'cartography-3d', file: 'experience-modules/game11-cartography/index.html', label: 'The Cartography' },
+    { id: 'memorial-3d', file: 'experience-modules/game12-memorial/index.html', label: 'The Memorial' },
+    { id: 'resonance-3d', file: 'experience-modules/game13-resonance/index.html', label: 'The Resonance' },
+  ];
+
   /** Logical routes (site-root relative). Resolved per page via resolveDeckHref(). */
   const PAGE_ROUTES = {
     brain: { left: 'left.html', right: 'right.html', leftLabel: 'The War Room', rightLabel: 'The Signal Room' },
@@ -41,6 +57,24 @@
       rightLabel: next.label,
     };
   });
+
+  GAME3D_CHAIN.forEach(function (exp, i) {
+    const prev = i > 0 ? GAME3D_CHAIN[i - 1] : HUB_ROUTE;
+    const next = i < GAME3D_CHAIN.length - 1 ? GAME3D_CHAIN[i + 1] : HUB_ROUTE;
+    PAGE_ROUTES[exp.id] = {
+      left: prev.file,
+      right: next.file,
+      leftLabel: prev.label,
+      rightLabel: next.label,
+    };
+  });
+
+  PAGE_ROUTES['experience-hub'] = {
+    left: 'index.html',
+    right: 'brain/index.html',
+    leftLabel: 'Approach',
+    rightLabel: 'Observation Deck',
+  };
 
   const CHEVRON_LEFT =
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
@@ -148,10 +182,11 @@
     if (!target) return null;
     if (/^(https?:|mailto:|#)/.test(target)) return target;
     const clean = String(target).replace(/^\/+/, '');
-    const page = document.documentElement.getAttribute('data-deck-page') || 'landing';
-    if (page === 'brain') {
-      return '../' + clean;
+    if (window.SiemCore && window.SiemCore.resolveSiteHref) {
+      return window.SiemCore.resolveSiteHref(clean);
     }
+    const page = document.documentElement.getAttribute('data-deck-page') || 'landing';
+    if (page === 'brain') return '../' + clean;
     return clean;
   }
 
