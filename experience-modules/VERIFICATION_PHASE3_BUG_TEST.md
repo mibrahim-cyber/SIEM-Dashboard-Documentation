@@ -1,5 +1,5 @@
 # Verification Pass 3 — Bug Test
-**Passed:** 119
+**Passed:** 124
 **Issues:** 0
 
 ## OK
@@ -122,5 +122,10 @@
 - resonance.html links game13-resonance
 - sw.js precaches game1
 - sw.js precaches shared shell
+- sw.js precaches physics-bridge
+- sw.js precaches leaderboards
+- leaderboards/manifest.json exists
+- leaderboards has 13 boards
+- experience-modules hub exists
 
 ## Issues

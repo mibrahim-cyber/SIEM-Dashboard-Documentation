@@ -1,7 +1,7 @@
 /**
  * Meridian-7 service worker — offline cache for core assets
  */
-const CACHE = 'meridian7-v16.3';
+const CACHE = 'meridian7-v16.4';
 const PRECACHE = [
   '/',
   '/index.html',
@@ -37,6 +37,9 @@ const PRECACHE = [
   '/assets/deck-nav.css',
   '/assets/guides-manifest.json',
   '/assets/marked.min.js',
+  '/experience-modules/index.html',
+  '/experience-modules/shared/physics-bridge.js',
+  '/experience-modules/leaderboards/manifest.json',
   '/experience-modules/shared/progression-manager.js',
   '/experience-modules/shared/learning-system.js',
   '/experience-modules/shared/leaderboard-manager.js',
@@ -82,6 +85,9 @@ const PRECACHE = [
   '/experience-modules/game13-resonance/index.html',
   '/experience-modules/game13-resonance/game.js',
   '/experience-modules/game13-resonance/styles.css',
+  '/experience-modules/leaderboards/the_terminal-speedTrial-any.json',
+  '/experience-modules/leaderboards/the_breach-speedTrial-any.json',
+  '/experience-modules/leaderboards/the_resonance-speedTrial-any.json',
 ];
 
 self.addEventListener('install', function (event) {

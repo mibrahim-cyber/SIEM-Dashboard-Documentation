@@ -10,7 +10,7 @@
 - shared/game-shell.js
 - game1-terminal/index.html
 - game1-terminal/game.js
-- game1-terminal line count >= 400 — 499 lines
+- game1-terminal line count >= 400 — 504 lines
 - game1-terminal contains `HabibiGameShell`
 - game1-terminal contains `levels:`
 - game1-terminal contains `buildScene`

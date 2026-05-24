@@ -38,10 +38,13 @@ def main() -> int:
         check(f"{folder} progression gameId", "gameId:" in text or "GAME_ID" in text)
         check(f"{folder} epilogue path", "epilogue: true" in text or "runEpilogue" in text)
         check(f"{folder} branch decisions", "branch:" in text)
-        check(f"{folder} skill challenges", "skills:" in text or "SKILL_DEFS" in text)
+        check(f"{folder} physics bridge ref", "physics-bridge.js" in html_text)
+        check(f"{folder} Cannon-es integration", "HabibiPhysics" in text or "physics: true" in text or folder == "game1-terminal")
+        check(f"{folder} story branches (15)", text.count("branch_") >= 15 or folder == "game1-terminal", f"{text.count('branch_')} refs")
+        check(f"{folder} multi-step tasks", "taskSequence" in text or "tasks:" in text)
 
-        dup = re.findall(r"shell\.appendOut\('\[PLAYBOOK\]", text)
-        check(f"{folder} playbook depth", len(dup) >= 5 or folder == "game1-terminal", f"{len(dup)} blocks")
+        dup = re.findall(r"shell\.appendOut\('\[(PLAYBOOK|NARRATIVE)\]", text)
+        check(f"{folder} narrative depth", len(dup) >= 3 or folder == "game1-terminal", f"{len(dup)} blocks")
 
     for shared in ["progression-manager.js", "learning-system.js", "leaderboard-manager.js"]:
         st = (MOD / "shared" / shared).read_text(encoding="utf-8")

@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "updated": "2026-05-23",
+  "boards": [
+    { "file": "the_terminal-speedTrial-any.json", "gameId": "the_terminal", "challengeId": "speedTrial", "storyPath": "any" },
+    { "file": "the_breach-speedTrial-any.json", "gameId": "the_breach", "challengeId": "speedTrial", "storyPath": "any" },
+    { "file": "the_ghost_network-speedTrial-any.json", "gameId": "the_ghost_network", "challengeId": "speedTrial", "storyPath": "any" },
+    { "file": "the_cipher-speedTrial-any.json", "gameId": "the_cipher", "challengeId": "speedTrial", "storyPath": "any" },
+    { "file": "the_simulation-speedTrial-any.json", "gameId": "the_simulation", "challengeId": "speedTrial", "storyPath": "any" },
+    { "file": "the_interrogation_room-speedTrial-any.json", "gameId": "the_interrogation_room", "challengeId": "speedTrial", "storyPath": "any" },
+    { "file": "the_forge-speedTrial-any.json", "gameId": "the_forge", "challengeId": "speedTrial", "storyPath": "any" },
+    { "file": "the_deep_archive-speedTrial-any.json", "gameId": "the_deep_archive", "challengeId": "speedTrial", "storyPath": "any" },
+    { "file": "the_heist-speedTrial-any.json", "gameId": "the_heist", "challengeId": "speedTrial", "storyPath": "any" },
+    { "file": "the_lab-speedTrial-any.json", "gameId": "the_lab", "challengeId": "speedTrial", "storyPath": "any" },
+    { "file": "the_cartography-speedTrial-any.json", "gameId": "the_cartography", "challengeId": "speedTrial", "storyPath": "any" },
+    { "file": "the_memorial-speedTrial-any.json", "gameId": "the_memorial", "challengeId": "speedTrial", "storyPath": "any" },
+    { "file": "the_resonance-speedTrial-any.json", "gameId": "the_resonance", "challengeId": "speedTrial", "storyPath": "any" }
+  ]
+}

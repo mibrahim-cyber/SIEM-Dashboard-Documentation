@@ -40,6 +40,15 @@
     this._bindInput();
     this._running = false;
     this._onResize = this.resize.bind(this);
+    this.physics = null;
+    this.physicsEnabled = !!opts.physics;
+    if (this.physicsEnabled && global.HabibiPhysics) {
+      var self = this;
+      this.physics = new HabibiPhysics.PhysicsWorld({ gravity: opts.gravity });
+      this.physics._initPromise.then(function (ok) {
+        if (!ok) self.physicsEnabled = false;
+      });
+    }
     window.addEventListener('resize', this._onResize);
   }
 
@@ -92,6 +101,7 @@
       requestAnimationFrame(loop);
       var dt = Math.min(self.clock.getDelta(), 0.05);
       if (updateFn) updateFn(dt);
+      if (self.physics && self.physicsEnabled) self.physics.step(dt);
       self.renderer.render(self.scene, self.camera);
     }
     loop();
@@ -112,14 +122,34 @@
     return mesh;
   };
 
-  GameEngineBase.prototype.addBox = function (x, y, z, sx, sy, sz, color) {
+  GameEngineBase.prototype.addBox = function (x, y, z, sx, sy, sz, color, physicsMass) {
     var mesh = new THREE.Mesh(
       new THREE.BoxGeometry(sx, sy, sz),
       new THREE.MeshStandardMaterial({ color: color || 0x1a2a1a, metalness: 0.2, roughness: 0.7 })
     );
     mesh.position.set(x, y, z);
     this.scene.add(mesh);
+    if (this.physics && this.physicsEnabled && physicsMass !== false) {
+      this.physics.addBox(mesh, physicsMass == null ? 0 : physicsMass, { x: sx, y: sy, z: sz });
+    }
     return mesh;
+  };
+
+  GameEngineBase.prototype.addPhysicsSphere = function (x, y, z, radius, color, mass) {
+    var mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(radius, 12, 12),
+      new THREE.MeshStandardMaterial({ color: color || 0x38bdf8, metalness: 0.3, roughness: 0.5 })
+    );
+    mesh.position.set(x, y, z);
+    this.scene.add(mesh);
+    if (this.physics && this.physicsEnabled) {
+      this.physics.addSphere(mesh, mass == null ? 0.8 : mass, radius);
+    }
+    return mesh;
+  };
+
+  GameEngineBase.prototype.clearPhysics = function () {
+    if (this.physics) this.physics.clearDynamic();
   };
 
   global.HabibiGameEngine = GameEngineBase;

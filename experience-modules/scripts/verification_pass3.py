@@ -61,6 +61,16 @@ def main() -> int:
         sw_text = sw.read_text(encoding="utf-8")
         check("sw.js precaches game1", "experience-modules/game1-terminal" in sw_text)
         check("sw.js precaches shared shell", "experience-modules/shared/game-shell.js" in sw_text)
+        check("sw.js precaches physics-bridge", "physics-bridge.js" in sw_text)
+        check("sw.js precaches leaderboards", "leaderboards/manifest.json" in sw_text)
+
+    lb_manifest = MOD / "leaderboards" / "manifest.json"
+    check("leaderboards/manifest.json exists", lb_manifest.is_file())
+    if lb_manifest.is_file():
+        check("leaderboards has 13 boards", lb_manifest.read_text(encoding="utf-8").count("gameId") >= 13)
+
+    hub = MOD / "index.html"
+    check("experience-modules hub exists", hub.is_file())
 
     out = MOD / "VERIFICATION_PHASE3_BUG_TEST.md"
     body = [

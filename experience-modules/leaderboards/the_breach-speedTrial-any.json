@@ -1,0 +1,42 @@
+{
+  "gameId": "the_breach",
+  "challengeId": "speedTrial",
+  "storyPath": "any",
+  "entries": [
+    {
+      "score": 950,
+      "playerName": "GhostAnalyst",
+      "date": "2026-05-20",
+      "storyPath": "any",
+      "skillChallenge": "speedTrial"
+    },
+    {
+      "score": 910,
+      "playerName": "Meridian7",
+      "date": "2026-05-21",
+      "storyPath": "any",
+      "skillChallenge": "speedTrial"
+    },
+    {
+      "score": 870,
+      "playerName": "SOC_Ninja",
+      "date": "2026-05-22",
+      "storyPath": "any",
+      "skillChallenge": "speedTrial"
+    },
+    {
+      "score": 830,
+      "playerName": "PacketHunter",
+      "date": "2026-05-23",
+      "storyPath": "any",
+      "skillChallenge": "speedTrial"
+    },
+    {
+      "score": 790,
+      "playerName": "RuleSmith",
+      "date": "2026-05-20",
+      "storyPath": "any",
+      "skillChallenge": "speedTrial"
+    }
+  ]
+}

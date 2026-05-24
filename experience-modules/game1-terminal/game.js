@@ -120,7 +120,7 @@
       $('task-text').textContent = 'Three.js failed to load. Check network and refresh.';
       return;
     }
-    engine = new HabibiGameEngine($('canvas-host'), { bg: 0x030a04, camY: 1.55, camZ: 3.8 });
+    engine = new HabibiGameEngine($('canvas-host'), { bg: 0x030a04, camY: 1.55, camZ: 3.8, physics: true });
     buildEnvironment(state.currentLevel);
     levelState = initLevelState(state.currentLevel);
     bindTerminal();
@@ -149,8 +149,13 @@
     engine.monitor = monitor;
     engine.addBox(0, 0.25, 0.55, 0.5, 0.5, 0.5, 0x141a14);
     if (levelNum >= 2) {
-      engine.addBox(-1.8, 0.6, -1.2, 0.8, 1.2, 0.4, 0x121812);
-      engine.addBox(1.6, 0.5, -0.8, 0.6, 1.0, 0.35, 0x121812);
+      engine.addBox(-1.8, 0.6, -1.2, 0.8, 1.2, 0.4, 0x121812, 0);
+      engine.addBox(1.6, 0.5, -0.8, 0.6, 1.0, 0.35, 0x121812, 0);
+      if (engine.addPhysicsSphere) {
+        for (var si = 0; si < levelNum + 1; si++) {
+          engine.addPhysicsSphere((Math.random() - 0.5) * 3, 2.5, (Math.random() - 0.5) * 3, 0.1, 0x39ff14, 0.4);
+        }
+      }
     }
     if (levelNum >= 3) {
       var netPlane = new THREE.Mesh(

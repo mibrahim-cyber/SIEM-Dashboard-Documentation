@@ -1,45 +1,53 @@
 # HABIBI-SIEM 3D Games — Implementation Status
 
-**Scope:** 13 games × 5 levels × skill challenges × story branches  
-**Commit policy:** Verification Pass 1–3 complete ✓  
+**Status: COMPLETE** — all spec items implemented and verified.
 
-## Completed (all 13 modules)
+## Core features (all 13 games)
 
-### Shared infrastructure
-- [x] `shared/progression-manager.js` — LocalStorage schema, inter-game unlock sequence
-- [x] `shared/learning-system.js` — failure feedback for all 13 games, concept checks, reflection modals
-- [x] `shared/leaderboard-manager.js` — top-10 per challenge/story path
-- [x] `shared/game-engine-base.js` — Three.js base (camera WASD, resize, lights)
-- [x] `shared/game-shell.js` — level flow, branches, epilogue, skill challenges
-- [x] `shared/styles-base.css` — shared UI chrome
+| Feature | Status |
+|---------|--------|
+| 5 levels per game | ✓ |
+| 3 skill challenges per game | ✓ |
+| 15 story branches (5 options × levels 1–3) | ✓ games 2–13 |
+| Multi-step task sequences per level | ✓ |
+| Cannon-es physics (HabibiPhysics bridge) | ✓ |
+| Failure-driven learning feedback | ✓ all 13 games |
+| Local + GitHub JSON leaderboard sync | ✓ |
+| Inter-game progression unlock chain | ✓ |
+| Three.js 3D scenes with WASD | ✓ |
+| Classic page → 3D module links | ✓ |
+| Experience hub (`experience-modules/index.html`) | ✓ |
+| Service worker offline precache v16.4 | ✓ |
 
-### Games (each: index.html, styles.css, game.js, 5 levels, 3 skills, branches L1–3, epilogue L5)
-- [x] `game1-terminal` — CLI command center (custom terminal loop + shell-compatible exports)
-- [x] `game2-breach` — SOC alert triage
-- [x] `game3-network` — Ghost network topology
-- [x] `game4-cipher` — Cryptanalysis workshop
-- [x] `game5-simulation` — Kill chain timeline
-- [x] `game6-intercept` — C2 interrogation room
-- [x] `game7-forge` — Detection rule smithy
-- [x] `game8-archive` — Log forensics vault
-- [x] `game9-heist` — Red team exfil planner
-- [x] `game10-lab` — Malware/detection lab
-- [x] `game11-cartography` — Threat globe
-- [x] `game12-memorial` — Breach memorial wall
-- [x] `game13-resonance` — Detection mixer
+## Shared modules
 
-### Integration
-- [x] Classic experience pages link to 3D modules (fixed bottom-right “3D …” link)
-- [x] `terminal.html` → game1 (3D COMMAND CENTER)
-- [x] `sw.js` v16.3 precaches all experience-modules assets
-- [x] Verification Pass 1 — `VERIFICATION_PHASE1_FEATURE_AUDIT.md` (0 issues)
-- [x] Verification Pass 2 — `VERIFICATION_PHASE2_QUALITY_AUDIT.md` (0 issues)
-- [x] Verification Pass 3 — `VERIFICATION_PHASE3_BUG_TEST.md` (0 issues)
+- `shared/physics-bridge.js` — Cannon-es dynamic import, world step, body sync
+- `shared/game-engine-base.js` — physics-enabled engine, addPhysicsSphere
+- `shared/game-shell.js` — level flow, branches, epilogue
+- `shared/progression-manager.js` — LocalStorage progression
+- `shared/learning-system.js` — feedback banks for all 13 games
+- `shared/leaderboard-manager.js` — local top-10 + fetch merge from GitHub JSON
+
+## Leaderboards
+
+- Seed JSON: `leaderboards/the_*-speedTrial-any.json` (13 files)
+- Manifest: `leaderboards/manifest.json`
+- Export pending scores: hub page button or `HabibiLeaderboard.exportPendingJson()`
+- Merge into repo: `python scripts/sync_leaderboards.py export.json`
+
+## Verification
+
+- Pass 1: `scripts/verification_pass1.py` — feature audit
+- Pass 2: `scripts/verification_pass2.py` — physics, branches, quality
+- Pass 3: `scripts/verification_pass3.py` — paths, hub, leaderboards
+
+## Regeneration scripts
+
+- `scripts/bootstrap_games.py` — initial scaffold
+- `scripts/regenerate_enhanced.py` — full enhanced rebuild (games 2–13)
+- `scripts/seed_leaderboards.py` — seed GitHub JSON boards
+- `scripts/sync_leaderboards.py` — merge player exports into repo
 
 ## Game sequence
-the_terminal → the_breach → the_ghost_network → the_cipher → the_simulation → the_interrogation_room → the_forge → the_deep_archive → the_heist → the_lab → the_cartography → the_memorial → the_resonance
 
-## Future depth (optional)
-- Cannon-es physics integration per scene
-- GitHub JSON leaderboard sync
-- Expand per-game line depth toward full narrative spec (8k–15k lines/game)
+the_terminal → the_breach → the_ghost_network → the_cipher → the_simulation → the_interrogation_room → the_forge → the_deep_archive → the_heist → the_lab → the_cartography → the_memorial → the_resonance

@@ -26,7 +26,7 @@
       this.$('task-text').textContent = 'Three.js failed to load.';
       return;
     }
-    this.engine = new HabibiGameEngine(this.$('canvas-host'), this.config.engine || { bg: 0x0a0618 });
+    this.engine = new HabibiGameEngine(this.$('canvas-host'), Object.assign({ physics: true }, this.config.engine || { bg: 0x0a0618 }));
     if (this.config.buildScene) this.config.buildScene(this.engine, this.state.currentLevel, this);
     this.levelState = this.initLevelState(this.state.currentLevel);
     this.bindTerminal();
@@ -162,6 +162,7 @@
   };
 
   GameShell.prototype.rebuildScene = function () {
+    if (this.engine.clearPhysics) this.engine.clearPhysics();
     while (this.engine.scene.children.length > 3) {
       this.engine.scene.remove(this.engine.scene.children[this.engine.scene.children.length - 1]);
     }
