@@ -1,0 +1,7 @@
+:root {
+  --accent: #fbbf24;
+  --accent-dim: #fbbf2455;
+  --text-soft: #94a3b8;
+}
+body { background: #0a0804; color: #fbbf24; }
+#action-panel { border-color: var(--accent-dim); }

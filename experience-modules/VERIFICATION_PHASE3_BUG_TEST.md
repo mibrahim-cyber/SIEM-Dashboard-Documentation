@@ -1,0 +1,126 @@
+# Verification Pass 3 — Bug Test
+**Passed:** 119
+**Issues:** 0
+
+## OK
+- game1-terminal/index.html exists
+- game1-terminal/game.js exists
+- game1-terminal/styles.css exists
+- game1-terminal loads progression-manager.js
+- game1-terminal loads game-shell.js
+- game1-terminal loads game.js
+- game1-terminal ref ../../assets/siem-core.js
+- game1-terminal ref ../shared/game-engine-base.js
+- terminal.html links game1-terminal
+- game2-breach/index.html exists
+- game2-breach/game.js exists
+- game2-breach/styles.css exists
+- game2-breach loads progression-manager.js
+- game2-breach loads game-shell.js
+- game2-breach loads game.js
+- game2-breach ref ../../assets/siem-core.js
+- game2-breach ref ../shared/game-engine-base.js
+- breach.html links game2-breach
+- game3-network/index.html exists
+- game3-network/game.js exists
+- game3-network/styles.css exists
+- game3-network loads progression-manager.js
+- game3-network loads game-shell.js
+- game3-network loads game.js
+- game3-network ref ../../assets/siem-core.js
+- game3-network ref ../shared/game-engine-base.js
+- network.html links game3-network
+- game4-cipher/index.html exists
+- game4-cipher/game.js exists
+- game4-cipher/styles.css exists
+- game4-cipher loads progression-manager.js
+- game4-cipher loads game-shell.js
+- game4-cipher loads game.js
+- game4-cipher ref ../../assets/siem-core.js
+- game4-cipher ref ../shared/game-engine-base.js
+- cipher.html links game4-cipher
+- game5-simulation/index.html exists
+- game5-simulation/game.js exists
+- game5-simulation/styles.css exists
+- game5-simulation loads progression-manager.js
+- game5-simulation loads game-shell.js
+- game5-simulation loads game.js
+- game5-simulation ref ../../assets/siem-core.js
+- game5-simulation ref ../shared/game-engine-base.js
+- sim.html links game5-simulation
+- game6-intercept/index.html exists
+- game6-intercept/game.js exists
+- game6-intercept/styles.css exists
+- game6-intercept loads progression-manager.js
+- game6-intercept loads game-shell.js
+- game6-intercept loads game.js
+- game6-intercept ref ../../assets/siem-core.js
+- game6-intercept ref ../shared/game-engine-base.js
+- intercept.html links game6-intercept
+- game7-forge/index.html exists
+- game7-forge/game.js exists
+- game7-forge/styles.css exists
+- game7-forge loads progression-manager.js
+- game7-forge loads game-shell.js
+- game7-forge loads game.js
+- game7-forge ref ../../assets/siem-core.js
+- game7-forge ref ../shared/game-engine-base.js
+- forge.html links game7-forge
+- game8-archive/index.html exists
+- game8-archive/game.js exists
+- game8-archive/styles.css exists
+- game8-archive loads progression-manager.js
+- game8-archive loads game-shell.js
+- game8-archive loads game.js
+- game8-archive ref ../../assets/siem-core.js
+- game8-archive ref ../shared/game-engine-base.js
+- archive.html links game8-archive
+- game9-heist/index.html exists
+- game9-heist/game.js exists
+- game9-heist/styles.css exists
+- game9-heist loads progression-manager.js
+- game9-heist loads game-shell.js
+- game9-heist loads game.js
+- game9-heist ref ../../assets/siem-core.js
+- game9-heist ref ../shared/game-engine-base.js
+- heist.html links game9-heist
+- game10-lab/index.html exists
+- game10-lab/game.js exists
+- game10-lab/styles.css exists
+- game10-lab loads progression-manager.js
+- game10-lab loads game-shell.js
+- game10-lab loads game.js
+- game10-lab ref ../../assets/siem-core.js
+- game10-lab ref ../shared/game-engine-base.js
+- lab.html links game10-lab
+- game11-cartography/index.html exists
+- game11-cartography/game.js exists
+- game11-cartography/styles.css exists
+- game11-cartography loads progression-manager.js
+- game11-cartography loads game-shell.js
+- game11-cartography loads game.js
+- game11-cartography ref ../../assets/siem-core.js
+- game11-cartography ref ../shared/game-engine-base.js
+- cartography.html links game11-cartography
+- game12-memorial/index.html exists
+- game12-memorial/game.js exists
+- game12-memorial/styles.css exists
+- game12-memorial loads progression-manager.js
+- game12-memorial loads game-shell.js
+- game12-memorial loads game.js
+- game12-memorial ref ../../assets/siem-core.js
+- game12-memorial ref ../shared/game-engine-base.js
+- memorial.html links game12-memorial
+- game13-resonance/index.html exists
+- game13-resonance/game.js exists
+- game13-resonance/styles.css exists
+- game13-resonance loads progression-manager.js
+- game13-resonance loads game-shell.js
+- game13-resonance loads game.js
+- game13-resonance ref ../../assets/siem-core.js
+- game13-resonance ref ../shared/game-engine-base.js
+- resonance.html links game13-resonance
+- sw.js precaches game1
+- sw.js precaches shared shell
+
+## Issues

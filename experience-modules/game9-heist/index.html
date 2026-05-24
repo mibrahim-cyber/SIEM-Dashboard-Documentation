@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" data-deck-page="heist-3d">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>THE HEIST — 3D · HABIBI-SIEM</title>
+  <link rel="stylesheet" href="../../assets/palette.css" />
+  <link rel="stylesheet" href="../shared/styles-base.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+</head>
+<body>
+  <div id="hud-top">
+    <span id="hud-game">THE HEIST · 3D</span>
+    <span id="hud-level">LEVEL 1</span>
+    <span id="hud-timer"></span>
+    <span id="hud-score">SCORE 0</span>
+    <div id="hud-load-wrap"><span>LOAD</span><div id="hud-load-bar"><div id="hud-load-fill"></div></div></div>
+  </div>
+  <div id="canvas-host"></div>
+  <div id="action-panel">
+    <div id="task-text">Initializing…</div>
+    <div id="action-log"></div>
+    <div id="action-btns"></div>
+    <form id="term-form" class="hidden"><span id="term-prompt">&gt;</span><input id="term-in" type="text" autocomplete="off" /></form>
+  </div>
+  <div id="branch-overlay" class="hidden">
+    <div class="branch-card"><h3 id="branch-title"></h3><p id="branch-desc"></p><div id="branch-btns"></div></div>
+  </div>
+  <div id="level-complete" class="hidden">
+    <div class="complete-card"><h2 id="complete-title"></h2><p id="complete-msg"></p><p id="complete-realworld" class="realworld"></p><button type="button" id="btn-continue">Continue</button></div>
+  </div>
+  <aside id="skill-sidebar">
+    <h4>Skill challenges</h4>
+    <ul id="skill-list"></ul>
+    <h4>Leaderboard</h4>
+    <div id="lb-speed"></div>
+  </aside>
+  <div id="deck-nav-root"></div>
+  <script src="../../assets/siem-core.js"></script>
+  <script src="../../assets/palette.js"></script>
+  <script src="../shared/progression-manager.js"></script>
+  <script src="../shared/learning-system.js"></script>
+  <script src="../shared/leaderboard-manager.js"></script>
+  <script src="../shared/game-engine-base.js"></script>
+  <script src="../shared/game-shell.js"></script>
+  <script src="game.js"></script>
+  <script src="../../assets/deck-nav.js"></script>
+  <script>SiemCore.bootPage('heist');</script>
+</body>
+</html>
