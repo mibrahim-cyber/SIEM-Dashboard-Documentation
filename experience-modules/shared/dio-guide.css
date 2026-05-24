@@ -120,23 +120,22 @@
 }
 
 #dio-guide.dio-landing {
-  max-width: min(720px, 98vw);
-  bottom: 80px !important;
+  max-width: min(560px, 96vw);
+  bottom: 48px !important;
 }
 
 #dio-guide.dio-landing .dio-panel {
-  transform: scale(1.55);
-  transform-origin: bottom center;
+  transform: none;
 }
 
 #dio-guide.dio-landing .dio-avatar canvas {
-  width: 160px;
-  height: 240px;
+  width: 96px;
+  height: 144px;
 }
 
 #dio-guide.dio-landing #dio-speech {
-  width: min(400px, 78vw);
-  font-size: 12px;
+  width: min(320px, 72vw);
+  font-size: 11px;
 }
 
 body.dio-start-only .orbit-field,
@@ -198,7 +197,12 @@ body.landing-dio-mode #dio-guide {
   }
 
   #dio-guide.dio-landing .dio-panel {
-    transform: scale(0.95);
+    transform: none;
+  }
+
+  #dio-guide.dio-landing .dio-avatar canvas {
+    width: 80px;
+    height: 120px;
   }
 }
 

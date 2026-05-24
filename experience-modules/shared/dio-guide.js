@@ -60877,7 +60877,7 @@ DioGuide.prototype.applyLayout = function () {
     this.container.style.left = '50%';
     this.container.style.right = 'auto';
     this.container.style.top = 'auto';
-    this.container.style.bottom = '80px';
+    this.container.style.bottom = '48px';
     this.x = window.innerWidth / 2;
     this.y = window.innerHeight - 200;
     return;
