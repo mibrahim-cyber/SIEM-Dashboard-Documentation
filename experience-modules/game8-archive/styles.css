@@ -2,15 +2,5 @@
   --bg: #04080c;
   --accent: #93c5fd;
   --accent-dim: #93c5fd55;
-  --text-soft: #94a3b8;
 }
-html, body { background: var(--bg); color: var(--accent); }
-#hud-top { border-bottom-color: var(--accent-dim); color: var(--accent); }
-#action-panel, #terminal-panel { border-color: var(--accent-dim); }
-#action-btns button, .act-btn, #branch-btns button, #btn-continue {
-  border-color: var(--accent-dim);
-  color: var(--accent);
-}
-#skill-sidebar { border-left-color: var(--accent-dim); }
-#skill-sidebar h4 { color: var(--accent); }
-.lb-row span:last-child { color: var(--accent); }
+html, body { background: var(--bg); }

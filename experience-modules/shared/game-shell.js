@@ -252,8 +252,15 @@
     (this.config.skills || []).forEach(function (sk) {
       var ch = self.state.skillChallenges[sk.id];
       var li = document.createElement('li');
-      li.textContent = sk.name + (ch && ch.unlocked ? ' ✓' : ' (locked)');
-      if (!ch || !ch.unlocked) li.className = 'locked';
+      li.className = ch && ch.unlocked ? 'skill-item' : 'skill-item locked';
+      var name = document.createElement('span');
+      name.className = 'skill-name';
+      name.textContent = sk.name;
+      var badge = document.createElement('span');
+      badge.className = 'skill-badge';
+      badge.textContent = ch && ch.unlocked ? (ch.bestScore ? ch.bestScore + ' pts' : 'OPEN') : 'LOCKED';
+      li.appendChild(name);
+      li.appendChild(badge);
       li.title = sk.desc;
       if (ch && ch.unlocked && sk.start) li.addEventListener('click', function () { sk.start(self); });
       ul.appendChild(li);

@@ -1,208 +1,337 @@
 #!/usr/bin/env python3
-"""Generate dio-guide.js with explicit 24x32 pixel arrays for every animation frame."""
+"""Generate dio-guide.js with explicit 32x48 pixel arrays for every animation frame."""
 from __future__ import annotations
+
 from pathlib import Path
-import textwrap
 
 OUT = Path(__file__).resolve().parents[1] / "shared" / "dio-guide.js"
-W, H = 24, 32
+W, H = 32, 48
 
-# Build base Dio silhouette as palette keys
-def blank():
+
+def blank() -> list[list[str | None]]:
     return [[None for _ in range(W)] for _ in range(H)]
 
 
-def rect(grid, x0, y0, x1, y1, key):
-    for y in range(y0, min(y1 + 1, H)):
-        for x in range(x0, min(x1 + 1, W)):
+def rect(
+    grid: list[list[str | None]],
+    x0: int,
+    y0: int,
+    x1: int,
+    y1: int,
+    key: str,
+) -> None:
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
             if 0 <= y < H and 0 <= x < W:
                 grid[y][x] = key
 
 
-def draw_jojo_dio(offset_x=0, offset_y=0, mouth=0, eyes_wide=False, arm_point=False, arm_up=False, crouch=0, cape_side=0):
-    """Humanoid Dio — visible anime face/jawline, hair frames face, professional readable silhouette."""
+def apply_outline(grid: list[list[str | None]]) -> None:
+    """Draw OUTLINE on empty neighbours adjacent to filled pixels."""
+    snapshot = [row[:] for row in grid]
+    for y in range(H):
+        for x in range(W):
+            if snapshot[y][x] is None:
+                continue
+            for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                ny, nx = y + dy, x + dx
+                if 0 <= ny < H and 0 <= nx < W:
+                    if grid[ny][nx] is None:
+                        grid[ny][nx] = "OUTLINE"
+                elif grid[y][x] != "OUTLINE":
+                    # Edge pixels get outline drawn inward if possible
+                    if 0 <= ny < H and 0 <= nx < W and grid[ny][nx] is None:
+                        grid[ny][nx] = "OUTLINE"
+
+
+def draw_dio_pose(
+    offset_x: int = 0,
+    offset_y: int = 0,
+    mouth: int = 0,
+    eyes_wide: bool = False,
+    eyes_glow: bool = False,
+    arm_point: bool = False,
+    arm_up: bool = False,
+    arm_spread: bool = False,
+    crouch: int = 0,
+    cape_side: int = 0,
+    hair_shift: int = 0,
+    chest_expand: int = 0,
+    weight_left: bool = False,
+    head_back: bool = False,
+    motion_lines: int = 0,
+) -> list[list[str | None]]:
+    """Draw JoJo Dio at 32x48 — massive hair, heart gem, purple coat, anime jawline."""
     g = blank()
     ox, oy = offset_x, offset_y
-    # Hair — top + sides only (face center stays clear)
-    rect(g, 6 + ox, 0 + oy, 17 + ox, 1 + oy, "HAIR")
-    rect(g, 5 + ox, 1 + oy, 18 + ox, 2 + oy, "HAIR_DARK")
-    rect(g, 4 + ox, 2 + oy, 6 + ox, 6 + oy, "HAIR")
-    rect(g, 17 + ox, 2 + oy, 19 + ox, 6 + oy, "HAIR")
-    rect(g, 6 + ox, 2 + oy, 17 + ox, 4 + oy, "HAIR")
-    rect(g, 7 + ox, 4 + oy, 8 + ox, 8 + oy, "HAIR_DARK")
-    rect(g, 15 + ox, 4 + oy, 16 + ox, 8 + oy, "HAIR_DARK")
-    rect(g, 8 + ox, 3 + oy, 15 + ox, 5 + oy, "HAIR")
-    # Heart headband
-    rect(g, 7 + ox, 6 + oy, 16 + ox, 7 + oy, "HEART_BAND")
-    rect(g, 11 + ox, 6 + oy, 12 + ox, 7 + oy, "HEART_GREEN")
-    # Face — tapered jaw (anime chin)
-    rect(g, 9 + ox, 8 + oy, 14 + ox, 8 + oy, "SKIN")
-    rect(g, 8 + ox, 9 + oy, 15 + ox, 12 + oy, "SKIN")
-    rect(g, 8 + ox, 13 + oy, 15 + ox, 13 + oy, "SKIN")
-    rect(g, 9 + ox, 14 + oy, 14 + ox, 14 + oy, "SKIN")
-    rect(g, 10 + ox, 15 + oy, 13 + ox, 15 + oy, "SKIN")
-    # Jawline definition
-    rect(g, 8 + ox, 13 + oy, 8 + ox, 14 + oy, "SKIN_DARK")
-    rect(g, 15 + ox, 13 + oy, 15 + ox, 14 + oy, "SKIN_DARK")
-    rect(g, 9 + ox, 14 + oy, 9 + ox, 15 + oy, "SKIN_DARK")
-    rect(g, 14 + ox, 14 + oy, 14 + ox, 15 + oy, "SKIN_DARK")
-    rect(g, 10 + ox, 15 + oy, 10 + ox, 15 + oy, "SKIN_DARK")
-    rect(g, 13 + ox, 15 + oy, 13 + ox, 15 + oy, "SKIN_DARK")
-    # Cheek shadow (subtle, not full face)
-    rect(g, 8 + ox, 10 + oy, 8 + ox, 12 + oy, "SHADOW")
-    rect(g, 15 + ox, 11 + oy, 15 + ox, 12 + oy, "SKIN_DARK")
-    # Eyes
-    brow = 9 + oy
-    eye = 10 + oy
+    hs = hair_shift
+
+    # --- Hair (~top 40%: rows 0-18) ---
+    rect(g, 8 + ox + hs, 0 + oy, 23 + ox + hs, 1 + oy, "HAIR_BRIGHT")
+    rect(g, 6 + ox + hs, 1 + oy, 25 + ox + hs, 2 + oy, "HAIR_BRIGHT")
+    rect(g, 5 + ox + hs, 2 + oy, 26 + ox + hs, 4 + oy, "HAIR_MID")
+    rect(g, 4 + ox + hs, 3 + oy, 27 + ox + hs, 6 + oy, "HAIR_MID")
+    rect(g, 3 + ox + hs, 5 + oy, 5 + ox + hs, 12 + oy, "HAIR_MID")
+    rect(g, 26 + ox + hs, 5 + oy, 28 + ox + hs, 12 + oy, "HAIR_MID")
+    rect(g, 6 + ox + hs, 5 + oy, 25 + ox + hs, 10 + oy, "HAIR_BRIGHT")
+    rect(g, 7 + ox + hs, 7 + oy, 9 + ox + hs, 14 + oy, "HAIR_DARK")
+    rect(g, 22 + ox + hs, 7 + oy, 24 + ox + hs, 14 + oy, "HAIR_DARK")
+    rect(g, 8 + ox + hs, 10 + oy, 10 + ox + hs, 16 + oy, "HAIR_SHADOW")
+    rect(g, 21 + ox + hs, 10 + oy, 23 + ox + hs, 16 + oy, "HAIR_SHADOW")
+    rect(g, 10 + ox + hs, 4 + oy, 21 + ox + hs, 8 + oy, "HAIR_BRIGHT")
+    rect(g, 11 + ox + hs, 8 + oy, 20 + ox + hs, 12 + oy, "HAIR_MID")
+    if head_back:
+        rect(g, 5 + ox, 0 + oy, 27 + ox, 6 + oy, "HAIR_BRIGHT")
+        rect(g, 4 + ox, 6 + oy, 28 + ox, 14 + oy, "HAIR_MID")
+
+    # --- Heart headband + 2x2 green gem ---
+    band_y = 16 + oy
+    rect(g, 10 + ox, band_y, 21 + ox, band_y, "BAND_GOLD")
+    rect(g, 14 + ox, band_y - 1, 17 + ox, band_y + 1, "GEM_GREEN")
+    rect(g, 15 + ox, band_y, 16 + ox, band_y, "GEM_DARK")
+
+    # --- Face / jawline ---
+    face_top = 17 + oy
+    rect(g, 12 + ox, face_top, 19 + ox, face_top + 1, "SKIN")
+    rect(g, 11 + ox, face_top + 2, 20 + ox, face_top + 6, "SKIN")
+    rect(g, 11 + ox, face_top + 7, 20 + ox, face_top + 8, "SKIN")
+    rect(g, 12 + ox, face_top + 9, 19 + ox, face_top + 9, "SKIN")
+    rect(g, 13 + ox, face_top + 10, 18 + ox, face_top + 10, "SKIN")
+    # Jawline shadows
+    rect(g, 11 + ox, face_top + 7, 11 + ox, face_top + 9, "SKIN_SHADOW")
+    rect(g, 20 + ox, face_top + 7, 20 + ox, face_top + 9, "SKIN_SHADOW")
+    rect(g, 12 + ox, face_top + 9, 12 + ox, face_top + 10, "SKIN_DARK")
+    rect(g, 19 + ox, face_top + 9, 19 + ox, face_top + 10, "SKIN_DARK")
+    rect(g, 11 + ox, face_top + 4, 11 + ox, face_top + 6, "SKIN_SHADOW")
+    rect(g, 20 + ox, face_top + 5, 20 + ox, face_top + 6, "SKIN_SHADOW")
+
+    # --- Eyes ---
+    brow = face_top + 3
+    eye = face_top + 4
+    eye_key = "EYE_BRIGHT" if eyes_glow else "EYE_PURPLE"
     if eyes_wide:
-        rect(g, 9 + ox, eye, 11 + ox, eye + 1, "EYE_WHITE")
+        rect(g, 12 + ox, brow, 14 + ox, brow, "OUTLINE")
+        rect(g, 17 + ox, brow, 19 + ox, brow, "OUTLINE")
         rect(g, 12 + ox, eye, 14 + ox, eye + 1, "EYE_WHITE")
-        rect(g, 10 + ox, eye, 10 + ox, eye, "EYE")
-        rect(g, 13 + ox, eye, 13 + ox, eye, "EYE")
+        rect(g, 17 + ox, eye, 19 + ox, eye + 1, "EYE_WHITE")
+        rect(g, 13 + ox, eye, 13 + ox, eye, eye_key)
+        rect(g, 18 + ox, eye, 18 + ox, eye, eye_key)
     else:
-        rect(g, 9 + ox, brow, 11 + ox, brow, "SHADOW")
-        rect(g, 12 + ox, brow, 14 + ox, brow, "SHADOW")
-        rect(g, 10 + ox, eye, 11 + ox, eye, "EYE_WHITE")
-        rect(g, 10 + ox, eye, 10 + ox, eye, "EYE")
+        rect(g, 12 + ox, brow, 14 + ox, brow, "OUTLINE")
+        rect(g, 17 + ox, brow, 19 + ox, brow, "OUTLINE")
         rect(g, 13 + ox, eye, 14 + ox, eye, "EYE_WHITE")
-        rect(g, 13 + ox, eye, 13 + ox, eye, "EYE")
-    # Mouth
-    my = 12 + oy
-    if mouth == 1:
-        rect(g, 10 + ox, my, 13 + ox, my, "SHADOW")
+        rect(g, 13 + ox, eye, 13 + ox, eye, eye_key)
+        rect(g, 18 + ox, eye, 19 + ox, eye, "EYE_WHITE")
+        rect(g, 18 + ox, eye, 18 + ox, eye, eye_key)
+
+    # --- Mouth (0-5 talk states) ---
+    my = face_top + 8
+    if mouth == 0:
+        rect(g, 14 + ox, my, 17 + ox, my, "LIP_DARK")
+        rect(g, 17 + ox, my - 1, 17 + ox, my - 1, "LIP_DARK")  # smirk
+    elif mouth == 1:
+        rect(g, 14 + ox, my, 17 + ox, my, "LIP_DARK")
+        rect(g, 15 + ox, my, 16 + ox, my, "TOOTH")
     elif mouth == 2:
-        rect(g, 9 + ox, my, 14 + ox, my + 1, "TEETH")
-        rect(g, 10 + ox, my, 13 + ox, my, "MOUTH_IN")
+        rect(g, 13 + ox, my - 1, 18 + ox, my + 1, "LIP_DARK")
+        rect(g, 14 + ox, my, 17 + ox, my, "TOOTH")
+        rect(g, 15 + ox, my + 1, 16 + ox, my + 1, "TONGUE")
     elif mouth == 3:
-        rect(g, 11 + ox, my, 12 + ox, my, "SKIN_DARK")
+        rect(g, 14 + ox, my, 17 + ox, my + 1, "LIP_DARK")
+        rect(g, 15 + ox, my, 16 + ox, my, "TOOTH")
+        rect(g, 13 + ox, face_top + 3, 14 + ox, face_top + 3, "OUTLINE")
+        rect(g, 18 + ox, face_top + 3, 19 + ox, face_top + 3, "OUTLINE")
+    elif mouth == 4:
+        rect(g, 14 + ox, my, 17 + ox, my, "LIP_DARK")
+        rect(g, 15 + ox, my, 16 + ox, my, "TOOTH")
     else:
-        rect(g, 10 + ox, my, 13 + ox, my, "SHADOW")
-        rect(g, 11 + ox, my - 1, 12 + ox, my - 1, "SKIN_DARK")
-    # Neck
-    rect(g, 10 + ox, 16 + oy, 13 + ox, 16 + oy, "SKIN")
-    # Torso — humanoid jacket
-    chest = 17 + oy + crouch
-    rect(g, 7 + ox, chest, 16 + ox, 24 + oy + crouch, "JACKET")
-    rect(g, 8 + ox, chest + 1, 15 + ox, 23 + oy + crouch, "JACKET_DARK")
-    rect(g, 7 + ox, chest, 16 + ox, chest, "JACKET_GOLD")
-    rect(g, 9 + ox, chest + 1, 14 + ox, chest + 3, "SHADOW")
-    rect(g, 10 + ox, chest + 3, 13 + ox, 21 + oy + crouch, "SHADOW")
+        rect(g, 14 + ox, my, 17 + ox, my, "LIP_DARK")
+        rect(g, 14 + ox, my - 1, 14 + ox, my - 1, "LIP_DARK")
+
+    # --- Neck ---
+    neck_y = face_top + 11 + crouch // 2
+    rect(g, 14 + ox, neck_y, 17 + ox, neck_y + 1, "SKIN")
+
+    # --- Coat / torso (broad shoulders) ---
+    chest = neck_y + 2 + crouch
+    shoulder_w = 1 + chest_expand
+    rect(g, 7 + ox - shoulder_w, chest, 24 + ox + shoulder_w, chest + 12 + crouch, "COAT_MID")
+    rect(g, 8 + ox, chest + 1, 23 + ox, chest + 11 + crouch, "COAT_DARK")
+    rect(g, 7 + ox - shoulder_w, chest, 24 + ox + shoulder_w, chest, "GOLD_TRIM")
+    rect(g, 7 + ox - shoulder_w, chest, 7 + ox - shoulder_w, chest + 2, "GOLD_BRIGHT")
+    rect(g, 24 + ox + shoulder_w, chest, 24 + ox + shoulder_w, chest + 2, "GOLD_BRIGHT")
+    rect(g, 13 + ox, chest, 18 + ox, chest + 3, "GOLD_TRIM")
+    rect(g, 14 + ox, chest + 1, 17 + ox, chest + 8 + crouch, "SHIRT")
+    rect(g, 10 + ox, chest + 2, 12 + ox, chest + 8 + crouch, "COAT_LIGHT")
+    rect(g, 19 + ox, chest + 2, 21 + ox, chest + 8 + crouch, "COAT_LIGHT")
+
+    # Cape
     if cape_side <= 0:
-        rect(g, 5 + ox, chest + 2, 6 + ox, 27 + oy, "CAPE")
+        rect(g, 4 + ox, chest + 2, 6 + ox, chest + 14 + crouch, "COAT_DARK")
     if cape_side >= 0:
-        rect(g, 17 + ox, chest + 2, 18 + ox, 27 + oy, "CAPE")
-    # Arms
-    if arm_point:
-        rect(g, 16 + ox, 14 + oy + crouch, 22 + ox, 16 + oy + crouch, "JACKET")
-        rect(g, 22 + ox, 14 + oy + crouch, 23 + ox, 15 + oy + crouch, "SKIN")
-        rect(g, 5 + ox, 18 + oy + crouch, 7 + ox, 22 + oy + crouch, "JACKET")
+        rect(g, 25 + ox, chest + 2, 27 + ox, chest + 14 + crouch, "COAT_DARK")
+
+    # --- Arms ---
+    if arm_spread:
+        rect(g, 2 + ox, chest + 1, 6 + ox, chest + 5, "COAT_MID")
+        rect(g, 25 + ox, chest + 1, 29 + ox, chest + 5, "COAT_MID")
+        rect(g, 1 + ox, chest + 2, 2 + ox, chest + 4, "SKIN")
+        rect(g, 29 + ox, chest + 2, 30 + ox, chest + 4, "SKIN")
+    elif arm_point:
+        rect(g, 22 + ox, chest + 1, 30 + ox, chest + 4, "COAT_MID")
+        rect(g, 30 + ox, chest + 1, 31 + ox, chest + 2, "SKIN")
+        rect(g, 10 + ox, chest + 3, 14 + ox, chest + 6, "COAT_MID")
+        rect(g, 5 + ox, chest + 5, 8 + ox, chest + 12 + crouch, "COAT_MID")
     elif arm_up:
-        rect(g, 5 + ox, 12 + oy + crouch, 8 + ox, 17 + oy + crouch, "JACKET")
-        rect(g, 15 + ox, 12 + oy + crouch, 18 + ox, 17 + oy + crouch, "JACKET")
+        rect(g, 4 + ox, chest - 2, 8 + ox, chest + 4, "COAT_MID")
+        rect(g, 23 + ox, chest - 4, 27 + ox, chest + 2, "COAT_MID")
+        rect(g, 24 + ox, chest - 5, 26 + ox, chest - 3, "SKIN")
     else:
-        rect(g, 5 + ox, 18 + oy + crouch, 7 + ox, 24 + oy + crouch, "JACKET")
-        rect(g, 16 + ox, 18 + oy + crouch, 18 + ox, 24 + oy + crouch, "JACKET")
-    # Legs
-    ly = 25 + oy + crouch
-    if crouch > 0:
-        rect(g, 8 + ox, ly, 11 + ox, 31 + oy, "JACKET_DARK")
-        rect(g, 12 + ox, ly, 15 + ox, 31 + oy, "JACKET_DARK")
+        arm_raise = 2 if weight_left else 0
+        rect(g, 5 + ox, chest + 4 - arm_raise, 8 + ox, chest + 13 + crouch, "COAT_MID")
+        rect(g, 23 + ox, chest + 4, 26 + ox, chest + 13 + crouch, "COAT_MID")
+
+    # --- Legs ---
+    ly = chest + 13 + crouch
+    if crouch >= 2:
+        rect(g, 10 + ox, ly, 14 + ox, 47 + oy, "COAT_DARK")
+        rect(g, 17 + ox, ly, 21 + ox, 47 + oy, "COAT_DARK")
+    elif crouch == 1:
+        rect(g, 10 + ox, ly, 13 + ox, 47 + oy, "COAT_DARK")
+        rect(g, 18 + ox, ly, 21 + ox, 47 + oy, "COAT_DARK")
     else:
-        rect(g, 8 + ox, ly, 10 + ox, 31 + oy, "JACKET_DARK")
-        rect(g, 13 + ox, ly, 15 + ox, 31 + oy, "JACKET_DARK")
+        rect(g, 11 + ox, ly, 14 + ox, 47 + oy, "COAT_DARK")
+        rect(g, 17 + ox, ly, 20 + ox, 47 + oy, "COAT_DARK")
+
+    # Motion lines (dodge)
+    if motion_lines:
+        streak_y = chest + 5 + oy
+        length = motion_lines * 3
+        for i in range(length):
+            x = max(0, 2 - i + ox)
+            if 0 <= streak_y < H and 0 <= x < W:
+                g[streak_y][x] = "HAIR_MID"
+            if motion_lines > 1 and 0 <= streak_y + 2 < H:
+                g[streak_y + 2][max(0, 1 - i + ox)] = "HAIR_MID"
+            if motion_lines > 2 and 0 <= streak_y + 4 < H:
+                g[streak_y + 4][max(0, ox - i)] = "HAIR_MID"
+
+    apply_outline(g)
     return g
 
 
-# alias for frame builders
-draw_base_dio = draw_jojo_dio
-
-
-def draw_walk_frame(step, direction=1):
-    ox = 0
-    oy = 0
-    leg_fwd = step % 4
+def draw_walk_frame(step: int) -> list[list[str | None]]:
+    leg = step % 4
     cape = -1 if step < 4 else 1
-    g = draw_base_dio(offset_x=ox, offset_y=oy, mouth=0, cape_side=cape)
-    if leg_fwd == 0:
-        rect(g, 7, 25, 10, 31, "JACKET_DARK")
-        rect(g, 14, 24, 16, 30, "JACKET_DARK")
-    elif leg_fwd == 1:
-        rect(g, 8, 24, 11, 31, "JACKET_DARK")
-        rect(g, 13, 25, 15, 30, "JACKET_DARK")
-    elif leg_fwd == 2:
-        rect(g, 9, 25, 11, 31, "JACKET_DARK")
-        rect(g, 13, 24, 16, 31, "JACKET_DARK")
+    bounce = -1 if step % 2 else 0
+    g = draw_dio_pose(offset_y=bounce, cape_side=cape, hair_shift=1 if step % 2 else 0)
+    ly = 38 + bounce
+    if leg == 0:
+        rect(g, 9, ly, 13, 47, "COAT_DARK")
+        rect(g, 18, ly - 1, 21, 46, "COAT_DARK")
+    elif leg == 1:
+        rect(g, 10, ly - 1, 14, 47, "COAT_DARK")
+        rect(g, 17, ly, 20, 45, "COAT_DARK")
+    elif leg == 2:
+        rect(g, 11, ly, 14, 47, "COAT_DARK")
+        rect(g, 17, ly - 1, 22, 47, "COAT_DARK")
     else:
-        rect(g, 7, 24, 9, 30, "JACKET_DARK")
-        rect(g, 14, 25, 17, 31, "JACKET_DARK")
+        rect(g, 9, ly - 1, 12, 46, "COAT_DARK")
+        rect(g, 18, ly, 22, 47, "COAT_DARK")
     if step < 4:
-        rect(g, 3, 17, 5, 27, "CAPE")
+        rect(g, 3, 32, 5, 44, "COAT_DARK")
     else:
-        rect(g, 18, 17, 20, 27, "CAPE")
+        rect(g, 26, 32, 28, 44, "COAT_DARK")
+    apply_outline(g)
     return g
 
 
-def draw_dodge_frame(step):
-    """All dodge frames stay humanoid — no abstract blocks."""
+def draw_dodge_frame(step: int) -> list[list[str | None]]:
     if step == 0:
-        return draw_base_dio(eyes_wide=True)
+        return draw_dio_pose(eyes_wide=True)
     if step == 1:
-        return draw_base_dio(crouch=1, eyes_wide=True)
+        return draw_dio_pose(crouch=2, eyes_wide=True)
     if step == 2:
-        return draw_base_dio(offset_y=-2, arm_up=True, eyes_wide=True)
+        return draw_dio_pose(offset_y=-3, crouch=1, arm_up=True, eyes_wide=True)
     if step == 3:
-        return draw_base_dio(offset_x=2, offset_y=-3, arm_up=True, cape_side=1)
+        return draw_dio_pose(offset_y=-5, arm_up=True, cape_side=1, eyes_wide=True)
     if step == 4:
-        return draw_base_dio(offset_x=4, offset_y=-2, arm_point=True, mouth=2)
-    return draw_base_dio(offset_x=6, offset_y=-1, mouth=1)
+        return draw_dio_pose(offset_x=3, offset_y=-3, arm_up=True, motion_lines=1)
+    if step == 5:
+        return draw_dio_pose(offset_x=6, offset_y=-2, arm_point=True, motion_lines=3)
+    # Frame 6: flash — 4 HAIR_BRIGHT pixels where Dio was
+    g = blank()
+    rect(g, 14, 20, 15, 21, "HAIR_BRIGHT")
+    return g
 
 
-def draw_za_frame(step):
+def draw_za_frame(step: int) -> list[list[str | None]]:
     if step == 0:
-        return draw_base_dio(arm_up=True, cape_side=-1)
+        return draw_dio_pose(arm_spread=True, cape_side=-1)
     if step == 1:
-        g = draw_base_dio(offset_y=-2, arm_up=True)
-        rect(g, 6, 0, 17, 3, "HAIR")
+        g = draw_dio_pose(offset_y=-2, arm_spread=True, hair_shift=2)
+        rect(g, 5, 0, 26, 4, "HAIR_BRIGHT")
+        apply_outline(g)
         return g
     if step == 2:
-        return draw_base_dio(arm_point=True, arm_up=True, cape_side=1)
+        return draw_dio_pose(offset_y=-3, head_back=True, arm_spread=True)
     if step == 3:
-        return draw_base_dio(arm_point=True, arm_up=True, cape_side=1)
-    return draw_base_dio(mouth=0)
+        return draw_dio_pose(arm_point=True, arm_up=True, eyes_glow=True, cape_side=1)
+    if step == 4:
+        g = draw_dio_pose(eyes_glow=True)
+        cx, cy = 16, 24
+        for dx, dy in ((0, -6), (0, 6), (6, 0), (-6, 0), (4, -4), (-4, -4), (4, 4), (-4, 4)):
+            nx, ny = cx + dx, cy + dy
+            if 0 <= nx < W and 0 <= ny < H:
+                g[ny][nx] = "GOLD_BRIGHT"
+        return g
+    return draw_dio_pose(chest_expand=0, hair_shift=0)
 
 
-def grid_to_js_rows(grid, indent="    "):
-    lines = []
+def grid_to_js_rows(grid: list[list[str | None]], indent: str = "    ") -> str:
+    """One palette key per line inside each row array."""
+    lines: list[str] = []
     for row in grid:
-        lines.append(indent + "[")
-        for c in row:
-            if c is None:
-                lines.append(indent + "  null,")
+        lines.append(f"{indent}[")
+        for cell in row:
+            if cell is None:
+                lines.append(f"{indent}  null,")
             else:
-                lines.append(indent + f"  '{c}',")
-        lines.append(indent + "],")
+                lines.append(f"{indent}  '{cell}',")
+        lines.append(f"{indent}],")
     return "\n".join(lines)
 
 
-def emit_frame(name, grid):
-    return f"  // {name}\n  [\n{grid_to_js_rows(grid)}\n  ]"
+def build_frames() -> dict[str, list[list[list[str | None]]]]:
+    frames: dict[str, list[list[list[str | None]]]] = {}
 
-
-def build_frames():
-    frames = {}
-    frames["IDLE_FRAMES"] = []
-    for i, (oy, cape, ox) in enumerate([(0, 0, 0), (-1, 0, 0), (0, 0, 0), (0, -1, -1)]):
-        frames["IDLE_FRAMES"].append(draw_base_dio(offset_y=oy, offset_x=ox, cape_side=cape))
-    frames["WALK_FRAMES"] = [draw_walk_frame(i) for i in range(8)]
-    frames["POINT_FRAMES"] = [
-        draw_base_dio(arm_point=False),
-        draw_base_dio(arm_point=True),
-        draw_base_dio(arm_point=True, cape_side=1),
+    frames["IDLE_FRAMES"] = [
+        draw_dio_pose(),
+        draw_dio_pose(chest_expand=1, hair_shift=1),
+        draw_dio_pose(),
+        draw_dio_pose(weight_left=True, hair_shift=-1, cape_side=-1),
     ]
-    frames["DODGE_FRAMES"] = [draw_dodge_frame(i) for i in range(6)]
-    frames["TALK_FRAMES"] = [draw_base_dio(offset_y=-1, mouth=m) for m in range(4)]
-    frames["ZA_WARUDO_FRAMES"] = [draw_za_frame(i) for i in range(5)]
-    frames["HOVER_FRAMES"] = [draw_base_dio(offset_y=0), draw_base_dio(offset_y=-2)]
+
+    frames["WALK_FRAMES"] = [draw_walk_frame(i) for i in range(8)]
+
+    frames["POINT_FRAMES"] = [
+        draw_dio_pose(arm_point=False),
+        draw_dio_pose(arm_point=True),
+        draw_dio_pose(arm_point=True, cape_side=1),
+        draw_dio_pose(arm_point=True, cape_side=0),
+    ]
+
+    frames["DODGE_FRAMES"] = [draw_dodge_frame(i) for i in range(7)]
+
+    frames["TALK_FRAMES"] = [draw_dio_pose(offset_y=-1, mouth=m) for m in range(6)]
+
+    frames["ZA_WARUDO_FRAMES"] = [draw_za_frame(i) for i in range(6)]
+
+    frames["HOVER_FRAMES"] = [
+        draw_dio_pose(offset_y=0),
+        draw_dio_pose(offset_y=-2),
+    ]
+
     return frames
 
 
@@ -356,35 +485,41 @@ var RECRUITER_SCRIPT = [
 
 DIO_CLASSES = r'''
 var DIO_PALETTE = {
-  SKIN: '#F4C88A',
-  SKIN_DARK: '#D4A870',
-  HAIR: '#F5E642',
-  HAIR_DARK: '#C8BB20',
-  HEART_BAND: '#FF4466',
-  HEART_PINK: '#FF88AA',
-  HEART_GREEN: '#44BB55',
-  JACKET: '#F0D030',
-  JACKET_DARK: '#C8A018',
-  JACKET_GOLD: '#FFE860',
-  CAPE: '#2A1048',
-  COAT: '#2A1A4A',
-  COAT_LIGHT: '#3D2A6A',
-  COAT_GOLD: '#C8A020',
-  SHIRT: '#F0E8D0',
-  EYE: '#8040C0',
-  EYE_DARK: '#401880',
-  EYE_WHITE: '#FFFFFF',
-  EYE_GLOW: '#CC66FF',
-  TEETH: '#FFFFFF',
-  MOUTH_IN: '#1A0818',
-  SHADOW: '#0A0412',
-  TRANSPARENT: null
+  SKIN:           '#F5DEB3',
+  SKIN_SHADOW:    '#D4A870',
+  SKIN_DARK:      '#B8864E',
+  OUTLINE:        '#0A0008',
+  HAIR_BRIGHT:    '#FFE800',
+  HAIR_MID:       '#D4B800',
+  HAIR_DARK:      '#A08A00',
+  HAIR_SHADOW:    '#6A5C00',
+  GEM_GREEN:      '#00FF66',
+  GEM_DARK:       '#00AA44',
+  BAND_GOLD:      '#C8A020',
+  COAT_DARK:      '#1A0A2E',
+  COAT_MID:       '#2A1A4A',
+  COAT_LIGHT:     '#3D2A6A',
+  GOLD_TRIM:      '#C8A020',
+  GOLD_BRIGHT:    '#FFD700',
+  EYE_PURPLE:     '#8040C0',
+  EYE_BRIGHT:     '#AA66FF',
+  EYE_WHITE:      '#FFFFFF',
+  EYE_DARK:       '#401880',
+  TOOTH:          '#F0F0E8',
+  TOOTH_SHADOW:   '#C8C8B8',
+  LIP_DARK:       '#8B2020',
+  TONGUE:         '#CC4444',
+  SHIRT:          '#F0E8D0',
+  SHADOW:         '#0A0412',
+  TRANSPARENT:    null
 };
 
 function DioSprite(canvas) {
   this.canvas = canvas;
   this.ctx = canvas.getContext('2d');
-  this.pixelSize = 5;
+  this.pixelSize = 4;
+  this.gridW = 32;
+  this.gridH = 48;
   this.currentAnimation = 'idle';
   this.currentFrame = 0;
   this.frameTimer = 0;
@@ -403,8 +538,8 @@ function DioSprite(canvas) {
 DioSprite.prototype.drawFrame = function (frameData, offsetX, offsetY) {
   var row, col, colour;
   this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  for (row = 0; row < 32; row++) {
-    for (col = 0; col < 24; col++) {
+  for (row = 0; row < this.gridH; row++) {
+    for (col = 0; col < this.gridW; col++) {
       colour = frameData[row][col];
       if (colour === null) continue;
       this.ctx.fillStyle = DIO_PALETTE[colour];
@@ -476,6 +611,7 @@ function DioGuide() {
   this.pendingAction = null;
   this.isLanding = false;
   this.landingFloat = 0;
+  this.panelClickActive = false;
 }
 
 DioGuide.prototype.init = function () {
@@ -516,9 +652,10 @@ DioGuide.prototype.buildDOM = function () {
   tail.className = 'dio-speech-tail';
   this.avatarWrap = document.createElement('div');
   this.avatarWrap.className = 'dio-avatar';
+  this.avatarWrap.style.width = '128px';
   this.canvas = document.createElement('canvas');
-  this.canvas.width = 120;
-  this.canvas.height = 160;
+  this.canvas.width = 128;
+  this.canvas.height = 192;
   this.speechBubble.appendChild(name);
   this.speechBubble.appendChild(subtitle);
   this.speechBubble.appendChild(this.speechText);
@@ -536,9 +673,20 @@ DioGuide.prototype.buildDOM = function () {
 
 DioGuide.prototype.bindEvents = function () {
   var self = this;
+  this.panel.addEventListener('mousedown', function () {
+    self.panelClickActive = true;
+  });
+  document.addEventListener('mouseup', function () {
+    self.panelClickActive = false;
+  });
   this.panel.addEventListener('click', function (e) {
     if (e.target.closest('#dio-next-btn')) return;
     if (!self.isDodging && !self.recruiterMode) self.advanceDialogue();
+  });
+  document.addEventListener('mousemove', function (e) {
+    self.lastMouseX = e.clientX;
+    self.lastMouseY = e.clientY;
+    if (!self.panelClickActive) self.checkHoverDistance();
   });
 };
 
@@ -551,12 +699,12 @@ DioGuide.prototype.applyLayout = function () {
     this.container.style.top = 'auto';
     this.container.style.bottom = '28px';
     this.x = window.innerWidth / 2;
-    this.y = window.innerHeight - 160;
+    this.y = window.innerHeight - 200;
     return;
   }
   this.container.classList.remove('dio-landing');
-  this.x = Math.min(window.innerWidth - 380, Math.max(16, window.innerWidth * 0.62));
-  this.y = Math.max(80, window.innerHeight - 180);
+  this.x = Math.min(window.innerWidth - 420, Math.max(16, window.innerWidth * 0.62));
+  this.y = Math.max(80, window.innerHeight - 220);
   this.container.style.left = this.x + 'px';
   this.container.style.top = this.y + 'px';
   this.container.style.bottom = 'auto';
@@ -565,10 +713,11 @@ DioGuide.prototype.applyLayout = function () {
 
 DioGuide.prototype.checkHoverDistance = function () {
   if (this.isDodging || this.recruiterMode || this.isLanding) return;
-  var rect = this.container.getBoundingClientRect();
-  var dx = this.lastMouseX - (rect.left + rect.width / 2);
-  var dy = this.lastMouseY - (rect.top + rect.height / 2);
-  if (Math.sqrt(dx * dx + dy * dy) < 60) this.dodge();
+  var rect = this.avatarWrap.getBoundingClientRect();
+  var cx = rect.left + rect.width / 2;
+  var cy = rect.top + rect.height / 2;
+  var dist = Math.hypot(this.lastMouseX - cx, this.lastMouseY - cy);
+  if (dist < 80) this.dodge();
 };
 
 DioGuide.prototype.dodge = function () {
@@ -577,9 +726,9 @@ DioGuide.prototype.dodge = function () {
   this.sprite.playAnimation('dodge');
   var corners = [
     { x: 40, y: 40 },
-    { x: window.innerWidth - 140, y: 40 },
-    { x: 40, y: window.innerHeight - 200 },
-    { x: window.innerWidth - 140, y: window.innerHeight - 200 }
+    { x: window.innerWidth - 160, y: 40 },
+    { x: 40, y: window.innerHeight - 240 },
+    { x: window.innerWidth - 160, y: window.innerHeight - 240 }
   ];
   var best = corners[0];
   var bestDist = -1;
@@ -826,9 +975,9 @@ document.addEventListener('DOMContentLoaded', function () {
 '''
 
 
-def main():
+def main() -> None:
     frames = build_frames()
-    body = ["(function (global) {\n'use strict';\n\n"]
+    body: list[str] = ["(function (global) {\n'use strict';\n\n"]
     body.append(DIO_CLASSES.split("function DioSprite")[0])
     for set_name, frame_list in frames.items():
         body.append(f"var {set_name} = [\n")
@@ -837,13 +986,21 @@ def main():
         body.append("];\n\n")
     body.append(STORYLINE_JS)
     body.append("\n")
-    body.append(DIO_CLASSES[DIO_CLASSES.index("function DioSprite"):])
+    body.append(DIO_CLASSES[DIO_CLASSES.index("function DioSprite") :])
     body.append("\n})(typeof window !== 'undefined' ? window : globalThis);\n")
     content = "".join(body)
     OUT.write_text(content, encoding="utf-8")
     lines = len(content.splitlines())
-    pixels = sum(content.count("'" + k) for k in ["SKIN", "HAIR", "COAT", "EYE", "HEART"])
-    print(f"Wrote {OUT} — {lines} lines, ~{pixels} palette pixel refs")
+    palette_keys = [
+        "SKIN", "SKIN_SHADOW", "SKIN_DARK", "OUTLINE",
+        "HAIR_BRIGHT", "HAIR_MID", "HAIR_DARK", "HAIR_SHADOW",
+        "GEM_GREEN", "GEM_DARK", "BAND_GOLD",
+        "COAT_DARK", "COAT_MID", "COAT_LIGHT", "GOLD_TRIM", "GOLD_BRIGHT",
+        "EYE_PURPLE", "EYE_BRIGHT", "EYE_WHITE", "EYE_DARK",
+        "TOOTH", "TOOTH_SHADOW", "LIP_DARK", "TONGUE", "SHIRT", "SHADOW",
+    ]
+    pixels = sum(content.count(f"'{k}'") for k in palette_keys)
+    print(f"Wrote {OUT} — {lines} lines, {pixels} palette pixel refs")
 
 
 if __name__ == "__main__":

@@ -113,6 +113,8 @@
 
 .dio-avatar canvas {
   display: block;
+  width: 128px;
+  height: 192px;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
@@ -128,8 +130,8 @@
 }
 
 #dio-guide.dio-landing .dio-avatar canvas {
-  width: 120px;
-  height: 160px;
+  width: 128px;
+  height: 192px;
 }
 
 #dio-guide.dio-landing #dio-speech {
