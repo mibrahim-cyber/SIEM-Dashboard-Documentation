@@ -3,7 +3,7 @@
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 90;
+  z-index: 110; /* above #boot (100) so nav arrows are always clickable */
 }
 
 .deck-nav-btn {

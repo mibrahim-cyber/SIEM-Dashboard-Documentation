@@ -1075,7 +1075,7 @@
     let path = href;
     if (path.startsWith('../')) path = path.slice(3);
     else if (path.startsWith('./')) path = path.slice(2);
-    return siteBaseUrl() + 'read.html?p=' + encodeURIComponent(path.replace(/^\/+/, ''));
+    return siteBaseUrl() + 'read.html#doc=' + encodeURIComponent(path.replace(/^\/+/, ''));
   }
 
   function printBrief() {
@@ -1085,9 +1085,7 @@
     const dir = b.dir || briefDir.textContent || '';
     const bodyHtml = briefBody.innerHTML;
     const pages = briefPages.textContent || '';
-    const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + title.replace(/</g, '&lt;') + '</title><style>body{font-family:Georgia,serif;max-width:680px;margin:40px auto;padding:0 24px;color:#111;line-height:1.65}h1{font-size:22px;margin-bottom:8px}.meta{color:#555;font-size:12px;margin-bottom:20px;font-family:Consolas,monospace}.glossary-term{border-bottom:none;color:inherit}@media print{body{margin:0;padding:16px}}</style></head><body><h1>' + title.replace(/</g, '&lt;') + '</h1><p class="meta">' + String(dir).replace(/</g, '&lt;') + (pages ? ' · ' + String(pages).replace(/</g, '&lt;') : '') + '</p><div>' + bodyHtml + '</div>  <script src="../experience-modules/shared/narrative-engine.js"></script>
-<script src="../experience-modules/shared/dio-guide.js"></script>
-</body></html>';
+    const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + title.replace(/</g, '&lt;') + '</title><style>body{font-family:Georgia,serif;max-width:680px;margin:40px auto;padding:0 24px;color:#111;line-height:1.65}h1{font-size:22px;margin-bottom:8px}.meta{color:#555;font-size:12px;margin-bottom:20px;font-family:Consolas,monospace}.glossary-term{border-bottom:none;color:inherit}@media print{body{margin:0;padding:16px}}</style></head><body><h1>' + title.replace(/</g, '&lt;') + '</h1><p class="meta">' + String(dir).replace(/</g, '&lt;') + (pages ? ' · ' + String(pages).replace(/</g, '&lt;') : '') + '</p><div>' + bodyHtml + '</div></body></html>';
     const frame = document.createElement('iframe');
     frame.setAttribute('aria-hidden', 'true');
     frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
@@ -2072,9 +2070,15 @@
   try {
     initBodies(); buildStars(); buildNebulae(); rebuildAtmosphere(); rebuildCosmicWeb();
   } catch (err) { console.error(err); }
-  setTimeout(() => {
-    if (!bootDone) dismissBoot();
-  }, 800);
+  // Skip boot entirely when arriving via in-site navigation
+  const _inboundNav = document.referrer && document.referrer.includes(location.hostname || location.host || 'habibi');
+  const _sessionEntry = (() => { try { return sessionStorage.getItem('habibi-visited'); } catch(_){return null;} })();
+  if (_inboundNav || _sessionEntry) {
+    dismissBoot();
+  } else {
+    try { sessionStorage.setItem('habibi-visited', '1'); } catch(_){}
+    setTimeout(() => { if (!bootDone) dismissBoot(); }, 800);
+  }
   bootEl.addEventListener('click', dismissBoot);
   addEventListener('resize', resize);
 
