@@ -1,0 +1,12 @@
+{
+  "name": "siem-dashboard-documentation",
+  "private": true,
+  "scripts": {
+    "serve": "npx --yes serve -l 4173",
+    "test:nav": "playwright test",
+    "test:nav:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}

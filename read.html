@@ -457,6 +457,10 @@
       opacity: 0.35;
       pointer-events: none;
     }
+    .pager.is-loading {
+      pointer-events: none;
+      opacity: 0.6;
+    }
     .pager .pager-link .pager-label {
       font: 500 10px "IBM Plex Mono", Consolas, monospace;
       text-transform: uppercase;
@@ -654,9 +658,20 @@
   'use strict';
 
   // ── URL & path helpers ───────────────────────────────────
-  var params = new URLSearchParams(location.search);
-  var rawPath = params.get('path') || params.get('p') || params.get('doc') || 'docs/02-architecture/00-system-overview.md';
-  var docPath = String(rawPath).replace(/^\/+/, '').replace(/\\/g, '/');
+  function resolveDocPath() {
+    var hash = location.hash.replace(/^#/, '');
+    if (hash.indexOf('doc=') === 0) {
+      try {
+        return decodeURIComponent(hash.slice(4)).replace(/^\/+/, '').replace(/\\/g, '/');
+      } catch (_) {
+        return hash.slice(4).replace(/^\/+/, '').replace(/\\/g, '/');
+      }
+    }
+    var params = new URLSearchParams(location.search);
+    var rawPath = params.get('doc') || params.get('p') || params.get('path') || 'docs/02-architecture/00-system-overview.md';
+    return String(rawPath).replace(/^\/+/, '').replace(/\\/g, '/');
+  }
+  var docPath = resolveDocPath();
 
   var docPathEl = document.getElementById('doc-path');
   var loadingEl = document.getElementById('doc-loading');
@@ -696,7 +711,7 @@
   }
 
   function viewerUrl(mdPath) {
-    return siteBase() + 'read.html?path=' + encodeURIComponent(mdPath);
+    return siteBase() + 'read.html#doc=' + encodeURIComponent(mdPath);
   }
 
   function assetUrl(rel) {
@@ -981,6 +996,12 @@
 
     pagerEl.appendChild(prevLink);
     pagerEl.appendChild(nextLink);
+
+    pagerEl.querySelectorAll('.pager-link.disabled').forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+      });
+    });
   }
 
   // ── Markdown rendering ───────────────────────────────────
@@ -1100,8 +1121,9 @@
   }
 
   function scrollToHash() {
-    if (!location.hash) return;
-    var id = location.hash.slice(1);
+    var hash = location.hash;
+    if (!hash || hash.indexOf('#doc=') === 0) return;
+    var id = hash.slice(1);
     var target = document.getElementById(id);
     if (target && target.scrollIntoView) {
       target.scrollIntoView({ behavior: 'auto', block: 'start' });
@@ -1109,6 +1131,7 @@
   }
 
   function load() {
+    if (pagerEl) pagerEl.classList.add('is-loading');
     setDocumentTitle(titleCaseFromSlug(docPath.split('/').pop()));
     var sectionKey = inferSectionKey(docPath);
 
@@ -1143,7 +1166,9 @@
       if (h1) setDocumentTitle(h1.textContent.trim());
       buildToc();
       scrollToHash();
+      if (pagerEl) pagerEl.classList.remove('is-loading');
     }).catch(function (e) {
+      if (pagerEl) pagerEl.classList.remove('is-loading');
       manifestP.then(function (manifest) {
         renderError(e && e.message ? e.message : String(e), manifest);
       });
@@ -1170,6 +1195,8 @@
   }
 
   function init() {
+    docPath = resolveDocPath();
+    docPathEl.textContent = docPath;
     load();
     if (!bootCoreWhenReady()) {
       var tries = 0;
@@ -1180,6 +1207,12 @@
     }
     syncMenuButton();
   }
+
+  window.addEventListener('hashchange', function () {
+    docPath = resolveDocPath();
+    docPathEl.textContent = docPath;
+    load();
+  });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

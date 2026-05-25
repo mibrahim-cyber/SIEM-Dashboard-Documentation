@@ -1,7 +1,7 @@
 /**
  * Meridian-7 service worker — offline cache for core assets
  */
-const CACHE = 'meridian7-v18.7';
+const CACHE = 'meridian7-v18.8';
 const PRECACHE = [
   'index.html',
   '404.html',
@@ -117,6 +117,12 @@ self.addEventListener('fetch', function (event) {
   var url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
   if (!url.pathname.match(/\.(html|js|css|json|svg|woff2?)$/i) && !url.pathname.endsWith('/')) return;
+
+  /* read.html uses query params for doc path — never serve a cached copy without the query string */
+  if (url.pathname.endsWith('/read.html') || url.pathname === '/read.html') {
+    event.respondWith(fetch(event.request));
+    return;
+  }
 
   event.respondWith(
     caches.match(event.request).then(function (cached) {

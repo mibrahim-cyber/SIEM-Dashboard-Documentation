@@ -92,7 +92,9 @@
   const TRANSITION_KEY = 'deck-nav-transition-style';
   const TRANSITION_STYLES = ['WIPE', 'GLITCH', 'DISSOLVE'];
   let transitionStyle = 'WIPE';
-  const REDUCED_MOTION = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function prefersReducedMotion() {
+    return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
 
   function loadTransitionStyle() {
     try {
@@ -231,7 +233,7 @@
     setNavDisabled(true);
     dispatchNavEvent('deck-nav-wipe-start', { href: href, style: transitionStyle });
 
-    if (REDUCED_MOTION) {
+    if (prefersReducedMotion()) {
       finishNavigate(href);
       return;
     }
@@ -354,6 +356,7 @@
       '<span class="deck-nav-label">' +
       label +
       '</span>';
+    if (href) btn.setAttribute('data-nav-href', href);
     btn.addEventListener('click', function (e) {
       if (btn.disabled || wiping) return;
       e.preventDefault();
@@ -387,6 +390,10 @@
     }
     ensureWipeLayer();
     resizeWipe();
+    navigating = false;
+    wiping = false;
+    navClickAt = 0;
+    resetWipeLayer();
     setNavDisabled(false);
   }
 
@@ -402,8 +409,11 @@
   addEventListener('resize', resizeWipe);
   addEventListener('pagehide', resetWipeLayer);
   addEventListener('pageshow', function () {
-    navigating = false; // bfcache restore: ensure lock is cleared on page re-show
+    navigating = false;
+    wiping = false;
+    navClickAt = 0;
     resetWipeLayer();
+    setNavDisabled(false);
   });
   addEventListener('DOMContentLoaded', function () {
     var layer = document.getElementById('deck-nav-wipe');

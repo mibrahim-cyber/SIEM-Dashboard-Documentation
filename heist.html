@@ -300,49 +300,49 @@
         title: 'Rule: rapid-requests — 847 requests in 60 seconds from your IP',
         component: 'SIEM Component: Correlation Engine / Rate Analyzer',
         explain: 'Perimeter checkpoints log every badge swipe and turnstile event. When three zone crossings occur inside a 30-second sliding window, the correlation engine assumes automated scanning or credential stuffing. The rule exists to catch reconnaissance bots before they reach internal VLANs.',
-        doc: 'read.html?doc=guides/rules/detection-basics'
+        doc: 'read.html#doc=guides/configure/rules-engine/02-what-is-a-detection-rule.md'
       },
       'unusual-port': {
         title: 'Rule: unusual-port — outbound connection to TCP/4444',
         component: 'SIEM Component: Network IDS / Firewall Analytics',
         explain: 'Production services use well-known ports like 443. Connections to 4444 or 8888 match historical C2 and reverse-shell patterns in your environment. Without an approved tunnel tool, the firewall sends a high-severity event to the Alert Manager.',
-        doc: 'read.html?doc=guides/ingest-config/log-ingestion/02-ingestion-pipeline-end-to-end'
+        doc: 'read.html#doc=guides/ingest-config/log-ingestion/02-ingestion-pipeline-end-to-end.md'
       },
       'sensitive-path': {
         title: 'Rule: sensitive-path — unauthorized access to /admin/core/detection',
         component: 'SIEM Component: UEBA / File Integrity Monitor',
         explain: 'Core-zone floor tiles map to privileged paths in the detection engine filesystem. Walking them without admin credentials violates least-privilege baselines. UEBA compares your session role against path sensitivity and raises an insider-threat alert.',
-        doc: 'read.html?doc=guides/investigate/event-graph'
+        doc: 'read.html#doc=guides/investigate/event-graph/02-graph-theory-basics.md'
       },
       'brute-force': {
         title: 'Rule: brute-force — failed_auth > 3 in 30 seconds',
         component: 'SIEM Component: Authentication Analytics',
         explain: 'Password terminals feed auth logs in real time. Three failed attempts within thirty seconds matches the failed_auth threshold used across the fleet. This catches password spraying before a valid credential is found.',
-        doc: 'read.html?doc=guides/rules/detection-basics'
+        doc: 'read.html#doc=guides/configure/rules-engine/02-what-is-a-detection-rule.md'
       },
       'sql-injection': {
         title: 'Rule: sql-injection — suspicious query pattern in db_console',
         component: 'SIEM Component: Detection Engine (delayed batch rule)',
         explain: 'The database terminal accepts SQL-like input. A successful injection string is silently queued; the Detection Engine evaluates query logs on a 45-second delay to reduce false positives during maintenance windows. You must exfil and exit before the batch job fires.',
-        doc: 'read.html?doc=guides/investigate/event-graph'
+        doc: 'read.html#doc=guides/investigate/event-graph/02-graph-theory-basics.md'
       },
       'guard-vision': {
         title: 'Rule: guard-vision — physical access anomaly in monitored sector',
         component: 'SIEM Component: Alert Manager → SOAR Playbook',
         explain: 'Guards represent integrated CCTV analytics. Sustained presence inside a vision cone fills a detection meter in 0.8 seconds. On alert, backup units converge and the Alert Manager begins a ten-second escalation timer toward full lockdown.',
-        doc: 'read.html?doc=guides/investigate/event-graph'
+        doc: 'read.html#doc=guides/investigate/event-graph/02-graph-theory-basics.md'
       },
       'tripwire': {
         title: 'Rule: motion-tripwire — unexpected movement in air-gap corridor',
         component: 'SIEM Component: Perimeter Motion Sensor Grid',
         explain: 'Cyan tripwire tiles simulate laser grids in the perimeter. Crossing them spikes the noise floor and can combine with other rules. Slow, deliberate movement keeps the noise meter below analyst review thresholds.',
-        doc: 'read.html?doc=guides/rules/detection-basics'
+        doc: 'read.html#doc=guides/configure/rules-engine/02-what-is-a-detection-rule.md'
       },
       'full-alarm': {
         title: 'Rule: full-alarm — SOAR lockdown playbook executed',
         component: 'SIEM Component: SOAR / Alert Manager',
         explain: 'The ten-second pre-alarm window expired without a valid SOAR override. Automated playbooks isolate segments, flush sessions, and page on-call. At this stage evasion is no longer possible — the incident is fully materialized.',
-        doc: 'read.html?doc=guides/investigate/event-graph'
+        doc: 'read.html#doc=guides/investigate/event-graph/02-graph-theory-basics.md'
       }
     };
 
@@ -706,7 +706,7 @@
       document.getElementById('overlay-explain').textContent = info.explain;
       var doc = document.getElementById('overlay-doc');
       doc.href = info.doc;
-      doc.textContent = 'Read: ' + info.doc.replace('read.html?doc=', '') + ' →';
+      doc.textContent = 'Read: ' + info.doc.replace(/read\.html#doc=/, '') + ' →';
       overlayPanel.classList.remove('win');
       overlayScreen.classList.add('show');
       hudAlarm.classList.add('on');
@@ -727,7 +727,7 @@
       document.getElementById('overlay-rule').textContent = 'Objectives secured: ' + Object.keys(state.copied).length + ' / ' + TOTAL_OBJECTIVES + ' · Time: ' + timeStr;
       document.getElementById('overlay-component').textContent = 'SIEM Component: None triggered (this time)';
       document.getElementById('overlay-explain').textContent = 'You copied enough DATA_EXFIL nodes and reached the perimeter exit before correlation, UEBA, or SOAR playbooks materialized a case. The same tactics fail when analysts tune thresholds — revisit the docs linked from each death screen.';
-      document.getElementById('overlay-doc').href = 'read.html?doc=guides/rules/detection-basics';
+      document.getElementById('overlay-doc').href = 'read.html#doc=guides/configure/rules-engine/02-what-is-a-detection-rule.md';
       document.getElementById('overlay-doc').textContent = 'Read: guides/rules/detection-basics →';
       overlayPanel.classList.add('win');
       overlayScreen.classList.add('show');
