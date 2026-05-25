@@ -496,6 +496,22 @@
     injectCoreStyles();
     injectSessionBadge();
     loadQoL();
+    // Demo / portfolio mode: unlock all games so any page is directly accessible
+    if (/[?&]demo=true/.test(location.search) || /[?&]recruiter=true/.test(location.search)) {
+      try {
+        var SEQ = ['the_terminal','the_breach','the_ghost_network','the_cipher','the_simulation',
+          'the_interrogation_room','the_forge','the_deep_archive','the_heist','the_lab',
+          'the_cartography','the_memorial','the_resonance'];
+        SEQ.forEach(function (gid) {
+          var key = 'habibi-xp-' + gid;
+          var raw = localStorage.getItem(key);
+          var data = raw ? JSON.parse(raw) : {};
+          data.unlocked = true;
+          if (!data.gameId) data.gameId = gid;
+          localStorage.setItem(key, JSON.stringify(data));
+        });
+      } catch (_) { /* storage may be unavailable */ }
+    }
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {
       navigator.serviceWorker.register(resolveSwPath()).catch(function () { /* offline optional */ });
     }

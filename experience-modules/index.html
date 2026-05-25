@@ -7,26 +7,78 @@
   <link rel="stylesheet" href="../assets/palette.css" />
   <link rel="stylesheet" href="shared/styles-base.css" />
   <style>
-    body { background: #030a12; color: #94a3b8; font-family: 'IBM Plex Mono', monospace; padding: 24px; }
-    h1 { color: #38bdf8; font-size: 18px; letter-spacing: 3px; margin-bottom: 8px; }
-    p.sub { font-size: 11px; margin-bottom: 24px; color: #64748b; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; max-width: 1100px; }
-    .card { border: 1px solid rgba(56,189,248,.25); padding: 14px; border-radius: 6px; background: rgba(10,13,26,.7); text-decoration: none; color: inherit; transition: border-color .2s; }
-    .card:hover { border-color: #38bdf8; }
-    .card h2 { font-size: 12px; color: #e2e8f0; margin-bottom: 6px; letter-spacing: 1px; }
-    .card span { font-size: 10px; color: #64748b; }
-    .tools { margin-top: 32px; font-size: 10px; }
-    .tools button { background: rgba(56,189,248,.15); border: 1px solid rgba(56,189,248,.35); color: #38bdf8; padding: 8px 12px; cursor: pointer; font-family: inherit; }
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Mono:wght@400;600&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #030a12; }
+    body { color: #94a3b8; font-family: 'IBM Plex Mono', monospace; padding: 40px 32px 80px; overflow-y: auto; }
+    .hub-header { max-width: 1100px; margin-bottom: 32px; border-bottom: 1px solid rgba(56,189,248,.15); padding-bottom: 24px; }
+    .hub-eyebrow { font-size: 9px; letter-spacing: 3px; color: #38bdf8; opacity: .6; margin-bottom: 10px; text-transform: uppercase; }
+    h1 { color: #e2e8f0; font-size: 22px; letter-spacing: 2px; margin-bottom: 8px; font-weight: normal; }
+    h1 span { color: #38bdf8; }
+    p.sub { font-size: 11px; color: #64748b; line-height: 1.7; }
+    .section-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.2); margin-bottom: 14px; margin-top: 32px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; max-width: 1100px; }
+    .card {
+      border: 1px solid rgba(56,189,248,.18);
+      padding: 16px;
+      border-radius: 6px;
+      background: rgba(10,13,26,.85);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color .2s, background .2s, transform .15s;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--card-accent, #38bdf8);
+      opacity: .4;
+      transition: opacity .2s;
+    }
+    .card:hover { border-color: var(--card-accent, #38bdf8); background: rgba(14,18,34,.95); transform: translateY(-2px); }
+    .card:hover::before { opacity: 1; }
+    .card.locked { opacity: .45; cursor: not-allowed; pointer-events: none; }
+    .card h2 { font-size: 12px; color: #e2e8f0; letter-spacing: 1px; font-weight: normal; }
+    .card .card-sub { font-size: 10px; color: #64748b; line-height: 1.5; }
+    .card .card-num { font-size: 9px; color: rgba(255,255,255,.15); position: absolute; top: 10px; right: 12px; letter-spacing: 1px; }
+    .card .lock-badge { font-size: 9px; color: #475569; background: rgba(0,0,0,.4); padding: 2px 6px; border-radius: 3px; display: inline-block; margin-top: 2px; }
+    .tools { margin-top: 32px; max-width: 1100px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .tools button {
+      background: transparent;
+      border: 1px solid rgba(56,189,248,.25);
+      color: #64748b;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 1px;
+      border-radius: 4px;
+      transition: all .15s;
+    }
+    .tools button:hover { border-color: #38bdf8; color: #38bdf8; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,.3); }
+    ::-webkit-scrollbar-thumb { background: rgba(56,189,248,.25); border-radius: 2px; }
   </style>
   <link rel="stylesheet" href="shared/dio-guide.css" />
 </head>
 <body>
-  <h1>MERIDIAN-7 · 3D EXPERIENCE RING</h1>
-  <p class="sub">Thirteen linked modules — Cannon-es physics, multi-step levels, 15 story branches per game, GitHub leaderboard sync.</p>
+  <div class="hub-header">
+    <div class="hub-eyebrow">Operation Meridian-7</div>
+    <h1><span>HABIBI-SIEM</span> · 3D Experience Ring</h1>
+    <p class="sub">Thirteen linked modules spanning the full MITRE ATT&amp;CK kill chain — 3D environments, Cannon-es physics, multi-level progression, live leaderboards.</p>
+  </div>
+  <div class="section-label">Modules</div>
   <div class="grid" id="game-grid"></div>
-  <div class="tools">
-    <button type="button" id="btn-export-lb">Export pending leaderboard scores</button>
-    <button type="button" id="btn-sync-lb">Refresh leaderboards from GitHub JSON</button>
+  <div class="tools" style="margin-top:24px;">
+    <button type="button" id="btn-export-lb">Export leaderboard scores</button>
+    <button type="button" id="btn-sync-lb">Sync from GitHub</button>
   </div>
   <div id="deck-nav-root"></div>
   <script src="../assets/siem-core.js"></script>
@@ -36,41 +88,50 @@
   <script src="../assets/deck-nav.js"></script>
   <script>
   (function () {
+    SiemCore.bootPage('hub');
     var games = [
-      ['game1-terminal', 'The Terminal', 'CLI command center'],
-      ['game2-breach', 'The Breach', 'SOC alert triage'],
-      ['game3-network', 'Ghost Network', 'Topology & lateral movement'],
-      ['game4-cipher', 'The Cipher', 'Cryptanalysis workshop'],
-      ['game5-simulation', 'The Simulation', 'Kill chain timeline'],
-      ['game6-intercept', 'Interrogation Room', 'C2 decode & IOCs'],
-      ['game7-forge', 'The Forge', 'Detection rule smithy'],
-      ['game8-archive', 'Deep Archive', 'Log forensics vault'],
-      ['game9-heist', 'The Heist', 'Red team exfil planner'],
-      ['game10-lab', 'The Lab', 'Payload & detection lab'],
-      ['game11-cartography', 'Cartography', 'Threat globe'],
-      ['game12-memorial', 'The Memorial', 'Breach lessons wall'],
-      ['game13-resonance', 'Resonance', 'Detection mixer']
+      ['game1-terminal',    'The Terminal',         'CLI threat reconnaissance',         '#39ff14'],
+      ['game2-breach',      'The Breach',           'SOC incident triage',               '#ff4444'],
+      ['game3-network',     'Ghost Network',         'Topology & lateral movement',       '#00aaff'],
+      ['game4-cipher',      'The Cipher',           'Cryptanalysis workshop',            '#f5e642'],
+      ['game5-simulation',  'The Simulation',       'Kill chain timeline',               '#ff8800'],
+      ['game6-intercept',   'Interrogation Room',   'C2 decode & IOC extraction',        '#cc44ff'],
+      ['game7-forge',       'The Forge',            'Detection rule construction',        '#4ade80'],
+      ['game8-archive',     'Deep Archive',         'Log forensics vault',               '#22d3ee'],
+      ['game9-heist',       'The Heist',            'Red team exfil pathing',            '#f97316'],
+      ['game10-lab',        'The Lab',              'Payload & detection lab',           '#a78bfa'],
+      ['game11-cartography','Cartography',           'Threat intelligence globe',         '#34d399'],
+      ['game12-memorial',   'The Memorial',         'Breach post-mortem wall',           '#fb7185'],
+      ['game13-resonance',  'Resonance',            'Detection rule mixer',              '#2dd4bf']
     ];
+    var seqIds = ['the_terminal','the_breach','the_ghost_network','the_cipher','the_simulation',
+      'the_interrogation_room','the_forge','the_deep_archive','the_heist','the_lab',
+      'the_cartography','the_memorial','the_resonance'];
     var grid = document.getElementById('game-grid');
     games.forEach(function (g, i) {
+      var gameId = seqIds[i];
+      var locked = i > 0 && HabibiProgression && !HabibiProgression.isGameUnlocked(gameId);
       var a = document.createElement('a');
-      a.className = 'card';
+      a.className = 'card' + (locked ? ' locked' : '');
       a.href = g[0] + '/index.html';
-      var locked = i > 0 && HabibiProgression && !HabibiProgression.isGameUnlocked(
-        ['the_terminal','the_breach','the_ghost_network','the_cipher','the_simulation',
-         'the_interrogation_room','the_forge','the_deep_archive','the_heist','the_lab',
-         'the_cartography','the_memorial','the_resonance'][i]
-      );
-      a.innerHTML = '<h2>' + (locked ? '🔒 ' : '') + g[1] + '</h2><span>' + g[2] + '</span>';
+      a.style.setProperty('--card-accent', g[3]);
+      a.innerHTML =
+        '<span class="card-num">0' + (i + 1 < 10 ? '0' : '') + (i + 1) + '</span>' +
+        '<h2>' + g[1] + '</h2>' +
+        '<span class="card-sub">' + g[2] + '</span>' +
+        (locked ? '<span class="lock-badge">locked — complete previous module</span>' : '');
       grid.appendChild(a);
     });
     document.getElementById('btn-export-lb').onclick = function () {
-      if (HabibiLeaderboard.exportPendingJson) HabibiLeaderboard.exportPendingJson();
+      if (window.HabibiLeaderboard && HabibiLeaderboard.exportPendingJson) HabibiLeaderboard.exportPendingJson();
     };
     document.getElementById('btn-sync-lb').onclick = function () {
-      if (HabibiLeaderboard.syncAllFromManifest) HabibiLeaderboard.syncAllFromManifest().then(function () { alert('Leaderboards synced from GitHub JSON.'); });
+      if (window.HabibiLeaderboard && HabibiLeaderboard.syncAllFromManifest) {
+        HabibiLeaderboard.syncAllFromManifest().then(function () {
+          alert('Leaderboards synced.');
+        });
+      }
     };
-    SiemCore.bootPage('hub');
   })();
   </script>
   <script src="shared/narrative-engine.js"></script>

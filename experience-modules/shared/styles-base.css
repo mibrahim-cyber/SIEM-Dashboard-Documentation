@@ -315,6 +315,9 @@ html, body {
 .act-btn.sev-high { border-color: #ff8800; color: #ff8800; }
 .act-btn.sev-medium { border-color: #ffcc00; color: #ffcc00; }
 .act-btn.sev-low { border-color: #44ff88; color: #44ff88; }
+.act-btn.secondary { border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.45); font-size: 10px; }
+.act-btn.secondary:hover { border-color: rgba(255,255,255,0.4); color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.04); }
+.act-btn.secondary::before { display: none; }
 
 #skill-panel,
 #skill-sidebar {
@@ -368,6 +371,31 @@ html, body {
 #skill-list li:not(.locked):hover {
   border-color: var(--accent);
   background: rgba(255, 255, 255, 0.03);
+}
+
+.skill-item { display: flex; align-items: center; justify-content: space-between; }
+.skill-item.locked { opacity: 0.35; cursor: not-allowed; border-style: dashed; }
+
+.skill-name {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.skill-badge {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+
+.skill-item.locked .skill-badge {
+  color: rgba(255, 255, 255, 0.2);
 }
 
 #lb-section { padding-top: 8px; border-top: 1px solid var(--accent-dim); margin-top: 8px; }
@@ -562,6 +590,132 @@ html, body {
   background: rgba(0, 0, 0, 0.95);
   border: 1px solid var(--accent-dim);
   border-radius: var(--radius-lg);
+}
+
+.habibi-learn-wide { max-width: 560px; }
+
+.habibi-learn-card h3 {
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 18px;
+  font-weight: normal;
+}
+
+.habibi-learn-q {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.habibi-learn-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.habibi-learn-opt {
+  background: transparent;
+  border: 1px solid var(--accent-dim);
+  color: rgba(255, 255, 255, 0.55);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: all var(--transition);
+  letter-spacing: 0.5px;
+}
+
+.habibi-learn-opt:hover,
+.habibi-learn-opt.selected {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.habibi-learn-done {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: all var(--transition);
+  margin-top: 8px;
+}
+
+.habibi-learn-done:hover {
+  background: var(--accent);
+  color: #000;
+}
+
+.phase-title {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+  margin-bottom: 10px;
+}
+
+/* Range slider styling */
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--accent-dim);
+  border-radius: 2px;
+  outline: none;
+  margin: 8px 0;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 6px var(--accent-dim);
+}
+input[type=range]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+/* Checkbox styling */
+#action-btns input[type=checkbox] {
+  accent-color: var(--accent);
+  width: 13px;
+  height: 13px;
+  cursor: pointer;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+#action-btns label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  user-select: none;
+}
+#action-btns label:hover {
+  color: var(--accent);
+}
+#action-btns > div, #action-btns > label {
+  width: 100%;
 }
 
 ::-webkit-scrollbar { width: 4px; }

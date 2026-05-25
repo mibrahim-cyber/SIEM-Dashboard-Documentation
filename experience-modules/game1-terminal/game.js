@@ -307,26 +307,32 @@
   function onLevelTasksComplete() {
     levelState.completed = true;
     clearInterval(levelTimer);
-    HabibiProgression.markLevelComplete(GAME_ID, state.currentLevel, state);
+    var completedLv = state.currentLevel;
+    HabibiProgression.markLevelComplete(GAME_ID, completedLv, state);
     state = HabibiProgression.load(GAME_ID);
-    var rw = HabibiLearning.getRealWorldConnection(GAME_ID, state.currentLevel);
-    $('complete-title').textContent = 'Level ' + state.currentLevel + ' complete';
-    $('complete-msg').textContent = LEVELS[state.currentLevel].name + ' — all objectives satisfied.';
+    // state.currentLevel is now completedLv + 1; store completedLv for branch lookup
+    state._completedLv = completedLv;
+    var rw = HabibiLearning.getRealWorldConnection(GAME_ID, completedLv);
+    $('complete-title').textContent = 'Level ' + completedLv + ' complete';
+    $('complete-msg').textContent = (LEVELS[completedLv] && LEVELS[completedLv].name) + ' — all objectives satisfied.';
     $('complete-realworld').textContent = rw;
     $('level-complete').classList.remove('hidden');
-    if (state.currentLevel === 1 && HabibiLearning.CONCEPT_CHECKS.the_terminal[1]) {
+    if (completedLv === 1 && HabibiLearning.CONCEPT_CHECKS.the_terminal[1]) {
       HabibiLearning.showConceptCheckModal(HabibiLearning.CONCEPT_CHECKS.the_terminal[1]).then(function (res) {
         if (res && !res.skipped) HabibiLearning.recordConceptCheck(GAME_ID, 1, 'cli_why', res.correct);
       });
     }
-    unlockSkillsForLevel(state.currentLevel);
+    unlockSkillsForLevel(completedLv);
   }
 
   function onContinueAfterComplete() {
     $('level-complete').classList.add('hidden');
-    var def = LEVELS[state.currentLevel];
+    // Use _completedLv to get the branch from the level that was just finished,
+    // not the already-incremented state.currentLevel.
+    var branchLv = state._completedLv || state.currentLevel;
+    var def = LEVELS[branchLv];
     if (def && def.branch) {
-      showBranch(def.branch, 'level' + state.currentLevel);
+      showBranch(def.branch, 'level' + branchLv);
       return;
     }
     advanceLevelOrEpilogue();
@@ -353,16 +359,17 @@
   }
 
   function advanceLevelOrEpilogue() {
+    // state.currentLevel was already incremented by markLevelComplete —
+    // do NOT increment again; just play whatever currentLevel is now.
     if (state.currentLevel >= 5) {
       runEpilogue();
       return;
     }
-    state.currentLevel = Math.min(5, state.currentLevel + 1);
     HabibiProgression.save(GAME_ID, state);
     levelState = initLevelState(state.currentLevel);
     rebuildEnvironment();
     showLevelIntro(state.currentLevel);
-    if (LEVELS[state.currentLevel].timeLimit) startLevelTimer(LEVELS[state.currentLevel].timeLimit);
+    if (LEVELS[state.currentLevel] && LEVELS[state.currentLevel].timeLimit) startLevelTimer(LEVELS[state.currentLevel].timeLimit);
   }
 
   function runEpilogue() {
@@ -401,9 +408,13 @@
     clearInterval(levelTimer);
     levelTimer = setInterval(function () {
       levelSecondsLeft--;
-      $('hud-timer').textContent = formatTime(levelSecondsLeft);
+      var timerEl = $('hud-timer');
+      timerEl.textContent = formatTime(levelSecondsLeft);
+      if (levelSecondsLeft <= 30) timerEl.classList.add('urgent');
+      else timerEl.classList.remove('urgent');
       if (levelSecondsLeft <= 0) {
         clearInterval(levelTimer);
+        timerEl.classList.remove('urgent');
         appendOut('[TIME] Window expired — review pipeline efficiency and retry level.');
         levelState.taskIdx = 0;
       }

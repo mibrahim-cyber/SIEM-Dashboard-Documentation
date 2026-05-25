@@ -207,6 +207,9 @@
     },
     3: {
       timeLimit: 360,
+      wrongOrderFeedback: {
+        'BLOCK IP': 'Blocking before log investigation can hide attacker sequence. INVESTIGATE LOGS first.'
+      },
       steps: [
         {
           id: 'l3_step1_investigate',
@@ -234,14 +237,14 @@
           wrongFeedback: {
             default: 'Final containment for this flow is ISOLATE NODE on the compromised system.'
           }
-        },
-        wrongOrderFeedback: {
-          'BLOCK IP': 'Blocking before log investigation can hide attacker sequence. INVESTIGATE LOGS first.'
         }
       ]
     },
     4: {
       timeLimit: 420,
+      wrongOrderFeedback: {
+        'ISOLATE NODE': 'Isolating before log triage can sever needed telemetry. INVESTIGATE LOGS first.'
+      },
       steps: [
         {
           id: 'l4_step1_investigate',
@@ -269,9 +272,6 @@
           wrongFeedback: {
             default: 'Final response action is command-level notification. Choose ESCALATE.'
           }
-        },
-        wrongOrderFeedback: {
-          'ISOLATE NODE': 'Isolating before log triage can sever needed telemetry. INVESTIGATE LOGS first.'
         }
       ]
     }

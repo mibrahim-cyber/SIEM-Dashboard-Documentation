@@ -60808,7 +60808,7 @@ DioGuide.prototype.init = function () {
   window.addEventListener('habibi-game-complete', function (e) {
     if (e.detail && e.detail.gameId) self.onGameComplete(e.detail.gameId);
   });
-  window.addEventListener('resize', function () { self.applyLayout(); });
+  window.addEventListener('resize', function () { if (!self.isDodging) self.applyLayout(); });
 };
 
 DioGuide.prototype.buildDOM = function () {
@@ -60923,7 +60923,7 @@ DioGuide.prototype.dodge = function () {
     self.x = startX + (best.x - startX) * eased;
     self.y = startY + (best.y - startY) * eased;
     self.updatePosition();
-    if (t >= 1) clearInterval(moveInterval);
+    if (t >= 1) { clearInterval(moveInterval); self.onDodgeComplete(); }
   }, 16);
 };
 

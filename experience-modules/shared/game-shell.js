@@ -88,7 +88,8 @@
       if (this.levelState.taskIdx >= this.levelState.tasks.length) {
         this.onLevelTasksComplete();
       } else {
-        this.setTaskText(this.levelState.tasks[this.levelState.taskIdx]);
+        var nt = this.levelState.tasks[this.levelState.taskIdx];
+        this.setTaskText('Task ' + (this.levelState.taskIdx + 1) + '/' + this.levelState.tasks.length + ': ' + (nt.hint || nt.cmd || ''));
       }
     } else {
       HabibiProgression.logFailure(this.gameId, this.state.currentLevel, task.id || 'wrong', this.state);
@@ -103,24 +104,29 @@
     var self = this;
     this.levelState.completed = true;
     clearInterval(this.levelTimer);
-    HabibiProgression.markLevelComplete(this.gameId, this.state.currentLevel, this.state);
+    var completedLv = this.state.currentLevel;
+    this._completedLv = completedLv; // stash for branch lookup
+    HabibiProgression.markLevelComplete(this.gameId, completedLv, this.state);
     this.state = HabibiProgression.load(this.gameId);
-    var lv = this.state.currentLevel;
-    this.$('complete-title').textContent = 'Level ' + lv + ' complete';
-    this.$('complete-msg').textContent = (this.config.levels[lv] && this.config.levels[lv].name) || 'Objectives satisfied.';
-    this.$('complete-realworld').textContent = HabibiLearning.getRealWorldConnection(this.gameId, lv) || '';
+    // state.currentLevel is now completedLv + 1 — do NOT increment again in advanceLevel
+    this.$('complete-title').textContent = 'Level ' + completedLv + ' complete';
+    this.$('complete-msg').textContent = (this.config.levels[completedLv] && this.config.levels[completedLv].name) || 'Objectives satisfied.';
+    this.$('complete-realworld').textContent = HabibiLearning.getRealWorldConnection(this.gameId, completedLv) || '';
     this.$('level-complete').classList.remove('hidden');
-    this.unlockSkillsForLevel(lv);
-    if (this.config.onLevelComplete) this.config.onLevelComplete(lv, this);
+    this.unlockSkillsForLevel(completedLv);
+    if (this.config.onLevelComplete) this.config.onLevelComplete(completedLv, this);
   };
 
   GameShell.prototype.bindUI = function () {
     var self = this;
     this.$('btn-continue').addEventListener('click', function () {
       self.$('level-complete').classList.add('hidden');
-      var def = self.config.levels[self.state.currentLevel];
+      // Use _completedLv (the level just finished) to find the branch, not the
+      // already-incremented state.currentLevel which points to the NEXT level.
+      var branchLv = self._completedLv || self.state.currentLevel;
+      var def = self.config.levels[branchLv];
       if (def && def.branch) {
-        self.showBranch(def.branch, 'level' + self.state.currentLevel);
+        self.showBranch(def.branch, 'level' + branchLv);
       } else {
         self.advanceLevel();
       }
@@ -149,11 +155,12 @@
   };
 
   GameShell.prototype.advanceLevel = function () {
+    // state.currentLevel was already incremented by markLevelComplete inside
+    // onLevelTasksComplete — do NOT increment again here.
     if (this.state.currentLevel >= 5) {
       this.runEpilogue();
       return;
     }
-    this.state.currentLevel = Math.min(5, this.state.currentLevel + 1);
     HabibiProgression.save(this.gameId, this.state);
     this.rebuildScene();
     this.levelState = this.initLevelState(this.state.currentLevel);
@@ -218,9 +225,13 @@
     clearInterval(this.levelTimer);
     this.levelTimer = setInterval(function () {
       self.levelSecondsLeft--;
-      self.$('hud-timer').textContent = self.formatTime(self.levelSecondsLeft);
+      var timerEl = self.$('hud-timer');
+      timerEl.textContent = self.formatTime(self.levelSecondsLeft);
+      if (self.levelSecondsLeft <= 30) timerEl.classList.add('urgent');
+      else timerEl.classList.remove('urgent');
       if (self.levelSecondsLeft <= 0) {
         clearInterval(self.levelTimer);
+        timerEl.classList.remove('urgent');
         self.appendOut('[TIME] Level window expired — retry objectives.');
         self.levelState.taskIdx = 0;
       }
@@ -235,7 +246,7 @@
 
   GameShell.prototype.setTaskText = function (t) { this.$('task-text').textContent = t; };
   GameShell.prototype.appendOut = function (t) {
-    var el = this.$('term-out');
+    var el = this.$('term-out') || this.$('action-log');
     if (!el) return;
     el.textContent += t + '\n';
     el.scrollTop = el.scrollHeight;
@@ -297,7 +308,10 @@
     if (task.onSuccess) task.onSuccess(this);
     this.levelState.taskIdx++;
     if (this.levelState.taskIdx >= this.levelState.tasks.length) this.onLevelTasksComplete();
-    else this.setTaskText(this.levelState.tasks[this.levelState.taskIdx]);
+    else {
+      var nt = this.levelState.tasks[this.levelState.taskIdx];
+      this.setTaskText('Task ' + (this.levelState.taskIdx + 1) + '/' + this.levelState.tasks.length + ': ' + (nt.hint || nt.cmd || ''));
+    }
   };
 
   global.HabibiGameShell = GameShell;
