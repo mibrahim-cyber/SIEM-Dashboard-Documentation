@@ -337,7 +337,7 @@ var DIO_STORYLINE = {
 };
 
 var RECRUITER_SCRIPT = [
-  "Welcome. I am DIO. I will give you the 90-second overview.",
+  "I am DIO. 90-second overview.",
   "HABIBI-SIEM is a Security Operations Centre simulator built entirely in-browser.",
   "13 games. Each teaches one phase of real SOC work — from log analysis to malware sandboxing.",
   "Built with Three.js, Cannon-es physics, and a shared progression engine.",
@@ -346,7 +346,7 @@ var RECRUITER_SCRIPT = [
   "Game 6: The Interrogation Room. C2 communication decoding. MITRE T1071.",
   "Game 7: The Forge. Detection rule engineering. SIGMA and YARA.",
   "Game 11: The Cartography. Threat actor attribution. MITRE Groups.",
-  "Together the 13 games cover all 5 NIST CSF functions: Identify, Protect, Detect, Respond, Recover.",
+  "The 13 games span all 5 NIST CSF functions: Identify, Protect, Detect, Respond, Recover.",
   "The detection engine in the companion dashboard maps to STRIDE and MITRE ATT&CK.",
   "28 modules. 245 guides. One connected investigation across 13 playable experiences.",
   "That is HABIBI-SIEM. ZA WARUDO."
