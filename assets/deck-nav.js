@@ -136,7 +136,7 @@
 
   function resetWipeLayer() {
     wiping = false;
-    navigating = false;
+    // navigating is intentionally NOT reset here — finishNavigate and pageshow manage it
     wipeTargetHref = null;
     if (wipeFailSafe) {
       clearTimeout(wipeFailSafe);
@@ -148,7 +148,7 @@
       layer.style.opacity = '';
       layer.style.transition = '';
     }
-    setNavDisabled(false);
+    if (!navigating) setNavDisabled(false);
     dispatchNavEvent('deck-nav-wipe-end');
   }
 
@@ -171,9 +171,12 @@
       var key = String(href).replace(/^(\.\.\/)+/, '').split('?')[0];
       if (navMap[key]) window.SiemCore.AchievementSystem.check(navMap[key]);
     }
-    navigating = true;
+    navigating = true;        // lock before resetWipeLayer so buttons stay disabled
     resetWipeLayer();
-    setTimeout(function () { navigating = false; }, 1800);
+    setTimeout(function () {  // safety valve — clears the lock if navigation stalls
+      navigating = false;
+      setNavDisabled(false);
+    }, 2000);
     location.assign(href);
   }
 
@@ -221,7 +224,7 @@
 
   function radialWipeNavigate(href, originX, originY) {
     const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-    if (wiping || navigating || !href || now - navClickAt < 720) return;
+    if (wiping || navigating || !href || now - navClickAt < 800) return;
     navClickAt = now;
     wiping = true;
     wipeTargetHref = href;
@@ -331,7 +334,12 @@
     if (wipeFailSafe) clearTimeout(wipeFailSafe);
     wipeFailSafe = setTimeout(function () {
       if (wiping && wipeTargetHref) finishNavigate(wipeTargetHref);
-    }, 520);
+    }, 560);
+    function onEnd() {
+      layer.removeEventListener('transitionend', onEnd);
+      if (wiping && wipeTargetHref) finishNavigate(wipeTargetHref);
+    }
+    layer.addEventListener('transitionend', onEnd);
     requestAnimationFrame(function () { layer.style.opacity = '1'; });
   }
 
@@ -394,6 +402,7 @@
   addEventListener('resize', resizeWipe);
   addEventListener('pagehide', resetWipeLayer);
   addEventListener('pageshow', function () {
+    navigating = false; // bfcache restore: ensure lock is cleared on page re-show
     resetWipeLayer();
   });
   addEventListener('DOMContentLoaded', function () {
