@@ -41,6 +41,12 @@
     this.startLevelTimerIfNeeded(this.state.currentLevel);
     var inp = this.$('term-in');
     if (inp) inp.focus();
+    // Stop engine and timers when leaving the page
+    var self = this;
+    window.addEventListener('pagehide', function () {
+      clearInterval(self.levelTimer);
+      if (self.engine) self.engine.stop();
+    });
   };
 
   GameShell.prototype.initLevelState = function (levelNum) {

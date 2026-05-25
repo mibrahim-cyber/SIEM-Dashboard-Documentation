@@ -810,4 +810,13 @@ document.addEventListener('DOMContentLoaded', function () {
   window.DIO.init();
 });
 
+// Clean up timers/rAF on page unload to prevent cross-page leaks
+window.addEventListener('pagehide', function () {
+  if (window.DIO) {
+    if (window.DIO.animFrame)          { cancelAnimationFrame(window.DIO.animFrame); window.DIO.animFrame = null; }
+    if (window.DIO.levelTrackInterval) { clearInterval(window.DIO.levelTrackInterval); window.DIO.levelTrackInterval = null; }
+    if (window.DIO.autoAdvanceTimer)   { clearTimeout(window.DIO.autoAdvanceTimer);   window.DIO.autoAdvanceTimer = null; }
+  }
+});
+
 })(typeof window !== 'undefined' ? window : globalThis);

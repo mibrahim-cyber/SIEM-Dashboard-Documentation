@@ -118,6 +118,9 @@
   GameEngineBase.prototype.stop = function () {
     this._running = false;
     window.removeEventListener('resize', this._onResize);
+    if (this.renderer) {
+      try { this.renderer.dispose(); } catch (_) {}
+    }
   };
 
   GameEngineBase.prototype.addFloor = function (w, h, color) {

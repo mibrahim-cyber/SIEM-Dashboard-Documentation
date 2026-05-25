@@ -76,6 +76,12 @@
     rightLabel: 'Observation Deck',
   };
 
+  // Utility pages — single back-arrow to Observation Deck
+  PAGE_ROUTES['debrief']  = { left: 'brain/index.html', right: null, leftLabel: 'Observation Deck' };
+  PAGE_ROUTES['trophy']   = { left: 'brain/index.html', right: null, leftLabel: 'Observation Deck' };
+  PAGE_ROUTES['motd']     = { left: 'brain/index.html', right: null, leftLabel: 'Observation Deck' };
+  PAGE_ROUTES['read']     = { left: 'brain/index.html', right: null, leftLabel: 'Observation Deck' };
+
   const CHEVRON_LEFT =
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
   const CHEVRON_RIGHT =
