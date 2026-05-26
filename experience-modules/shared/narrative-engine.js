@@ -104,6 +104,11 @@
   };
 
   NarrativeEngine.prototype.showUnlockBanner = function (nextGameName, nextGameUrl) {
+    /* Resolve site-root relative URL against current page depth */
+    var resolvedUrl = (window.SiemCore && window.SiemCore.resolveSiteHref)
+      ? window.SiemCore.resolveSiteHref(nextGameUrl)
+      : nextGameUrl;
+    nextGameUrl = resolvedUrl;
     var existing = document.getElementById('habibi-unlock-banner');
     if (existing) existing.remove();
     var banner = document.createElement('div');

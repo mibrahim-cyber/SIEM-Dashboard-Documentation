@@ -1,7 +1,7 @@
 /**
  * Meridian-7 service worker — offline cache for core assets
  */
-const CACHE = 'meridian7-v19.0';
+const CACHE = 'meridian7-v19.1';
 const PRECACHE = [
   'index.html',
   '404.html',
@@ -126,14 +126,21 @@ self.addEventListener('fetch', function (event) {
 
   event.respondWith(
     caches.match(event.request).then(function (cached) {
-      var fetchPromise = fetch(event.request).then(function (res) {
-        if (res && res.status === 200) {
-          var clone = res.clone();
-          caches.open(CACHE).then(function (c) { c.put(event.request, clone); });
-        }
-        return res;
-      }).catch(function () { return cached; });
-      return cached || fetchPromise;
+      /* Versioned assets (e.g. deck-nav.js?v=16.1) may not be in the precache under
+         the versioned URL — fall back to the unversioned precache entry offline. */
+      var exactOrFallback = cached || (url.search
+        ? caches.match(event.request, { ignoreSearch: true })
+        : Promise.resolve(null));
+      return Promise.resolve(exactOrFallback).then(function (hit) {
+        var fetchPromise = fetch(event.request).then(function (res) {
+          if (res && res.status === 200) {
+            var clone = res.clone();
+            caches.open(CACHE).then(function (c) { c.put(event.request, clone); });
+          }
+          return res;
+        }).catch(function () { return hit; });
+        return hit || fetchPromise;
+      });
     })
   );
 });
