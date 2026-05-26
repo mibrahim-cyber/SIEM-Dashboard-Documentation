@@ -174,7 +174,7 @@ DioSprite.prototype._ensureStyles = function () {
     '#dio-svg-char.dio-idle{animation:dioBreath 3s ease-in-out infinite;transform-origin:50px 85px}' +
     '#dio-svg-char.dio-talk #dio-mouth-open{opacity:1;animation:dioMouthPulse 0.4s steps(1) infinite}' +
     '#dio-svg-char.dio-talk #dio-mouth-c{opacity:0}' +
-    '#dio-svg-char.dio-point #dio-right-arm{transform-origin:78px 96px;animation:dioArmRaise 1.2s ease-in-out forwards}' +
+    '#dio-svg-char.dio-point #dio-right-arm{transform-origin:78px 99px;animation:dioArmRaise 1.2s ease-in-out forwards}' +
     '#dio-svg-char.dio-dodge{animation:dioDodge 0.4s ease-out forwards;transform-origin:50px 86px}' +
     '#dio-svg-char.dio-zawarudo{animation:dioZaWarudo 1.6s ease-out forwards}';
   document.head.appendChild(s);
@@ -188,76 +188,81 @@ DioSprite.prototype._buildSVG = function () {
   this.svg.setAttribute('height', '170');
   this.svg.id = 'dio-svg-char';
   this.svg.innerHTML =
-    /* Hair back shadow — darker gold, gives depth behind the main volume */
-    '<path d="M33,62 C16,48 12,20 30,4 C38,-1 50,1 50,1 C42,16 38,42 37,60Z" fill="#C8A000"/>' +
-    '<path d="M67,62 C84,48 88,20 70,4 C62,-1 50,1 50,1 C58,16 62,42 63,60Z" fill="#C8A000"/>' +
-    /* Main hair mass — bright gold, swept dramatically upward */
-    '<path d="M37,60 C34,28 44,-3 50,0 C56,-3 66,28 63,60 C59,51 55,47 50,47 C45,47 41,51 37,60Z" fill="#FFE000"/>' +
-    /* Hair top highlights and spike */
-    '<path d="M42,5 C42,-4 58,-4 58,5 C54,1 50,0 46,5Z" fill="#FFF080"/>' +
-    '<path d="M48,1 C47,-8 53,-8 52,1 C51,-4 49,-4 48,1Z" fill="#FFEE00"/>' +
-    '<path d="M39,30 C40,18 44,8 47,3" stroke="#D4A000" stroke-width="1" fill="none" opacity="0.5"/>' +
-    '<path d="M61,30 C60,18 56,8 53,3" stroke="#D4A000" stroke-width="1" fill="none" opacity="0.5"/>' +
-    /* Headband — gold band with diamond gem */
-    '<rect x="34" y="49" width="32" height="5.5" rx="2.5" fill="#C8A020"/>' +
-    '<rect x="34" y="49" width="32" height="2" rx="1" fill="#FFD700" opacity="0.4"/>' +
-    '<polygon points="50,47 54.5,51.5 50,56 45.5,51.5" fill="#00EE60" stroke="#00AA44" stroke-width="0.5"/>' +
-    '<polygon points="50,48.5 53,51.5 50,54.5 47,51.5" fill="#66FFB8" opacity="0.45"/>' +
-    /* Face — aristocratic pale, angular jaw */
-    '<ellipse cx="50" cy="65" rx="14" ry="17" fill="#F2D898"/>' +
-    '<path d="M36,70 Q40,82 50,85 Q60,82 64,70" stroke="#D4A060" stroke-width="0.5" fill="none" opacity="0.35"/>' +
-    '<ellipse cx="42" cy="62" rx="4" ry="2.5" fill="#FFF4D8" opacity="0.38" transform="rotate(-12,42,62)"/>' +
-    '<ellipse cx="58" cy="62" rx="4" ry="2.5" fill="#FFF4D8" opacity="0.38" transform="rotate(12,58,62)"/>' +
-    /* Eyebrows — sharp, angled inward for menace */
-    '<path d="M35,57 Q40,54 46,56.5" stroke="#7A5010" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-    '<path d="M65,57 Q60,54 54,56.5" stroke="#7A5010" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-    /* Eyes — violet, intense */
-    '<ellipse cx="42" cy="62" rx="5.5" ry="4.5" fill="#7730C0"/>' +
-    '<ellipse cx="42" cy="62" rx="3.5" ry="3" fill="#5518A0"/>' +
-    '<ellipse cx="42" cy="62" rx="2" ry="2" fill="#0A0020"/>' +
-    '<ellipse cx="40.5" cy="60.5" rx="1.3" ry="0.9" fill="white" opacity="0.85"/>' +
-    '<ellipse cx="42" cy="62" rx="5.5" ry="4.5" fill="none" stroke="#1A0040" stroke-width="0.8"/>' +
-    '<ellipse cx="58" cy="62" rx="5.5" ry="4.5" fill="#7730C0"/>' +
-    '<ellipse cx="58" cy="62" rx="3.5" ry="3" fill="#5518A0"/>' +
-    '<ellipse cx="58" cy="62" rx="2" ry="2" fill="#0A0020"/>' +
-    '<ellipse cx="56.5" cy="60.5" rx="1.3" ry="0.9" fill="white" opacity="0.85"/>' +
-    '<ellipse cx="58" cy="62" rx="5.5" ry="4.5" fill="none" stroke="#1A0040" stroke-width="0.8"/>' +
+    /* ── HAIR ─────────────────────────────────────────────────────────
+       Outer silhouette (dark gold) — wide dramatic crown shape
+       Inner layer (bright gold) — front-facing lighter section
+       All y-coords positive so nothing is clipped by the viewBox     */
+    '<polygon points="28,52 18,36 13,20 22,9 34,4 50,3 66,4 78,9 87,20 82,36 72,52" fill="#C8A000"/>' +
+    '<polygon points="35,52 28,36 26,20 33,11 44,6 50,4 56,6 67,11 74,20 72,36 65,52" fill="#FFE000"/>' +
+    /* Bright highlight at the crown spike */
+    '<polygon points="50,4 44,13 50,10 56,13" fill="#FFF080"/>' +
+    /* Subtle texture lines down each side */
+    '<line x1="30" y1="46" x2="24" y2="14" stroke="#D4A000" stroke-width="1" opacity="0.35"/>' +
+    '<line x1="70" y1="46" x2="76" y2="14" stroke="#D4A000" stroke-width="1" opacity="0.35"/>' +
+    /* ── HEADBAND ──────────────────────────────────────────────────── */
+    '<rect x="34" y="50" width="32" height="5" rx="2.5" fill="#C8A020"/>' +
+    '<rect x="34" y="50" width="32" height="2" rx="1" fill="#FFD700" opacity="0.4"/>' +
+    /* Diamond gem */
+    '<polygon points="50,48 55,52.5 50,57 45,52.5" fill="#00EE60" stroke="#00AA44" stroke-width="0.5"/>' +
+    '<polygon points="50,49.5 54,52.5 50,55.5 46,52.5" fill="#88FFB8" opacity="0.45"/>' +
+    /* ── FACE ──────────────────────────────────────────────────────── */
+    '<ellipse cx="50" cy="68" rx="14" ry="17" fill="#F2D898" stroke="#2A1400" stroke-width="0.4"/>' +
+    /* Jaw sharpening line */
+    '<path d="M36,73 Q40,83 50,86 Q60,83 64,73" stroke="#D4A060" stroke-width="0.5" fill="none" opacity="0.3"/>' +
+    /* Eyebrows — strong, angled inward */
+    '<path d="M35,60 Q40,57 46,59" stroke="#7A5010" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+    '<path d="M65,60 Q60,57 54,59" stroke="#7A5010" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+    /* Left eye */
+    '<ellipse cx="42" cy="66" rx="5.5" ry="4.5" fill="#7730C0"/>' +
+    '<ellipse cx="42" cy="66" rx="3.5" ry="3" fill="#5518A0"/>' +
+    '<ellipse cx="42" cy="66" rx="2" ry="2" fill="#080018"/>' +
+    '<ellipse cx="40.5" cy="64.5" rx="1.3" ry="0.9" fill="white" opacity="0.9"/>' +
+    '<ellipse cx="42" cy="66" rx="5.5" ry="4.5" fill="none" stroke="#1A0040" stroke-width="0.8"/>' +
+    /* Right eye */
+    '<ellipse cx="58" cy="66" rx="5.5" ry="4.5" fill="#7730C0"/>' +
+    '<ellipse cx="58" cy="66" rx="3.5" ry="3" fill="#5518A0"/>' +
+    '<ellipse cx="58" cy="66" rx="2" ry="2" fill="#080018"/>' +
+    '<ellipse cx="56.5" cy="64.5" rx="1.3" ry="0.9" fill="white" opacity="0.9"/>' +
+    '<ellipse cx="58" cy="66" rx="5.5" ry="4.5" fill="none" stroke="#1A0040" stroke-width="0.8"/>' +
     /* Nose */
-    '<path d="M47,71 Q50,74 53,71" stroke="#C89040" stroke-width="0.9" fill="none" stroke-linecap="round"/>' +
-    /* Mouth closed (default) */
-    '<path id="dio-mouth-c" d="M44,78 Q50,81 56,78" stroke="#8B2020" stroke-width="1.2" fill="none" stroke-linecap="round"/>' +
-    /* Mouth open (talk animation reveals this) */
+    '<path d="M47,74 Q50,77 53,74" stroke="#C89040" stroke-width="0.9" fill="none" stroke-linecap="round"/>' +
+    /* Mouth — closed default */
+    '<path id="dio-mouth-c" d="M44,80 Q50,83 56,80" stroke="#8B2020" stroke-width="1.2" fill="none" stroke-linecap="round"/>' +
+    /* Mouth — open (talk animation) */
     '<g id="dio-mouth-open" opacity="0">' +
-      '<path d="M44,77 Q50,74 56,77 Q56,84 50,85.5 Q44,84 44,77Z" fill="#8B0000"/>' +
-      '<rect x="46" y="77" width="3.5" height="3" rx="0.5" fill="#F0F0E0"/>' +
-      '<rect x="50.5" y="77" width="3.5" height="3" rx="0.5" fill="#F0F0E0"/>' +
-      '<path d="M44,80 Q50,82 56,80" stroke="#660000" stroke-width="0.5" fill="none"/>' +
+      '<path d="M44,79 Q50,76 56,79 Q56,86 50,87.5 Q44,86 44,79Z" fill="#8B0000"/>' +
+      '<rect x="46" y="79" width="3.5" height="3" rx="0.5" fill="#F0F0E0"/>' +
+      '<rect x="50.5" y="79" width="3.5" height="3" rx="0.5" fill="#F0F0E0"/>' +
+      '<path d="M44,82 Q50,84 56,82" stroke="#660000" stroke-width="0.5" fill="none"/>' +
     '</g>' +
-    /* Neck */
-    '<rect x="44" y="82" width="12" height="9" fill="#E8C870"/>' +
-    '<path d="M34,89 Q44,86 50,86 Q56,86 66,89" stroke="#C8A020" stroke-width="2.5" fill="none"/>' +
-    /* Coat body — dark purple/black with gold ornate trim */
-    '<path d="M28,91 C20,97 17,130 15,168 L85,168 C83,130 80,97 72,91 C62,87 38,87 28,91Z" fill="#1A0A2E"/>' +
-    '<path d="M44,91 L43,168 L57,168 L56,91 Q50,88 44,91Z" fill="#241640"/>' +
-    '<path d="M44,91 Q36,96 29,112 Q24,128 26,152" stroke="#C8A020" stroke-width="1.8" fill="none"/>' +
-    '<path d="M56,91 Q64,96 71,112 Q76,128 74,152" stroke="#C8A020" stroke-width="1.8" fill="none"/>' +
-    '<path d="M50,86 L50,168" stroke="#C8A020" stroke-width="0.8" opacity="0.45"/>' +
-    '<circle cx="50" cy="97" r="2.5" fill="#C8A020" opacity="0.65"/>' +
-    '<circle cx="50" cy="108" r="2" fill="#C8A020" opacity="0.45"/>' +
-    '<path d="M15,168 L85,168" stroke="#C8A020" stroke-width="1.5" fill="none"/>' +
-    /* Left arm (static) */
-    '<path d="M22,97 C16,115 15,138 18,155" stroke="#1A0A2E" stroke-width="11" stroke-linecap="round" fill="none"/>' +
-    '<path d="M22,97 C16,115 15,138 18,155" stroke="#C8A020" stroke-width="1.2" stroke-linecap="round" fill="none"/>' +
-    '<ellipse cx="18" cy="156" rx="5.5" ry="3.5" fill="#C8A020"/>' +
-    '<ellipse cx="18" cy="161" rx="5" ry="5" fill="#E8C870"/>' +
-    /* Right arm (raises during point animation) */
+    /* ── NECK ──────────────────────────────────────────────────────── */
+    '<rect x="44" y="85" width="12" height="8" fill="#E8C870" stroke="#2A1400" stroke-width="0.4"/>' +
+    '<path d="M34,91 Q44,88 50,88 Q56,88 66,91" stroke="#C8A020" stroke-width="2.5" fill="none"/>' +
+    /* ── COAT ──────────────────────────────────────────────────────── */
+    '<path d="M28,93 C20,99 17,132 15,168 L85,168 C83,132 80,99 72,93 C62,89 38,89 28,93Z" fill="#1A0A2E" stroke="#0A0015" stroke-width="0.5"/>' +
+    /* Centre shirt strip */
+    '<path d="M44,93 L43,168 L57,168 L56,93 Q50,90 44,93Z" fill="#241640"/>' +
+    /* Gold lapel trim */
+    '<path d="M44,93 Q36,98 29,114 Q24,130 26,154" stroke="#C8A020" stroke-width="1.8" fill="none"/>' +
+    '<path d="M56,93 Q64,98 71,114 Q76,130 74,154" stroke="#C8A020" stroke-width="1.8" fill="none"/>' +
+    /* Centre seam + buttons */
+    '<line x1="50" y1="88" x2="50" y2="168" stroke="#C8A020" stroke-width="0.8" opacity="0.45"/>' +
+    '<circle cx="50" cy="99" r="2.5" fill="#C8A020" opacity="0.65"/>' +
+    '<circle cx="50" cy="110" r="2" fill="#C8A020" opacity="0.45"/>' +
+    /* Hem */
+    '<line x1="15" y1="168" x2="85" y2="168" stroke="#C8A020" stroke-width="1.5"/>' +
+    /* ── LEFT ARM ──────────────────────────────────────────────────── */
+    '<path d="M22,99 C16,117 15,139 18,156" stroke="#1A0A2E" stroke-width="11" stroke-linecap="round" fill="none"/>' +
+    '<path d="M22,99 C16,117 15,139 18,156" stroke="#C8A020" stroke-width="1.2" stroke-linecap="round" fill="none"/>' +
+    '<ellipse cx="18" cy="157" rx="5.5" ry="3.5" fill="#C8A020"/>' +
+    '<ellipse cx="18" cy="162" rx="5" ry="5" fill="#E8C870"/>' +
+    /* ── RIGHT ARM (animates on point) ────────────────────────────── */
     '<g id="dio-right-arm">' +
-      '<path d="M78,97 C84,115 85,138 82,155" stroke="#1A0A2E" stroke-width="11" stroke-linecap="round" fill="none"/>' +
-      '<path d="M78,97 C84,115 85,138 82,155" stroke="#C8A020" stroke-width="1.2" stroke-linecap="round" fill="none"/>' +
-      '<ellipse cx="82" cy="156" rx="5.5" ry="3.5" fill="#C8A020"/>' +
-      '<ellipse cx="82" cy="161" rx="5" ry="5" fill="#E8C870"/>' +
-      /* Extended pointing finger (visible when arm is raised) */
-      '<line x1="82" y1="158" x2="86" y2="148" stroke="#E8C870" stroke-width="3.5" stroke-linecap="round"/>' +
+      '<path d="M78,99 C84,117 85,139 82,156" stroke="#1A0A2E" stroke-width="11" stroke-linecap="round" fill="none"/>' +
+      '<path d="M78,99 C84,117 85,139 82,156" stroke="#C8A020" stroke-width="1.2" stroke-linecap="round" fill="none"/>' +
+      '<ellipse cx="82" cy="157" rx="5.5" ry="3.5" fill="#C8A020"/>' +
+      '<ellipse cx="82" cy="162" rx="5" ry="5" fill="#E8C870"/>' +
+      '<line x1="82" y1="160" x2="87" y2="150" stroke="#E8C870" stroke-width="3.5" stroke-linecap="round"/>' +
     '</g>';
   this.container.appendChild(this.svg);
   this.playAnimation('idle');
