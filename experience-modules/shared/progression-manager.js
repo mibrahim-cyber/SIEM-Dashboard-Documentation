@@ -114,7 +114,7 @@
   }
 
   function isGameUnlocked(gameId) {
-    return load(gameId).unlocked;
+    return true; // all games always accessible
   }
 
   function getCarriedStoryContext(fromGameId) {
