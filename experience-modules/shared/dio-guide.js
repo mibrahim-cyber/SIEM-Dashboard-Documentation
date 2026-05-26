@@ -1,209 +1,8 @@
 (function (global) {
 'use strict';
 
-var DIO_PALETTE = {
-  SKIN:           '#F0C070',
-  SKIN_SHADOW:    '#C89040',
-  SKIN_DARK:      '#A06830',
-  OUTLINE:        '#0A0008',
-  HAIR_BRIGHT:    '#FFE800',
-  HAIR_MID:       '#D4B800',
-  HAIR_DARK:      '#A08A00',
-  HAIR_SHADOW:    '#6A5C00',
-  GEM_GREEN:      '#00FF66',
-  GEM_DARK:       '#00AA44',
-  BAND_GOLD:      '#C8A020',
-  COAT_DARK:      '#1A0A2E',
-  COAT_MID:       '#2A1A4A',
-  COAT_LIGHT:     '#3D2A6A',
-  GOLD_TRIM:      '#C8A020',
-  GOLD_BRIGHT:    '#FFD700',
-  EYE_PURPLE:     '#8040C0',
-  EYE_BRIGHT:     '#AA66FF',
-  EYE_WHITE:      '#FFFFFF',
-  EYE_DARK:       '#401880',
-  TOOTH:          '#F0F0E8',
-  TOOTH_SHADOW:   '#C8C8B8',
-  LIP_DARK:       '#8B2020',
-  TONGUE:         '#CC4444',
-  SHIRT:          '#F0E8D0',
-  SHADOW:         '#0A0412',
-  TRANSPARENT:    null
-};
 
-/* ─── Compact pixel encoder ─────────────────────────────────────────────
-   Each character maps to a DIO_PALETTE key. '.' = transparent.
-   _r() pads/truncates any string to exactly 32 columns.
-   _f() turns 48 strings into a full frame (48×32 array).
-   _mod() returns a shallow-copy of a frame array with specific rows replaced.
-─────────────────────────────────────────────────────────────────────── */
-var _PC = {
-  '.':null,'O':'OUTLINE','H':'HAIR_BRIGHT','M':'HAIR_MID','D':'HAIR_DARK','S':'HAIR_SHADOW',
-  'K':'SKIN','T':'SKIN_SHADOW','U':'SKIN_DARK','G':'GEM_GREEN','g':'GEM_DARK','B':'BAND_GOLD',
-  'C':'COAT_DARK','c':'COAT_MID','L':'COAT_LIGHT','R':'GOLD_TRIM','F':'GOLD_BRIGHT',
-  'E':'EYE_PURPLE','P':'EYE_BRIGHT','W':'EYE_WHITE','e':'EYE_DARK',
-  'Y':'TOOTH','X':'LIP_DARK','Z':'TONGUE','N':'SHIRT','A':'SHADOW'
-};
-function _r(s) {
-  s = s.replace(/О/g, 'O'); // normalize Cyrillic lookalike → Latin O
-  while (s.length < 32) s += '.';
-  return s.substring(0, 32).split('').map(function(c) {
-    return (_PC[c] !== undefined) ? _PC[c] : null;
-  });
-}
-function _f(rows) {
-  var out = [];
-  for (var i = 0; i < 48; i++) out.push(_r(rows[i] || ''));
-  return out;
-}
-function _mod(base, changes) {
-  var frame = base.slice();
-  for (var i = 0; i < changes.length; i++) frame[changes[i][0]] = changes[i][1];
-  return frame;
-}
 
-/* ─── Base sprite rows (32 cols × 48 rows) ───────────────────────────────
-   DIO BRANDO — JoJo Part 1 anime style
-   Layout:
-     Rows  0-15 : Dramatic upward golden hair  (16 rows)
-     Row   16   : Heart headband + green gem
-     Rows 17-28 : Face (forehead / eyes / nose / mouth / chin)
-     Rows 29-31 : Neck
-     Rows 32-47 : Ornate dark coat with gold trim
-─────────────────────────────────────────────────────────────────────── */
-var _BASE = [
-/* 0 */ "..............OMMO",
-/* 1 */ ".............OMHMO",
-/* 2 */ ".............OMHHMO",
-/* 3 */ "............OMHHHMO",
-/* 4 */ ".....OOMOO..OMHHHMO..OOMOO.",
-/* 5 */ "....OMHMO..OMHHHHHMO.OMHMO.",
-/* 6 */ "...OMHHMO..OMHHHHHMO.OMHHMO",
-/* 7 */ "..OMHHHMO.OMHHHHHHHMO.OMHHHMO",
-/* 8 */ ".OMHHHHMOOMHHHHHHHHHHMOOMHHHMO",
-/* 9 */ "OMHHHHMMMHHHHHHHHHHHHMMMHHHHHMO",
-/*10 */ "OMHHHMMMMHHDDDDDDDDHHMMMHHHHMMO",
-/*11 */ ".OMHHHMMMDDDDDDDDDDDMMMHHHHMMO.",
-/*12 */ "..OMHHMMMDDDDSSSSDDDDMMMHHHMMOO",
-/*13 */ "...OMHMMMDDSSSSSSSSDDDMMHHMOO",
-/*14 */ "....OMMDDSSSSSSSSSSDDDMMMOO",
-/*15 */ ".....OMDSSSSSSSSSSSSDMOO",
-/* HEADBAND */
-/*16 */ ".....OBBBBBBBBgGgBBBBBBBBO",
-/* FACE */
-/*17 */ "........OKKKKKKKKKKKKKKO",
-/*18 */ "........OKKKKKKKKKKKKKKO",
-/*19 */ "........OKDDKKKKKDDKKKKO",
-/*20 */ "........OKOEEOKKKOEEOKKО",
-/*21 */ "........OKOWEOKKKOEWOKKO",
-/*22 */ "........OKOEEOKKKOEEOKKО",
-/*23 */ "........OKKKKTTKKKKKKKO",
-/*24 */ "........OKKKKKKKKKKKKKO",
-/*25 */ "........OKKOXXXXXXOKKKKO",
-/*26 */ "........OKKOYYYYYYOKKKKO",
-/*27 */ "........OKKOXXXXXXOKKKKO",
-/*28 */ "........OKKKKKKKKKKKKKKO",
-/* NECK */
-/*29 */ ".........OKKKKKKKKKKKO",
-/*30 */ "..........OCRRRRRRRCOO",
-/*31 */ "..........OCRRRRRRRCOO",
-/* COAT */
-/*32 */ ".........OCRLRRLRRLCO",
-/*33 */ "........OCCLRRRRRRLLCCO",
-/*34 */ ".......OCCCLcccccLCCCO",
-/*35 */ "......OCCCLLccccLLCCCO",
-/*36 */ ".....OCCCLLLccccLLLCCCO",
-/*37 */ "....OCCCCLLLcccLLLCCCCO",
-/*38 */ "...OCCCCLLLLcccLLLLCCCCO",
-/*39 */ "..OCCCCLLLLccccccLLLLCCCCO",
-/*40 */ ".OCCCCLLLLcccccccccLLLLCCCCO",
-/*41 */ "OCCCCLLLLcccccccccccLLLLCCCCO",
-/*42 */ "OCCCCLLLLcccccccccccLLLLCCCCO",
-/*43 */ "OCCCCLLLLcccccccccccLLLLCCCCO",
-/*44 */ ".OCCCLLLcccccccccccccLLLCCCO",
-/*45 */ "..OCCLLLcccccccccccccLLLCCO",
-/*46 */ "...OCCLcccccccccccccccLCCO",
-/*47 */ "....OOOOOOOOOOOOOOOOOOOOO"
-];
-
-/* ─── Animation variants (only rows that differ from _BASE) ─────────── */
-
-/* IDLE frame 1 — subtle breathing (hair tip 1 px taller) */
-var _IDLE1 = _mod(_BASE, [
-  [0, "..............OOMMO"],
-  [1, ".............OOMHMO"]
-]);
-
-/* TALK — mouth open */
-var _TALK_OPEN = _mod(_BASE, [
-  [25, "........OKKOCCCCCCOKKKKО"],
-  [26, "........OKKOYYYYZYOKKKKO"],
-  [27, "........OKKOCCCCCCOKKKKО"]
-]);
-
-/* WALK frame 1 — slight right lean */
-var _WALK1 = _mod(_BASE, [
-  [44, "OCCCLLLcccccccccccccLLLCCCO"],
-  [45, ".OCCLLLcccccccccccccLLLCCO"],
-  [46, "..OCCLcccccccccccccccLCCO"],
-  [47, "...OOOOOOOOOOOOOOOOOOOOOOO"]
-]);
-/* WALK frame 2 — slight left lean */
-var _WALK2 = _mod(_BASE, [
-  [44, "...OCCCLLLcccccccccccLLLCCCO"],
-  [45, "....OCCLLLcccccccccccLLLCCO"],
-  [46, ".....OCCLcccccccccccccLCCO"],
-  [47, "......OOOOOOOOOOOOOOOOOOOOO"]
-]);
-
-/* DODGE — body tilt suggests rapid sidestep */
-var _DODGE1 = _mod(_BASE, [
-  [37, "......OCCCCLLLcccLLLCCCCO"],
-  [38, ".....OCCCCLLLLcccLLLLCCCCO"],
-  [39, "....OCCCCLLLLccccccLLLLCCCCO"],
-  [40, "...OCCCCLLLLcccccccccLLLLCCCCO"],
-  [41, "..OCCCCLLLLcccccccccccLLLLCCCCO"],
-  [42, "..OCCCCLLLLcccccccccccLLLLCCCCO"],
-  [43, "..OCCCCLLLLcccccccccccLLLLCCCCO"]
-]);
-
-/* ZA WARUDO — intense, wide-eyed dramatic face */
-var _ZAWARUDO1 = _mod(_BASE, [
-  [19, "........ODDDDKKKKKDDDDKKO"],
-  [20, "........OOEEEOKKKOEEEОKKO"],
-  [21, "........OOWEEPKKWEEPOKKО"],
-  [22, "........OOEEEOKKKOEEEОKKO"],
-  [25, "........OKKOOOOOOOOOKKKKО"],
-  [26, "........OKKOZYYYYYZOKKKKO"],
-  [27, "........OKKOOOOOOOOOKKKKО"]
-]);
-var _ZAWARUDO2 = _mod(_ZAWARUDO1, [
-  [0,  ".............OOMMO"],
-  [1,  "............OOMHMO"],
-  [4,  "....OOMMOO.OMHHHMO..OOMMOO"],
-  [5,  "...OOMHMO..OMHHHHHMO.OOMHMO"]
-]);
-var _ZAWARUDO3 = _mod(_ZAWARUDO1, [
-  [0,  "..............OMMO"],
-  [1,  ".............OMHMO"],
-  [4,  ".....OOMOO..OMHHHMO..OOMOO."]
-]);
-
-/* POINT — same as base (pointing is in speech text, sprite stays iconic) */
-var _POINT1 = _BASE;
-
-/* HOVER — alternates with idle (float effect via JS transform) */
-var _HOVER1 = _BASE;
-var _HOVER2 = _IDLE1;
-
-/* ─── Animation sets ─────────────────────────────────────────────────── */
-var IDLE_FRAMES      = [_f(_BASE),       _f(_IDLE1)];
-var TALK_FRAMES      = [_f(_BASE),       _f(_TALK_OPEN)];
-var WALK_FRAMES      = [_f(_WALK1),      _f(_WALK2)];
-var DODGE_FRAMES     = [_f(_BASE),       _f(_DODGE1)];
-var POINT_FRAMES     = [_f(_BASE),       _f(_POINT1)];
-var ZA_WARUDO_FRAMES = [_f(_ZAWARUDO1),  _f(_ZAWARUDO2), _f(_ZAWARUDO3)];
-var HOVER_FRAMES     = [_f(_HOVER1),     _f(_HOVER2)];
 
 /* ─── Dialogue scripts ───────────────────────────────────────────────── */
 var DIO_STORYLINE = {
@@ -352,70 +151,140 @@ var RECRUITER_SCRIPT = [
   "That is HABIBI-SIEM. ZA WARUDO."
 ];
 
-/* ─── DioSprite ──────────────────────────────────────────────────────── */
-function DioSprite(canvas) {
-  this.canvas = canvas;
-  this.ctx = canvas.getContext('2d');
-  this.pixelSize = 4;
-  this.gridW = 32;
-  this.gridH = 48;
+/* ─── DioSprite (SVG + CSS animations) ──────────────────────────────── */
+function DioSprite(container) {
+  this.container = container;
   this.currentAnimation = 'idle';
-  this.currentFrame = 0;
-  this.frameTimer = 0;
   this.guide = null;
-  this.animations = {
-    idle:      { frames: IDLE_FRAMES,      loop: true,  fps: 4  },
-    walk:      { frames: WALK_FRAMES,      loop: true,  fps: 10 },
-    point:     { frames: POINT_FRAMES,     loop: false, fps: 8  },
-    dodge:     { frames: DODGE_FRAMES,     loop: false, fps: 16 },
-    talk:      { frames: TALK_FRAMES,      loop: true,  fps: 8  },
-    za_warudo: { frames: ZA_WARUDO_FRAMES, loop: false, fps: 8  },
-    hover:     { frames: HOVER_FRAMES,     loop: true,  fps: 3  }
-  };
+  this._animTimer = null;
+  this._ensureStyles();
+  this._buildSVG();
 }
 
-DioSprite.prototype.drawFrame = function (frameData, offsetX, offsetY) {
-  var row, col, colour;
-  this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  for (row = 0; row < this.gridH; row++) {
-    for (col = 0; col < this.gridW; col++) {
-      colour = frameData[row][col];
-      if (colour === null) continue;
-      this.ctx.fillStyle = DIO_PALETTE[colour];
-      this.ctx.fillRect(
-        offsetX + col * this.pixelSize,
-        offsetY + row * this.pixelSize,
-        this.pixelSize,
-        this.pixelSize
-      );
-    }
-  }
+DioSprite.prototype._ensureStyles = function () {
+  if (document.getElementById('dio-svg-styles')) return;
+  var s = document.createElement('style');
+  s.id = 'dio-svg-styles';
+  s.textContent =
+    '@keyframes dioBreath{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.014)}}' +
+    '@keyframes dioMouthPulse{0%,49%{opacity:1}50%,100%{opacity:0}}' +
+    '@keyframes dioArmRaise{0%{transform:rotate(0deg)}35%{transform:rotate(-100deg)}70%{transform:rotate(-100deg)}100%{transform:rotate(0deg)}}' +
+    '@keyframes dioDodge{0%{transform:rotate(0deg) scaleX(1)}25%{transform:rotate(14deg) scaleX(0.86)}55%{transform:rotate(-7deg) scaleX(1.09)}82%{transform:rotate(2deg) scaleX(0.99)}100%{transform:rotate(0deg) scaleX(1)}}' +
+    '@keyframes dioZaWarudo{0%{filter:none}15%{filter:drop-shadow(0 0 10px #CC66FF) drop-shadow(0 0 22px #8800FF) brightness(1.6)}32%{filter:none}55%{filter:drop-shadow(0 0 6px #CC66FF) brightness(1.2)}70%{filter:drop-shadow(0 0 15px #FF88FF) drop-shadow(0 0 30px #AA00FF) brightness(1.9)}86%{filter:none}100%{filter:drop-shadow(0 0 4px #CC66FF)}}' +
+    '#dio-svg-char.dio-idle{animation:dioBreath 3s ease-in-out infinite;transform-origin:50px 85px}' +
+    '#dio-svg-char.dio-talk #dio-mouth-open{opacity:1;animation:dioMouthPulse 0.4s steps(1) infinite}' +
+    '#dio-svg-char.dio-talk #dio-mouth-c{opacity:0}' +
+    '#dio-svg-char.dio-point #dio-right-arm{transform-origin:78px 96px;animation:dioArmRaise 1.2s ease-in-out forwards}' +
+    '#dio-svg-char.dio-dodge{animation:dioDodge 0.4s ease-out forwards;transform-origin:50px 86px}' +
+    '#dio-svg-char.dio-zawarudo{animation:dioZaWarudo 1.6s ease-out forwards}';
+  document.head.appendChild(s);
 };
 
-DioSprite.prototype.update = function (dt) {
-  this.frameTimer += dt;
-  var anim = this.animations[this.currentAnimation];
-  var frameDuration = 1000 / anim.fps;
-  if (this.frameTimer >= frameDuration) {
-    this.frameTimer = 0;
-    this.currentFrame++;
-    if (this.currentFrame >= anim.frames.length) {
-      if (anim.loop) {
-        this.currentFrame = 0;
-      } else {
-        this.currentFrame = anim.frames.length - 1;
-        this.onAnimationComplete(this.currentAnimation);
-      }
-    }
-  }
+DioSprite.prototype._buildSVG = function () {
+  var ns = 'http://www.w3.org/2000/svg';
+  this.svg = document.createElementNS(ns, 'svg');
+  this.svg.setAttribute('viewBox', '0 0 100 170');
+  this.svg.setAttribute('width', '100');
+  this.svg.setAttribute('height', '170');
+  this.svg.id = 'dio-svg-char';
+  this.svg.innerHTML =
+    /* Hair back shadow — darker gold, gives depth behind the main volume */
+    '<path d="M33,62 C16,48 12,20 30,4 C38,-1 50,1 50,1 C42,16 38,42 37,60Z" fill="#C8A000"/>' +
+    '<path d="M67,62 C84,48 88,20 70,4 C62,-1 50,1 50,1 C58,16 62,42 63,60Z" fill="#C8A000"/>' +
+    /* Main hair mass — bright gold, swept dramatically upward */
+    '<path d="M37,60 C34,28 44,-3 50,0 C56,-3 66,28 63,60 C59,51 55,47 50,47 C45,47 41,51 37,60Z" fill="#FFE000"/>' +
+    /* Hair top highlights and spike */
+    '<path d="M42,5 C42,-4 58,-4 58,5 C54,1 50,0 46,5Z" fill="#FFF080"/>' +
+    '<path d="M48,1 C47,-8 53,-8 52,1 C51,-4 49,-4 48,1Z" fill="#FFEE00"/>' +
+    '<path d="M39,30 C40,18 44,8 47,3" stroke="#D4A000" stroke-width="1" fill="none" opacity="0.5"/>' +
+    '<path d="M61,30 C60,18 56,8 53,3" stroke="#D4A000" stroke-width="1" fill="none" opacity="0.5"/>' +
+    /* Headband — gold band with diamond gem */
+    '<rect x="34" y="49" width="32" height="5.5" rx="2.5" fill="#C8A020"/>' +
+    '<rect x="34" y="49" width="32" height="2" rx="1" fill="#FFD700" opacity="0.4"/>' +
+    '<polygon points="50,47 54.5,51.5 50,56 45.5,51.5" fill="#00EE60" stroke="#00AA44" stroke-width="0.5"/>' +
+    '<polygon points="50,48.5 53,51.5 50,54.5 47,51.5" fill="#66FFB8" opacity="0.45"/>' +
+    /* Face — aristocratic pale, angular jaw */
+    '<ellipse cx="50" cy="65" rx="14" ry="17" fill="#F2D898"/>' +
+    '<path d="M36,70 Q40,82 50,85 Q60,82 64,70" stroke="#D4A060" stroke-width="0.5" fill="none" opacity="0.35"/>' +
+    '<ellipse cx="42" cy="62" rx="4" ry="2.5" fill="#FFF4D8" opacity="0.38" transform="rotate(-12,42,62)"/>' +
+    '<ellipse cx="58" cy="62" rx="4" ry="2.5" fill="#FFF4D8" opacity="0.38" transform="rotate(12,58,62)"/>' +
+    /* Eyebrows — sharp, angled inward for menace */
+    '<path d="M35,57 Q40,54 46,56.5" stroke="#7A5010" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+    '<path d="M65,57 Q60,54 54,56.5" stroke="#7A5010" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+    /* Eyes — violet, intense */
+    '<ellipse cx="42" cy="62" rx="5.5" ry="4.5" fill="#7730C0"/>' +
+    '<ellipse cx="42" cy="62" rx="3.5" ry="3" fill="#5518A0"/>' +
+    '<ellipse cx="42" cy="62" rx="2" ry="2" fill="#0A0020"/>' +
+    '<ellipse cx="40.5" cy="60.5" rx="1.3" ry="0.9" fill="white" opacity="0.85"/>' +
+    '<ellipse cx="42" cy="62" rx="5.5" ry="4.5" fill="none" stroke="#1A0040" stroke-width="0.8"/>' +
+    '<ellipse cx="58" cy="62" rx="5.5" ry="4.5" fill="#7730C0"/>' +
+    '<ellipse cx="58" cy="62" rx="3.5" ry="3" fill="#5518A0"/>' +
+    '<ellipse cx="58" cy="62" rx="2" ry="2" fill="#0A0020"/>' +
+    '<ellipse cx="56.5" cy="60.5" rx="1.3" ry="0.9" fill="white" opacity="0.85"/>' +
+    '<ellipse cx="58" cy="62" rx="5.5" ry="4.5" fill="none" stroke="#1A0040" stroke-width="0.8"/>' +
+    /* Nose */
+    '<path d="M47,71 Q50,74 53,71" stroke="#C89040" stroke-width="0.9" fill="none" stroke-linecap="round"/>' +
+    /* Mouth closed (default) */
+    '<path id="dio-mouth-c" d="M44,78 Q50,81 56,78" stroke="#8B2020" stroke-width="1.2" fill="none" stroke-linecap="round"/>' +
+    /* Mouth open (talk animation reveals this) */
+    '<g id="dio-mouth-open" opacity="0">' +
+      '<path d="M44,77 Q50,74 56,77 Q56,84 50,85.5 Q44,84 44,77Z" fill="#8B0000"/>' +
+      '<rect x="46" y="77" width="3.5" height="3" rx="0.5" fill="#F0F0E0"/>' +
+      '<rect x="50.5" y="77" width="3.5" height="3" rx="0.5" fill="#F0F0E0"/>' +
+      '<path d="M44,80 Q50,82 56,80" stroke="#660000" stroke-width="0.5" fill="none"/>' +
+    '</g>' +
+    /* Neck */
+    '<rect x="44" y="82" width="12" height="9" fill="#E8C870"/>' +
+    '<path d="M34,89 Q44,86 50,86 Q56,86 66,89" stroke="#C8A020" stroke-width="2.5" fill="none"/>' +
+    /* Coat body — dark purple/black with gold ornate trim */
+    '<path d="M28,91 C20,97 17,130 15,168 L85,168 C83,130 80,97 72,91 C62,87 38,87 28,91Z" fill="#1A0A2E"/>' +
+    '<path d="M44,91 L43,168 L57,168 L56,91 Q50,88 44,91Z" fill="#241640"/>' +
+    '<path d="M44,91 Q36,96 29,112 Q24,128 26,152" stroke="#C8A020" stroke-width="1.8" fill="none"/>' +
+    '<path d="M56,91 Q64,96 71,112 Q76,128 74,152" stroke="#C8A020" stroke-width="1.8" fill="none"/>' +
+    '<path d="M50,86 L50,168" stroke="#C8A020" stroke-width="0.8" opacity="0.45"/>' +
+    '<circle cx="50" cy="97" r="2.5" fill="#C8A020" opacity="0.65"/>' +
+    '<circle cx="50" cy="108" r="2" fill="#C8A020" opacity="0.45"/>' +
+    '<path d="M15,168 L85,168" stroke="#C8A020" stroke-width="1.5" fill="none"/>' +
+    /* Left arm (static) */
+    '<path d="M22,97 C16,115 15,138 18,155" stroke="#1A0A2E" stroke-width="11" stroke-linecap="round" fill="none"/>' +
+    '<path d="M22,97 C16,115 15,138 18,155" stroke="#C8A020" stroke-width="1.2" stroke-linecap="round" fill="none"/>' +
+    '<ellipse cx="18" cy="156" rx="5.5" ry="3.5" fill="#C8A020"/>' +
+    '<ellipse cx="18" cy="161" rx="5" ry="5" fill="#E8C870"/>' +
+    /* Right arm (raises during point animation) */
+    '<g id="dio-right-arm">' +
+      '<path d="M78,97 C84,115 85,138 82,155" stroke="#1A0A2E" stroke-width="11" stroke-linecap="round" fill="none"/>' +
+      '<path d="M78,97 C84,115 85,138 82,155" stroke="#C8A020" stroke-width="1.2" stroke-linecap="round" fill="none"/>' +
+      '<ellipse cx="82" cy="156" rx="5.5" ry="3.5" fill="#C8A020"/>' +
+      '<ellipse cx="82" cy="161" rx="5" ry="5" fill="#E8C870"/>' +
+      /* Extended pointing finger (visible when arm is raised) */
+      '<line x1="82" y1="158" x2="86" y2="148" stroke="#E8C870" stroke-width="3.5" stroke-linecap="round"/>' +
+    '</g>';
+  this.container.appendChild(this.svg);
+  this.playAnimation('idle');
 };
 
 DioSprite.prototype.playAnimation = function (name) {
-  if (this.currentAnimation === name) return;
+  if (this.currentAnimation === name && (name === 'idle' || name === 'hover')) return;
   this.currentAnimation = name;
-  this.currentFrame = 0;
-  this.frameTimer = 0;
+  if (this._animTimer) { clearTimeout(this._animTimer); this._animTimer = null; }
+  this.svg.classList.remove('dio-idle', 'dio-talk', 'dio-point', 'dio-dodge', 'dio-zawarudo');
+  var MAP = {
+    idle: 'dio-idle', hover: 'dio-idle', walk: 'dio-idle',
+    talk: 'dio-talk', point: 'dio-point', dodge: 'dio-dodge', za_warudo: 'dio-zawarudo'
+  };
+  this.svg.classList.add(MAP[name] || 'dio-idle');
+  var DURATIONS = { point: 1250, dodge: 430, za_warudo: 1700 };
+  if (DURATIONS[name]) {
+    var self = this;
+    this._animTimer = setTimeout(function () {
+      self._animTimer = null;
+      if (self.currentAnimation === name) self.onAnimationComplete(name);
+    }, DURATIONS[name]);
+  }
 };
+
+DioSprite.prototype.update = function () { /* CSS drives animation */ };
+DioSprite.prototype.drawFrame = function () { /* no-op */ };
 
 DioSprite.prototype.onAnimationComplete = function (animName) {
   if (animName === 'point' || animName === 'talk') this.playAnimation('idle');
@@ -492,21 +361,16 @@ DioGuide.prototype.buildDOM = function () {
   tail.className = 'dio-speech-tail';
   this.avatarWrap = document.createElement('div');
   this.avatarWrap.className = 'dio-avatar';
-  this.avatarWrap.style.width = '128px';
-  this.canvas = document.createElement('canvas');
-  this.canvas.width = 128;
-  this.canvas.height = 192;
   this.speechBubble.appendChild(name);
   this.speechBubble.appendChild(subtitle);
   this.speechBubble.appendChild(this.speechText);
   this.speechBubble.appendChild(this.actionSlot);
   this.speechBubble.appendChild(tail);
-  this.avatarWrap.appendChild(this.canvas);
   this.panel.appendChild(this.speechBubble);
   this.panel.appendChild(this.avatarWrap);
   this.container.appendChild(this.panel);
   document.body.appendChild(this.container);
-  this.sprite = new DioSprite(this.canvas);
+  this.sprite = new DioSprite(this.avatarWrap);
   this.sprite.guide = this;
   this.applyLayout();
 };
@@ -603,8 +467,6 @@ DioGuide.prototype.startLoop = function () {
       self.container.style.transform = 'translateY(' + floatY + 'px)';
     }
     self.sprite.update(dt);
-    var anim = self.sprite.animations[self.sprite.currentAnimation];
-    self.sprite.drawFrame(anim.frames[self.sprite.currentFrame], 0, 0);
     self.animFrame = requestAnimationFrame(loop);
   }
   self.animFrame = requestAnimationFrame(loop);

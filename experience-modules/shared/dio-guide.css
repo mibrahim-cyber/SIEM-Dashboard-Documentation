@@ -111,12 +111,11 @@
   z-index: 2;
 }
 
-.dio-avatar canvas {
+.dio-avatar svg {
   display: block;
-  width: 128px;
-  height: 192px;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
+  width: 100px;
+  height: 170px;
+  overflow: visible;
 }
 
 #dio-guide.dio-landing {
@@ -128,9 +127,9 @@
   transform: none;
 }
 
-#dio-guide.dio-landing .dio-avatar canvas {
-  width: 96px;
-  height: 144px;
+#dio-guide.dio-landing .dio-avatar svg {
+  width: 88px;
+  height: 149px;
 }
 
 #dio-guide.dio-landing #dio-speech {
@@ -200,9 +199,9 @@ body.landing-dio-mode #dio-guide {
     transform: none;
   }
 
-  #dio-guide.dio-landing .dio-avatar canvas {
-    width: 80px;
-    height: 120px;
+  #dio-guide.dio-landing .dio-avatar svg {
+    width: 72px;
+    height: 122px;
   }
 }
 

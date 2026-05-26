@@ -22,7 +22,7 @@
       leaderboardSubmissions: [],
       totalPlayTime: 0,
       lastPlayed: null,
-      unlocked: gameId === 'the_terminal',
+      unlocked: true,
       failureLog: {}
     };
   }
