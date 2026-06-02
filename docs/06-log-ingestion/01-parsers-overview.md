@@ -1,4 +1,4 @@
-# Parsers overview
+﻿﻿# Parsers overview
 
 Ingest is the front door of HABIBI-SIEM. Parsers turn vendor-specific lines into a single normalized event shape the detection engine can evaluate.
 
@@ -25,19 +25,3 @@ Use sample cards in Log Ingestion to teach each format. Watch detected format la
 - [Parsing and grok patterns](../../guides/ingest-config/log-ingestion/05-parsing-grok.md)
 - [Apache parser](02-apache-parser.md)
 - [Troubleshooting](../09-operations/08-troubleshooting.md)
-
-## Shift handoff checklist
-
-Before ending a lab session, record which account role was active, whether deduplication was on, and the last ingest batch size. Screenshot Overview KPIs if coursework requires evidence. If students report empty views, ask whether they refreshed after Simulate Campaign and whether filters hide new alerts. When promoting from tier1 to tier2 accounts, log out fully so cookies do not blend roles.
-
-## Coordination with other modules
-
-Cross-link findings in Case Manager or Incident views when drills span multiple screens. Threat Intel and Geo Map should tell the same story about an IP before watchlist blocking. Pipeline Health confirms whether zeros are detection silence or ingest failure. For security sign-off, pair this topic with CSRF and RBAC docs before external exposure.
-
-## Shift handoff checklist
-
-Before ending a lab session, record which account role was active, whether deduplication was on, and the last ingest batch size. Screenshot Overview KPIs if coursework requires evidence. If students report empty views, ask whether they refreshed after Simulate Campaign and whether filters hide new alerts. When promoting from tier1 to tier2 accounts, log out fully so cookies do not blend roles.
-
-## Coordination with other modules
-
-Cross-link findings in Case Manager or Incident views when drills span multiple screens. Threat Intel and Geo Map should tell the same story about an IP before watchlist blocking. Pipeline Health confirms whether zeros are detection silence or ingest failure. For security sign-off, pair this topic with CSRF and RBAC docs before external exposure.

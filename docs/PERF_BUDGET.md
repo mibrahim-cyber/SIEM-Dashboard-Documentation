@@ -1,4 +1,4 @@
-# Performance Budget — Meridian-7 Site
+﻿﻿# Performance Budget: Meridian-7 Site
 
 Lighthouse targets: Performance ≥90, Accessibility ≥95, Best Practices 100, SEO ≥90.
 

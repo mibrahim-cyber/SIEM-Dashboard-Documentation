@@ -1,4 +1,4 @@
-# SIEM industry notes
+﻿﻿# SIEM industry notes
 
 Short notes on real-world SIEM and SOC tooling. Useful context when reading this documentation.
 

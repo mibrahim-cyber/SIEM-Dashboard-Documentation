@@ -1,4 +1,4 @@
-# Known bugs and gaps
+﻿﻿# Known bugs and gaps
 
 This appendix tracks intentional teaching limitations and open gaps in HABIBI-SIEM. Use it when student reports sound like defects but match expected prototype behavior.
 
@@ -65,11 +65,3 @@ This appendix tracks intentional teaching limitations and open gaps in HABIBI-SI
 - [Troubleshooting](../09-operations/08-troubleshooting.md)
 - [System overview](../02-architecture/00-system-overview.md)
 - [Future work](07-future-work.md)
-
-## Shift handoff checklist
-
-Before ending a lab session, record which account role was active, whether deduplication was on, and the last ingest batch size. Screenshot Overview KPIs if coursework requires evidence. If students report empty views, ask whether they refreshed after Simulate Campaign and whether filters hide new alerts. When promoting from tier1 to tier2 accounts, log out fully so cookies do not blend roles.
-
-## Coordination with other modules
-
-Cross-link findings in Case Manager or Incident views when drills span multiple screens. Threat Intel and Geo Map should tell the same story about an IP before watchlist blocking. Pipeline Health confirms whether zeros are detection silence or ingest failure. For security sign-off, pair this topic with CSRF and RBAC docs before external exposure.

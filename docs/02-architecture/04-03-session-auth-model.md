@@ -1,46 +1,10 @@
-# Session auth model
+﻿﻿# Session auth model
 
 Cookie sessions (`siem.sid`), bcrypt login, CSRF on writes, role copied into session after auth.
 
-This page documents **cookie sessions and role tiers** as implemented in HABIBI-SIEM for coursework and small-team SOC labs.
-
-## Role in the platform
-
-Cookie sessions and role tiers sits in the split architecture where the browser runs detection and visualization while the API holds secrets, sessions, and SQLite persistence. Understanding this piece prevents misconfigured labs and false bug reports during demos.
-
-## Behavior summary
-
-Operators interact through the React sidebar modules; changes here affect whether data appears on Overview, whether writes succeed for tier2 analysts, and whether external enrichment returns useful fields. The system favors fail-closed authorization and explicit CSRF on mutating calls.
-
-## Data and security interactions
-
-Session cookies identify the analyst. RBAC middleware checks role before watchlist, SOAR, or admin routes. Rate limits protect threat lookup quotas. Audit entries record sensitive reads for manager accounts when enabled.
-
-## Operational guidance
-
-Document environment variables on the server host for the semester. Rotate default passwords before any network exposure. Take SQLite backups before schema experiments. When something fails, compare API HTTP status, browser network tab, and Pipeline Health counters before reinstalling.
-
-## Edge cases
-
-Mixed localhost and 127.0.0.1 origins break CORS. Tier1 users see UI buttons that still 403 on submit. Client-only prototypes (scheduler, some correlation drafts) reset on full page reload. Geo and threat features degrade gracefully when files or keys missing.
+Login checks the password against a bcrypt hash at cost 12 and, on success, calls `req.session.regenerate()` so a session id handed out before login can't be reused afterward. The session stores the user's role, and every write route reads that server-side role instead of trusting anything the client sends. Sessions persist in SQLite through connect-sqlite3, so restarting the server doesn't log everyone out. The CSRF token sits in the session and in a readable cookie, and writes have to send it back in the `X-CSRF-Token` header.
 
 ## Related material
 
 - [System overview](../02-architecture/00-system-overview.md)
 - [Guide index](../../guides/ingest-config/settings/04-rbac-roles.md)
-
-## Shift handoff checklist
-
-Before ending a lab session, record which account role was active, whether deduplication was on, and the last ingest batch size. Screenshot Overview KPIs if coursework requires evidence. If students report empty views, ask whether they refreshed after Simulate Campaign and whether filters hide new alerts. When promoting from tier1 to tier2 accounts, log out fully so cookies do not blend roles.
-
-## Coordination with other modules
-
-Cross-link findings in Case Manager or Incident views when drills span multiple screens. Threat Intel and Geo Map should tell the same story about an IP before watchlist blocking. Pipeline Health confirms whether zeros are detection silence or ingest failure. For security sign-off, pair this topic with CSRF and RBAC docs before external exposure.
-
-## Shift handoff checklist
-
-Before ending a lab session, record which account role was active, whether deduplication was on, and the last ingest batch size. Screenshot Overview KPIs if coursework requires evidence. If students report empty views, ask whether they refreshed after Simulate Campaign and whether filters hide new alerts. When promoting from tier1 to tier2 accounts, log out fully so cookies do not blend roles.
-
-## Coordination with other modules
-
-Cross-link findings in Case Manager or Incident views when drills span multiple screens. Threat Intel and Geo Map should tell the same story about an IP before watchlist blocking. Pipeline Health confirms whether zeros are detection silence or ingest failure. For security sign-off, pair this topic with CSRF and RBAC docs before external exposure.

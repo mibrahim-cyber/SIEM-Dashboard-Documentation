@@ -1,4 +1,4 @@
-# System overview
+﻿﻿# System overview
 
 Browser-based SOC console for learning and demos; smaller than Splunk or Sentinel, but end-to-end: ingest, detection, alerts, SOAR actions, RBAC.
 

@@ -1,6 +1,6 @@
-# Capability index
+﻿﻿# Capability index
 
-What the platform does — organised by capability, not by internal identifiers. See [System overview](../02-architecture/00-system-overview.md).
+What the platform does, organised by capability rather than by internal identifiers. See [System overview](../02-architecture/00-system-overview.md).
 
 ## Authentication and access
 

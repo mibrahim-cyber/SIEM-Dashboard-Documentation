@@ -1,4 +1,4 @@
-# Troubleshooting
+﻿﻿# Troubleshooting
 
 Operator-focused fixes for HABIBI-SIEM when the UI misbehaves, APIs return errors, or dashboards stay empty. Each item follows **symptom → likely cause → fix**.
 

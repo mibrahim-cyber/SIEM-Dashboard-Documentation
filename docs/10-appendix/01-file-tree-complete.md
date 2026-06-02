@@ -1,6 +1,6 @@
-# Module map
+﻿﻿# Module map
 
-What each area of the dashboard does and where to read more. This is a behavioural map — not a directory listing.
+What each area of the dashboard does and where to read more. It's a behavioural map, not a directory listing.
 
 ## Monitor
 

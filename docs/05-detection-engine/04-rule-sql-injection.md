@@ -1,4 +1,4 @@
-# Rule: SQL injection
+﻿﻿# Rule: SQL injection
 
 Critical severity injection rule. Fires when web-bound fields contain classic SQL metacharacters or union-select style tokens in query parameters, bodies, or URL paths.
 
@@ -28,19 +28,3 @@ Load Apache sample containing `/etc/passwd` or `UNION SELECT` style paths from L
 - [Rules Engine guide](../../guides/configure/rules-engine/INDEX.md)
 - [Sensitive path rule](09-rule-sensitive-path.md)
 - [Sanitize pipeline](../06-log-ingestion/09-sanitize-pipeline.md)
-
-## Shift handoff checklist
-
-Before ending a lab session, record which account role was active, whether deduplication was on, and the last ingest batch size. Screenshot Overview KPIs if coursework requires evidence. If students report empty views, ask whether they refreshed after Simulate Campaign and whether filters hide new alerts. When promoting from tier1 to tier2 accounts, log out fully so cookies do not blend roles.
-
-## Coordination with other modules
-
-Cross-link findings in Case Manager or Incident views when drills span multiple screens. Threat Intel and Geo Map should tell the same story about an IP before watchlist blocking. Pipeline Health confirms whether zeros are detection silence or ingest failure. For security sign-off, pair this topic with CSRF and RBAC docs before external exposure.
-
-## Shift handoff checklist
-
-Before ending a lab session, record which account role was active, whether deduplication was on, and the last ingest batch size. Screenshot Overview KPIs if coursework requires evidence. If students report empty views, ask whether they refreshed after Simulate Campaign and whether filters hide new alerts. When promoting from tier1 to tier2 accounts, log out fully so cookies do not blend roles.
-
-## Coordination with other modules
-
-Cross-link findings in Case Manager or Incident views when drills span multiple screens. Threat Intel and Geo Map should tell the same story about an IP before watchlist blocking. Pipeline Health confirms whether zeros are detection silence or ingest failure. For security sign-off, pair this topic with CSRF and RBAC docs before external exposure.
