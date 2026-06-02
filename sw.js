@@ -1,7 +1,7 @@
-/**
+2/**
  * Meridian-7 service worker — offline cache for core assets
  */
-const CACHE = 'meridian7-v22';
+const CACHE = 'meridian7-v23';
 const PRECACHE = [
   'index.html',
   '404.html',
@@ -37,6 +37,10 @@ const PRECACHE = [
   'assets/siem-qol.js',
   'assets/palette.js',
   'assets/palette.css',
+  'assets/components.css',
+  'assets/components.js',
+  'assets/cursor.js',
+  'assets/sounds/sounds.js',
   'assets/deck-nav.js',
   'assets/deck-nav.css',
   'assets/guides-manifest.json',
@@ -91,8 +95,9 @@ const PRECACHE = [
   'experience-modules/game13-resonance/styles.css',
   'experience-modules/leaderboards/the_terminal-speedTrial-any.json',
   'experience-modules/leaderboards/the_breach-speedTrial-any.json',
-  'experience-modules/leaderboards/the_resonance-speedTrial-any.json',
+  'experience-modules/leaderboards/the_resonance-speedTrial-any.json'
 ];
+
 
 self.addEventListener('install', function (event) {
   event.waitUntil(

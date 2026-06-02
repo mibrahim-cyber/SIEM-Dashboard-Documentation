@@ -1,140 +1,314 @@
 <!DOCTYPE html>
-<html lang="en" data-deck-page="experience-hub">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>3D Experience Ring — HABIBI-SIEM</title>
-  <link rel="stylesheet" href="../assets/palette.css" />
-  <link rel="stylesheet" href="shared/styles-base.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HABIBI-SIEM — Experience Hub</title>
+  <meta name="description" content="Browse all 13 HABIBI-SIEM experience modules.">
+  <meta name="theme-color" content="#020617">
+  <link rel="icon" href="../favicon.ico" sizes="any">
+  <link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/palette.css">
+  <link rel="stylesheet" href="../assets/components.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Mono:wght@400;600&display=swap');
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; background: #030a12; }
-    body { color: #94a3b8; font-family: 'IBM Plex Mono', monospace; padding: 40px 32px 80px; overflow-y: auto; }
-    .hub-header { max-width: 1100px; margin-bottom: 32px; border-bottom: 1px solid rgba(56,189,248,.15); padding-bottom: 24px; }
-    .hub-eyebrow { font-size: 9px; letter-spacing: 3px; color: #38bdf8; opacity: .6; margin-bottom: 10px; text-transform: uppercase; }
-    h1 { color: #e2e8f0; font-size: 22px; letter-spacing: 2px; margin-bottom: 8px; font-weight: normal; }
-    h1 span { color: #38bdf8; }
-    p.sub { font-size: 11px; color: #64748b; line-height: 1.7; }
-    .section-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.2); margin-bottom: 14px; margin-top: 32px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; max-width: 1100px; }
-    .card {
-      border: 1px solid rgba(56,189,248,.18);
-      padding: 16px;
-      border-radius: 6px;
-      background: rgba(10,13,26,.85);
-      text-decoration: none;
-      color: inherit;
-      transition: border-color .2s, background .2s, transform .15s;
+    .hub {
+      min-height: 100vh;
+      background: var(--void-0);
+      position: relative;
+    }
+
+    .hub::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(56,189,248,0.06) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hub-header {
+      position: relative;
+      z-index: 1;
+      padding: var(--space-6) var(--space-4);
+      text-align: center;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .hub-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      color: var(--text-primary);
+      letter-spacing: 0.15em;
+      margin-bottom: var(--space-2);
+    }
+
+    .hub-subtitle {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .hub-nav {
+      position: relative;
+      z-index: 1;
       display: flex;
-      flex-direction: column;
-      gap: 6px;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+    }
+
+    .hub-nav a {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 4px 10px;
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius-pill);
+      transition: color var(--t-fast), border-color var(--t-fast);
+    }
+
+    .hub-nav a:hover {
+      color: var(--cyan);
+      border-color: var(--border-bright);
+    }
+
+    .hub-content {
+      position: relative;
+      z-index: 1;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: var(--space-6) var(--space-4);
+    }
+
+    .hub-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-3);
+    }
+
+    .hub-card {
+      background: var(--void-glass);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      text-decoration: none;
       position: relative;
       overflow: hidden;
+      transition: border-color var(--t-mid), transform var(--t-bounce), box-shadow var(--t-mid);
     }
-    .card::before {
+
+    .hub-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .hub-card::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0;
+      top: 0;
+      left: 0;
+      right: 0;
       height: 2px;
-      background: var(--card-accent, #38bdf8);
-      opacity: .4;
-      transition: opacity .2s;
+      background: var(--cyan);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--t-mid);
     }
-    .card:hover { border-color: var(--card-accent, #38bdf8); background: rgba(14,18,34,.95); transform: translateY(-2px); }
-    .card:hover::before { opacity: 1; }
-    .card.locked { opacity: .45; cursor: not-allowed; pointer-events: none; }
-    .card h2 { font-size: 12px; color: #e2e8f0; letter-spacing: 1px; font-weight: normal; }
-    .card .card-sub { font-size: 10px; color: #64748b; line-height: 1.5; }
-    .card .card-num { font-size: 9px; color: rgba(255,255,255,.15); position: absolute; top: 10px; right: 12px; letter-spacing: 1px; }
-    .card .lock-badge { font-size: 9px; color: #475569; background: rgba(0,0,0,.4); padding: 2px 6px; border-radius: 3px; display: inline-block; margin-top: 2px; }
-    .tools { margin-top: 32px; max-width: 1100px; display: flex; gap: 8px; flex-wrap: wrap; }
-    .tools button {
-      background: transparent;
-      border: 1px solid rgba(56,189,248,.25);
-      color: #64748b;
-      padding: 8px 14px;
-      cursor: pointer;
-      font-family: inherit;
+
+    .hub-card:hover::before { transform: scaleX(1); }
+
+    .hub-card-icon {
+      font-size: 28px;
+      margin-bottom: var(--space-2);
+      display: block;
+    }
+
+    .hub-card-title {
+      font-family: var(--font-display);
+      font-size: 14px;
+      color: var(--text-primary);
+      letter-spacing: 0.08em;
+      margin-bottom: 2px;
+    }
+
+    .hub-card-desc {
+      font-family: var(--font-mono);
       font-size: 10px;
-      letter-spacing: 1px;
-      border-radius: 4px;
-      transition: all .15s;
+      color: var(--text-muted);
+      line-height: 1.5;
     }
-    .tools button:hover { border-color: #38bdf8; color: #38bdf8; }
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: rgba(0,0,0,.3); }
-    ::-webkit-scrollbar-thumb { background: rgba(56,189,248,.25); border-radius: 2px; }
+
+    .hub-card-meta {
+      display: flex;
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+    }
+
+    .hub-card-tag {
+      padding: 1px 6px;
+      font-size: 8px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-radius: var(--radius-pill);
+      background: rgba(56,189,248,0.1);
+      color: var(--cyan);
+    }
+
+    .hub-card-tag--gold { background: rgba(251,191,36,0.1); color: var(--gold); }
+    .hub-card-tag--purple { background: rgba(167,139,250,0.1); color: var(--purple); }
+
+    .hub-footer {
+      position: relative;
+      z-index: 1;
+      padding: var(--space-4);
+      text-align: center;
+      border-top: 1px solid var(--border-subtle);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--text-muted);
+    }
+
+    .hub-footer a { color: var(--cyan); text-decoration: none; }
+    .hub-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      .hub-grid { grid-template-columns: 1fr; }
+    }
   </style>
-  <link rel="stylesheet" href="shared/dio-guide.css" />
 </head>
 <body>
-  <div class="hub-header">
-    <div class="hub-eyebrow">Operation Meridian-7</div>
-    <h1><span>HABIBI-SIEM</span> · 3D Experience Ring</h1>
-    <p class="sub">Thirteen linked modules spanning the full MITRE ATT&amp;CK kill chain — 3D environments, Cannon-es physics, multi-level progression, live leaderboards.</p>
+  <div class="hub">
+    <header class="hub-header fade-up">
+      <h1 class="hub-title">Experience Modules</h1>
+      <p class="hub-subtitle">13 interactive security simulations</p>
+    </header>
+
+    <nav class="hub-nav">
+      <a href="../index.html">Approach</a>
+      <a href="../brain/index.html">Observation Deck</a>
+      <a href="../left.html">War Room</a>
+      <a href="../right.html">Signal Room</a>
+      <a href="../trophy.html">Achievements</a>
+      <a href="../read.html">Docs</a>
+    </nav>
+
+    <div class="hub-content">
+      <div class="hub-grid">
+        <a href="../terminal.html" class="hub-card fade-up">
+          <span class="hub-card-icon">▸</span>
+          <span class="hub-card-title">The Terminal</span>
+          <span class="hub-card-desc">Interactive shell with command execution and system exploration.</span>
+          <span class="hub-card-meta"><span class="hub-card-tag">Shell</span></span>
+        </a>
+
+        <a href="../breach.html" class="hub-card fade-up">
+          <span class="hub-card-icon">◈</span>
+          <span class="hub-card-title">The Breach</span>
+          <span class="hub-card-desc">Intrusion detection simulation — identify and contain threats.</span>
+          <span class="hub-card-meta"><span class="hub-card-tag">Detection</span></span>
+        </a>
+
+        <a href="../network.html" class="hub-card fade-up">
+          <span class="hub-card-icon">◎</span>
+          <span class="hub-card-title">Ghost Network</span>
+          <span class="hub-card-desc">Network topology mapping and traffic analysis challenges.</span>
+          <span class="hub-card-meta"><span class="hub-card-tag">Network</span></span>
+        </a>
+
+        <a href="../cipher.html" class="hub-card fade-up">
+          <span class="hub-card-icon">⬢</span>
+          <span class="hub-card-title">The Cipher</span>
+          <span class="hub-card-desc">Cryptographic puzzle vault with six chambers of increasing difficulty.</span>
+          <span class="hub-card-meta"><span class="hub-card-tag">Crypto</span></span>
+        </a>
+
+        <a href="../sim.html" class="hub-card fade-up">
+          <span class="hub-card-icon">◉</span>
+          <span class="hub-card-title">The Simulation</span>
+          <span class="hub-card-desc">Full-spectrum cyber range with scenario-based training.</span>
+          <span class="hub-card-meta"><span class="hub-card-tag">Range</span></span>
+        </a>
+
+        <a href="../intercept.html" class="hub-card fade-up">
+          <span class="hub-card-icon">◫</span>
+          <span class="hub-card-title">Interrogation Room</span>
+          <span class="hub-card-desc">Packet capture analysis and protocol interrogation.</span>
+          <span class="hub-card-meta"><span class="hub-card-tag">Forensics</span></span>
+        </a>
+
+        <a href="../forge.html" class="hub-card fade-up">
+          <span class="hub-card-icon">⬛</span>
+          <span class="hub-card-title">The Forge</span>
+          <span class="hub-card-desc">Custom rule engine for detection logic and alert creation.</span>
+          <span class="hub-card-meta"><span class="hub-card-tag">Rules</span></span>
+        </a>
+
+        <a href="../archive.html" class="hub-card fade-up">
+          <span class="hub-card-icon">▣</span>
+          <span class="hub-card-title">Deep Archive</span>
+          <span class="hub-card-desc">Historical log forensics and artifact recovery.</span>
+          <span class="hub-card-meta"><span class="hub-card-tag">Forensics</span></span>
+        </a>
+
+        <a href="../heist.html" class="hub-card fade-up">
+          <span class="hub-card-icon">◆</span>
+          <span class="hub-card-title">The Heist</span>
+          <span class="hub-card-desc">Stealth exfiltration simulation — extract data undetected.</span>
+          <span class="hub-card-meta"><span class="hub-card-tag">Stealth</span></span>
+        </a>
+
+        <a href="../cartography.html" class="hub-card fade-up">
+          <span class="hub-card-icon">◐</span>
+          <span class="hub-card-title">Cartography</span>
+          <span class="hub-card-desc">Global threat intelligence map with live attack visualization.</span>
+          <span class="hub-card-meta"><span class="hub-card-tag">Intel</span></span>
+        </a>
+
+        <a href="../lab.html" class="hub-card fade-up">
+          <span class="hub-card-icon">⬤</span>
+          <span class="hub-card-title">The Lab</span>
+          <span class="hub-card-desc">Sandboxed environment for malware analysis and reverse engineering.</span>
+          <span class="hub-card-meta"><span class="hub-card-tag">Analysis</span></span>
+        </a>
+
+        <a href="../memorial.html" class="hub-card fade-up">
+          <span class="hub-card-icon">◌</span>
+          <span class="hub-card-title">The Memorial</span>
+          <span class="hub-card-desc">Tribute wall documenting notable cyber incidents and breaches.</span>
+          <span class="hub-card-meta"><span class="hub-card-tag">Reference</span></span>
+        </a>
+
+        <a href="../resonance.html" class="hub-card fade-up">
+          <span class="hub-card-icon">♫</span>
+          <span class="hub-card-title">Resonance</span>
+          <span class="hub-card-desc">Data sonification — listen to network traffic and system events.</span>
+          <span class="hub-card-meta"><span class="hub-card-tag">Audio</span></span>
+        </a>
+      </div>
+    </div>
+
+    <footer class="hub-footer">
+      HABIBI-SIEM · <a href="https://github.com/Number-1-Python-Glazer/SIEM-Dashboard-Documentation" target="_blank" rel="noopener">GitHub</a>
+    </footer>
   </div>
-  <div class="section-label">Modules</div>
-  <div class="grid" id="game-grid"></div>
-  <div class="tools" style="margin-top:24px;">
-    <button type="button" id="btn-export-lb">Export leaderboard scores</button>
-    <button type="button" id="btn-sync-lb">Sync from GitHub</button>
-  </div>
-  <div id="deck-nav-root"></div>
+
+  <div class="scan-line-overlay" aria-hidden="true"></div>
+  <div id="scroll-progress" role="progressbar" aria-label="Page scroll progress"></div>
+  <button class="back-to-top" aria-label="Back to top">↑</button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="../assets/siem-core.js"></script>
-  <script src="../assets/palette.js"></script>
-  <script src="shared/leaderboard-manager.js"></script>
-  <script src="shared/progression-manager.js"></script>
-  <script src="../assets/deck-nav.js?v=16.1"></script>
-  <script>
-  (function () {
-    SiemCore.bootPage('hub');
-    var games = [
-      ['game1-terminal',    'The Terminal',         'CLI threat reconnaissance',         '#39ff14'],
-      ['game2-breach',      'The Breach',           'SOC incident triage',               '#ff4444'],
-      ['game3-network',     'Ghost Network',         'Topology & lateral movement',       '#00aaff'],
-      ['game4-cipher',      'The Cipher',           'Cryptanalysis workshop',            '#f5e642'],
-      ['game5-simulation',  'The Simulation',       'Kill chain timeline',               '#ff8800'],
-      ['game6-intercept',   'Interrogation Room',   'C2 decode & IOC extraction',        '#cc44ff'],
-      ['game7-forge',       'The Forge',            'Detection rule construction',        '#4ade80'],
-      ['game8-archive',     'Deep Archive',         'Log forensics vault',               '#22d3ee'],
-      ['game9-heist',       'The Heist',            'Red team exfil pathing',            '#f97316'],
-      ['game10-lab',        'The Lab',              'Payload & detection lab',           '#a78bfa'],
-      ['game11-cartography','Cartography',           'Threat intelligence globe',         '#34d399'],
-      ['game12-memorial',   'The Memorial',         'Breach post-mortem wall',           '#fb7185'],
-      ['game13-resonance',  'Resonance',            'Detection rule mixer',              '#2dd4bf']
-    ];
-    var seqIds = ['the_terminal','the_breach','the_ghost_network','the_cipher','the_simulation',
-      'the_interrogation_room','the_forge','the_deep_archive','the_heist','the_lab',
-      'the_cartography','the_memorial','the_resonance'];
-    var grid = document.getElementById('game-grid');
-    games.forEach(function (g, i) {
-      var gameId = seqIds[i];
-      var locked = i > 0 && HabibiProgression && !HabibiProgression.isGameUnlocked(gameId);
-      var a = document.createElement('a');
-      a.className = 'card' + (locked ? ' locked' : '');
-      a.href = g[0] + '/index.html';
-      a.style.setProperty('--card-accent', g[3]);
-      a.innerHTML =
-        '<span class="card-num">0' + (i + 1 < 10 ? '0' : '') + (i + 1) + '</span>' +
-        '<h2>' + g[1] + '</h2>' +
-        '<span class="card-sub">' + g[2] + '</span>' +
-        (locked ? '<span class="lock-badge">locked — complete previous module</span>' : '');
-      grid.appendChild(a);
-    });
-    document.getElementById('btn-export-lb').onclick = function () {
-      if (window.HabibiLeaderboard && HabibiLeaderboard.exportPendingJson) HabibiLeaderboard.exportPendingJson();
-    };
-    document.getElementById('btn-sync-lb').onclick = function () {
-      if (window.HabibiLeaderboard && HabibiLeaderboard.syncAllFromManifest) {
-        HabibiLeaderboard.syncAllFromManifest().then(function () {
-          alert('Leaderboards synced.');
-        });
-      }
-    };
-  })();
-  </script>
-  <script src="shared/narrative-engine.js"></script>
-<script src="shared/dio-guide.js"></script>
+  <script src="../assets/components.js"></script>
+  <script>SiemCore.bootPage('hub');</script>
 </body>
 </html>

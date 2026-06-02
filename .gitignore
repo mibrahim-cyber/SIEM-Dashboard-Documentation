@@ -4,3 +4,15 @@ __pycache__/
 .DS_Store
 Thumbs.db
 *.log
+
+# Local agent/AI tooling and scratch state (never publish)
+.claude/
+.claude-flow/
+.swarm/
+.mcp.json
+cline-agents/
+ruflo-temp/
+ruvector.db
+CLAUDE.md
+*.env
+.env*

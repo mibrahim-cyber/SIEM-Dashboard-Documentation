@@ -1,18 +1,24 @@
 /**
- * SIEM Deck — shared core (SessionState, Achievements, Palette hook, Broadcast, Canvas)
+ * ═══════════════════════════════════════════════════════════════════════════
+ * HABIBI-SIEM — Core Engine v16.0
+ * SessionState · AchievementSystem · Broadcast · CanvasLoop · GlobalPalette
+ * GSAP Master Timeline · ScrambleText · Ripple · Magnetic · Typewriter
+ * ═══════════════════════════════════════════════════════════════════════════
  */
 (function (global) {
   'use strict';
 
-  var STORAGE_KEY = 'siem-session-v1';
-  var ACH_KEY = 'siem-achievements-v1';
+  var STORAGE_KEY = 'siem-session-v2';
+  var ACH_KEY = 'siem-achievements-v2';
   var BC_NAME = 'siem-deck-channel';
-  var VERSION = '15.2.0';
+  var VERSION = '16.0.0';
 
   var REDUCED_MOTION =
     typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ── SessionState ── */
+  /* ═════════════════════════════════════════════════════════════════════════
+     SessionState
+     ═════════════════════════════════════════════════════════════════════════ */
   var SessionState = {
     _data: null,
 
@@ -21,9 +27,7 @@
       try {
         var raw = sessionStorage.getItem(STORAGE_KEY);
         this._data = raw ? JSON.parse(raw) : {};
-      } catch (_) {
-        this._data = {};
-      }
+      } catch (_) { this._data = {}; }
       if (!this._data.startedAt) this._data.startedAt = Date.now();
       if (!this._data.visited) this._data.visited = [];
       if (!this._data.prefs) this._data.prefs = {};
@@ -32,9 +36,7 @@
     },
 
     _save: function () {
-      try {
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(this._data));
-      } catch (_) { /* quota */ }
+      try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(this._data)); } catch (_) { /* quota */ }
     },
 
     get: function (key, fallback) {
@@ -67,7 +69,9 @@
     },
   };
 
-  /* ── AchievementSystem (44) ── */
+  /* ═════════════════════════════════════════════════════════════════════════
+     AchievementSystem (47 achievements)
+     ═════════════════════════════════════════════════════════════════════════ */
   var ACH_DEFINITIONS = [
     { id: 'first_boot', title: 'Cold Start', desc: 'Boot the terminal for the first time.', icon: '⬡', category: 'milestones', rarity: 'common' },
     { id: 'visit_terminal', title: 'Shell Access', desc: 'Enter The Terminal.', icon: '▸', category: 'experiences', rarity: 'common' },
@@ -97,26 +101,28 @@
     { id: 'heist_win', title: 'Clean Exfil', desc: 'Complete a heist without detection.', icon: '◈', category: 'milestones', rarity: 'rare' },
     { id: 'deck_transition', title: 'Phase Shift', desc: 'Cycle deck transition styles.', icon: '↻', category: 'milestones', rarity: 'common' },
     { id: 'explorer', title: 'Full Tour', desc: 'Visit 10 distinct deck pages.', icon: '✦', category: 'milestones', rarity: 'rare' },
-    { id: 'nav-terminal', title: 'Nav · Terminal', desc: 'Navigate to The Terminal via palette or nav.', icon: '▸', category: 'navigation', rarity: 'common' },
-    { id: 'nav-breach', title: 'Nav · Breach', desc: 'Navigate to The Breach.', icon: '◈', category: 'navigation', rarity: 'common' },
-    { id: 'nav-network', title: 'Nav · Network', desc: 'Navigate to The Ghost Network.', icon: '◎', category: 'navigation', rarity: 'common' },
-    { id: 'nav-cipher', title: 'Nav · Cipher', desc: 'Navigate to The Cipher.', icon: '⬢', category: 'navigation', rarity: 'common' },
-    { id: 'nav-sim', title: 'Nav · Simulation', desc: 'Navigate to The Simulation.', icon: '◉', category: 'navigation', rarity: 'common' },
-    { id: 'nav-intercept', title: 'Nav · Interrogation', desc: 'Navigate to The Interrogation Room.', icon: '◫', category: 'navigation', rarity: 'common' },
-    { id: 'nav-forge', title: 'Nav · Forge', desc: 'Navigate to The Forge.', icon: '⬛', category: 'navigation', rarity: 'common' },
-    { id: 'nav-archive', title: 'Nav · Archive', desc: 'Navigate to The Deep Archive.', icon: '▣', category: 'navigation', rarity: 'common' },
-    { id: 'nav-heist', title: 'Nav · Heist', desc: 'Navigate to The Heist.', icon: '◆', category: 'navigation', rarity: 'common' },
-    { id: 'nav-cartography', title: 'Nav · Cartography', desc: 'Navigate to The Cartography.', icon: '◐', category: 'navigation', rarity: 'common' },
-    { id: 'nav-lab', title: 'Nav · Lab', desc: 'Navigate to The Lab.', icon: '⬤', category: 'navigation', rarity: 'common' },
-    { id: 'nav-memorial', title: 'Nav · Memorial', desc: 'Navigate to The Memorial.', icon: '◌', category: 'navigation', rarity: 'common' },
-    { id: 'nav-resonance', title: 'Nav · Resonance', desc: 'Navigate to The Resonance.', icon: '♫', category: 'navigation', rarity: 'common' },
-    { id: 'nav-right', title: 'Nav · Signal Room', desc: 'Navigate to The Signal Room.', icon: '◓', category: 'navigation', rarity: 'common' },
-    { id: 'nav-left', title: 'Nav · War Room', desc: 'Navigate to The War Room.', icon: '◒', category: 'navigation', rarity: 'common' },
-    { id: 'nav-brain', title: 'Nav · Observation Deck', desc: 'Navigate to the Observation Deck.', icon: '◑', category: 'navigation', rarity: 'common' },
-    { id: 'nav-landing', title: 'Nav · Approach', desc: 'Navigate to the landing page.', icon: '⬡', category: 'navigation', rarity: 'common' },
-    { id: 'nav-read', title: 'Nav · Documentation', desc: 'Open the documentation reader.', icon: '📖', category: 'navigation', rarity: 'common' },
-    { id: 'nav-trophy', title: 'Nav · Achievements', desc: 'Open the Achievement Room.', icon: '🏆', category: 'navigation', rarity: 'common' },
-    { id: 'nav-motd', title: 'Nav · Daily Briefing', desc: 'Open the daily briefing.', icon: '📡', category: 'navigation', rarity: 'common' },
+    { id: 'speed_demon', title: 'Speed Demon', desc: 'Complete any game in under 30 seconds.', icon: '⚡', category: 'milestones', rarity: 'rare' },
+    { id: 'completionist', title: 'Completionist', desc: 'Unlock all achievements.', icon: '👑', category: 'secrets', rarity: 'secret' },
+    { id: 'nav_terminal', title: 'Nav · Terminal', desc: 'Navigate to The Terminal via palette or nav.', icon: '▸', category: 'navigation', rarity: 'common' },
+    { id: 'nav_breach', title: 'Nav · Breach', desc: 'Navigate to The Breach.', icon: '◈', category: 'navigation', rarity: 'common' },
+    { id: 'nav_network', title: 'Nav · Network', desc: 'Navigate to The Ghost Network.', icon: '◎', category: 'navigation', rarity: 'common' },
+    { id: 'nav_cipher', title: 'Nav · Cipher', desc: 'Navigate to The Cipher.', icon: '⬢', category: 'navigation', rarity: 'common' },
+    { id: 'nav_sim', title: 'Nav · Simulation', desc: 'Navigate to The Simulation.', icon: '◉', category: 'navigation', rarity: 'common' },
+    { id: 'nav_intercept', title: 'Nav · Interrogation', desc: 'Navigate to The Interrogation Room.', icon: '◫', category: 'navigation', rarity: 'common' },
+    { id: 'nav_forge', title: 'Nav · Forge', desc: 'Navigate to The Forge.', icon: '⬛', category: 'navigation', rarity: 'common' },
+    { id: 'nav_archive', title: 'Nav · Archive', desc: 'Navigate to The Deep Archive.', icon: '▣', category: 'navigation', rarity: 'common' },
+    { id: 'nav_heist', title: 'Nav · Heist', desc: 'Navigate to The Heist.', icon: '◆', category: 'navigation', rarity: 'common' },
+    { id: 'nav_cartography', title: 'Nav · Cartography', desc: 'Navigate to The Cartography.', icon: '◐', category: 'navigation', rarity: 'common' },
+    { id: 'nav_lab', title: 'Nav · Lab', desc: 'Navigate to The Lab.', icon: '⬤', category: 'navigation', rarity: 'common' },
+    { id: 'nav_memorial', title: 'Nav · Memorial', desc: 'Navigate to The Memorial.', icon: '◌', category: 'navigation', rarity: 'common' },
+    { id: 'nav_resonance', title: 'Nav · Resonance', desc: 'Navigate to The Resonance.', icon: '♫', category: 'navigation', rarity: 'common' },
+    { id: 'nav_right', title: 'Nav · Signal Room', desc: 'Navigate to The Signal Room.', icon: '◓', category: 'navigation', rarity: 'common' },
+    { id: 'nav_left', title: 'Nav · War Room', desc: 'Navigate to The War Room.', icon: '◒', category: 'navigation', rarity: 'common' },
+    { id: 'nav_brain', title: 'Nav · Observation Deck', desc: 'Navigate to the Observation Deck.', icon: '◑', category: 'navigation', rarity: 'common' },
+    { id: 'nav_landing', title: 'Nav · Approach', desc: 'Navigate to the landing page.', icon: '⬡', category: 'navigation', rarity: 'common' },
+    { id: 'nav_read', title: 'Nav · Documentation', desc: 'Open the documentation reader.', icon: '📖', category: 'navigation', rarity: 'common' },
+    { id: 'nav_trophy', title: 'Nav · Achievements', desc: 'Open the Achievement Room.', icon: '🏆', category: 'navigation', rarity: 'common' },
+    { id: 'nav_motd', title: 'Nav · Daily Briefing', desc: 'Open the daily briefing.', icon: '📡', category: 'navigation', rarity: 'common' },
   ];
 
   var AchievementSystem = {
@@ -127,16 +133,12 @@
       try {
         var raw = localStorage.getItem(ACH_KEY);
         this._unlocked = raw ? JSON.parse(raw) : {};
-      } catch (_) {
-        this._unlocked = {};
-      }
+      } catch (_) { this._unlocked = {}; }
       return this._unlocked;
     },
 
     _save: function () {
-      try {
-        localStorage.setItem(ACH_KEY, JSON.stringify(this._unlocked));
-      } catch (_) { /* quota */ }
+      try { localStorage.setItem(ACH_KEY, JSON.stringify(this._unlocked)); } catch (_) { /* quota */ }
     },
 
     list: function () {
@@ -163,6 +165,10 @@
         document.dispatchEvent(new CustomEvent('siem-achievement', { detail: { id: id, title: def.title } }));
       }
       if (SessionState._load().visited.length >= 10) this.check('explorer');
+      // Check completionist
+      var total = ACH_DEFINITIONS.length;
+      var unlocked = Object.keys(u).filter(function (k) { return !k.endsWith('_at') && u[k]; }).length;
+      if (unlocked >= total) this.check('completionist');
       return true;
     },
 
@@ -170,9 +176,13 @@
       var u = this._load();
       return ACH_DEFINITIONS.filter(function (a) { return u[a.id]; }).length;
     },
+
+    total: function () { return ACH_DEFINITIONS.length; },
   };
 
-  /* ── BroadcastChannel notifications ── */
+  /* ═════════════════════════════════════════════════════════════════════════
+     BroadcastChannel
+     ═════════════════════════════════════════════════════════════════════════ */
   var Broadcast = {
     _ch: null,
 
@@ -184,9 +194,7 @@
         this._ch.onmessage = function (ev) {
           document.dispatchEvent(new CustomEvent('siem-broadcast', { detail: ev.data }));
         };
-      } catch (_) {
-        this._ch = null;
-      }
+      } catch (_) { this._ch = null; }
       return this._ch;
     },
 
@@ -214,7 +222,9 @@
     },
   };
 
-  /* ── AmbientAudio singleton stub ── */
+  /* ═════════════════════════════════════════════════════════════════════════
+     AmbientAudio
+     ═════════════════════════════════════════════════════════════════════════ */
   var AmbientAudio = {
     _ctx: null,
     _gain: null,
@@ -264,7 +274,9 @@
     isPlaying: function () { return this._playing; },
   };
 
-  /* ── EventEngine (shared tick bus) ── */
+  /* ═════════════════════════════════════════════════════════════════════════
+     EventEngine
+     ═════════════════════════════════════════════════════════════════════════ */
   var EventEngine = {
     _subs: [],
     _running: false,
@@ -305,7 +317,9 @@
     },
   };
 
-  /* ── Canvas helpers: DPR cap, visibility pause, adaptive FPS ── */
+  /* ═════════════════════════════════════════════════════════════════════════
+     CanvasLoop
+     ═════════════════════════════════════════════════════════════════════════ */
   var CanvasLoop = {
     _loops: [],
 
@@ -376,7 +390,9 @@
     },
   };
 
-  /* ── GlobalPalette registry (Ctrl+K wired by palette.js) ── */
+  /* ═════════════════════════════════════════════════════════════════════════
+     GlobalPalette
+     ═════════════════════════════════════════════════════════════════════════ */
   var GlobalPalette = {
     _entries: [],
     _inited: false,
@@ -385,31 +401,33 @@
       if (!entry || !entry.id) return;
       this._entries = this._entries.filter(function (e) { return e.id !== entry.id; });
       this._entries.push(entry);
-      this._entries.sort(function (a, b) { return (a.group || '').localeCompare(b.group || '') || (a.label || '').localeCompare(b.label || ''); });
+      this._entries.sort(function (a, b) {
+        return (a.group || '').localeCompare(b.group || '') || (a.label || '').localeCompare(b.label || '');
+      });
     },
 
     registerDefaults: function () {
       var pages = [
-        { id: 'nav-landing', label: 'Approach Vector', href: 'index.html', group: 'Deck', kbd: 'H' },
-        { id: 'nav-brain', label: 'Observation Deck', href: 'brain/index.html', group: 'Deck' },
-        { id: 'nav-left', label: 'The War Room', href: 'left.html', group: 'Deck' },
-        { id: 'nav-right', label: 'The Signal Room', href: 'right.html', group: 'Deck' },
-        { id: 'nav-terminal', label: 'The Terminal', href: 'terminal.html', group: 'Experiences' },
-        { id: 'nav-breach', label: 'The Breach', href: 'breach.html', group: 'Experiences' },
-        { id: 'nav-network', label: 'The Ghost Network', href: 'network.html', group: 'Experiences' },
-        { id: 'nav-cipher', label: 'The Cipher', href: 'cipher.html', group: 'Experiences' },
-        { id: 'nav-sim', label: 'The Simulation', href: 'sim.html', group: 'Experiences' },
-        { id: 'nav-intercept', label: 'The Interrogation Room', href: 'intercept.html', group: 'Experiences' },
-        { id: 'nav-forge', label: 'The Forge', href: 'forge.html', group: 'Experiences' },
-        { id: 'nav-archive', label: 'The Deep Archive', href: 'archive.html', group: 'Experiences' },
-        { id: 'nav-heist', label: 'The Heist', href: 'heist.html', group: 'Experiences' },
-        { id: 'nav-cartography', label: 'The Cartography', href: 'cartography.html', group: 'Experiences' },
-        { id: 'nav-lab', label: 'The Lab', href: 'lab.html', group: 'Experiences' },
-        { id: 'nav-memorial', label: 'The Memorial', href: 'memorial.html', group: 'Experiences' },
-        { id: 'nav-resonance', label: 'The Resonance', href: 'resonance.html', group: 'Experiences' },
-        { id: 'nav-read', label: 'Documentation Reader', href: 'read.html', group: 'Docs' },
-        { id: 'nav-trophy', label: 'Achievements', href: 'trophy.html', group: 'System', action: 'achievements' },
-        { id: 'nav-motd', label: 'Daily Briefing', href: 'motd.html', group: 'System' },
+        { id: 'nav_landing', label: 'Approach Vector', href: 'index.html', group: 'Deck', kbd: 'H' },
+        { id: 'nav_brain', label: 'Observation Deck', href: 'brain/index.html', group: 'Deck' },
+        { id: 'nav_left', label: 'The War Room', href: 'left.html', group: 'Deck' },
+        { id: 'nav_right', label: 'The Signal Room', href: 'right.html', group: 'Deck' },
+        { id: 'nav_terminal', label: 'The Terminal', href: 'terminal.html', group: 'Experiences' },
+        { id: 'nav_breach', label: 'The Breach', href: 'breach.html', group: 'Experiences' },
+        { id: 'nav_network', label: 'The Ghost Network', href: 'network.html', group: 'Experiences' },
+        { id: 'nav_cipher', label: 'The Cipher', href: 'cipher.html', group: 'Experiences' },
+        { id: 'nav_sim', label: 'The Simulation', href: 'sim.html', group: 'Experiences' },
+        { id: 'nav_intercept', label: 'The Interrogation Room', href: 'intercept.html', group: 'Experiences' },
+        { id: 'nav_forge', label: 'The Forge', href: 'forge.html', group: 'Experiences' },
+        { id: 'nav_archive', label: 'The Deep Archive', href: 'archive.html', group: 'Experiences' },
+        { id: 'nav_heist', label: 'The Heist', href: 'heist.html', group: 'Experiences' },
+        { id: 'nav_cartography', label: 'The Cartography', href: 'cartography.html', group: 'Experiences' },
+        { id: 'nav_lab', label: 'The Lab', href: 'lab.html', group: 'Experiences' },
+        { id: 'nav_memorial', label: 'The Memorial', href: 'memorial.html', group: 'Experiences' },
+        { id: 'nav_resonance', label: 'The Resonance', href: 'resonance.html', group: 'Experiences' },
+        { id: 'nav_read', label: 'Documentation Reader', href: 'read.html', group: 'Docs' },
+        { id: 'nav_trophy', label: 'Achievements', href: 'trophy.html', group: 'System', action: 'achievements' },
+        { id: 'nav_motd', label: 'Daily Briefing', href: 'motd.html', group: 'System' },
       ];
       var base = siteRootPrefix();
       pages.forEach(function (p) {
@@ -448,26 +466,288 @@
     },
   };
 
-  function resolveAssetPath(rel) {
-    return resolveSiteHref(rel);
-  }
+  /* ═════════════════════════════════════════════════════════════════════════
+     GSAP Master Timeline — page entrance sequence
+     ═════════════════════════════════════════════════════════════════════════ */
+  var MasterTimeline = {
+    _tl: null,
+    _played: false,
 
-  function loadQoL() {
-    if (document.getElementById('siem-qol-script')) {
-      if (global.SiemQoL && !global.SiemQoL._inited) global.SiemQoL.init();
-      return;
-    }
-    if (global.SiemQoL && global.SiemQoL._inited) return;
-    var s = document.createElement('script');
-    s.id = 'siem-qol-script';
-    s.src = resolveAssetPath('assets/siem-qol.js');
-    s.onload = function () {
-      if (global.SiemQoL) global.SiemQoL.init();
-    };
-    document.body.appendChild(s);
-  }
+    /**
+     * Build and play the entrance sequence.
+     * @param {Object} opts - { container, titleEl, subtitleEl, onComplete }
+     */
+    play: function (opts) {
+      if (this._played) return;
+      this._played = true;
+      if (REDUCED_MOTION) {
+        if (opts.onComplete) opts.onComplete();
+        return;
+      }
+      if (typeof gsap === 'undefined') {
+        if (opts.onComplete) opts.onComplete();
+        return;
+      }
 
-  /* ── Site-root path resolution (GitHub Pages subpaths + nested games) ── */
+      var tl = gsap.timeline({ onComplete: opts.onComplete || null });
+      var container = opts.container || document.body;
+      var titleEl = opts.titleEl || container.querySelector('h1');
+      var subtitleEl = opts.subtitleEl || container.querySelector('.subtitle');
+
+      // Fade in container
+      tl.fromTo(container, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'power2.out' });
+
+      // Title entrance
+      if (titleEl) {
+        tl.fromTo(titleEl,
+          { y: 30, opacity: 0, scale: 0.95 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.4)' },
+          '-=0.2'
+        );
+      }
+
+      // Subtitle entrance
+      if (subtitleEl) {
+        tl.fromTo(subtitleEl,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' },
+          '-=0.3'
+        );
+      }
+
+      // Fade-up elements
+      var fadeUps = container.querySelectorAll('.fade-up');
+      if (fadeUps.length) {
+        tl.fromTo(fadeUps,
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'power2.out' },
+          '-=0.2'
+        );
+      }
+
+      this._tl = tl;
+    },
+
+    addLabel: function (label) {
+      if (this._tl) this._tl.addLabel(label);
+    },
+
+    reset: function () {
+      this._played = false;
+      this._tl = null;
+    },
+  };
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     ScrambleText — GSAP-based text scramble effect
+     ═════════════════════════════════════════════════════════════════════════ */
+  var ScrambleText = {
+    /**
+     * Scramble an element's text content.
+     * @param {HTMLElement} el - Target element
+     * @param {Object} opts - { chars, duration, reveal, onComplete }
+     */
+    animate: function (el, opts) {
+      opts = opts || {};
+      if (!el) return;
+      if (REDUCED_MOTION) return;
+      if (typeof gsap === 'undefined') return;
+
+      var originalText = el.textContent || '';
+      var chars = opts.chars || '!<>-_\\/[]{}—=+*^?#________';
+      var duration = opts.duration || 1.2;
+      var reveal = opts.reveal !== false;
+
+      var progress = { value: 0 };
+      gsap.to(progress, {
+        value: 1,
+        duration: duration,
+        ease: 'power2.inOut',
+        onUpdate: function () {
+          var p = progress.value;
+          var result = '';
+          var fullChars = Math.floor(p * originalText.length);
+          for (var i = 0; i < originalText.length; i++) {
+            if (i < fullChars) {
+              result += originalText[i];
+            } else if (i === fullChars && reveal) {
+              result += originalText[i];
+            } else {
+              result += chars[Math.floor(Math.random() * chars.length)];
+            }
+          }
+          el.textContent = result;
+        },
+        onComplete: function () {
+          el.textContent = originalText;
+          if (opts.onComplete) opts.onComplete();
+        },
+      });
+    },
+
+    /**
+     * Scramble multiple elements with stagger.
+     */
+    animateAll: function (selector, opts) {
+      var els = document.querySelectorAll(selector);
+      var delay = 0;
+      var stagger = (opts && opts.stagger) || 0.15;
+      els.forEach(function (el) {
+        setTimeout(function () {
+          ScrambleText.animate(el, opts);
+        }, delay * 1000);
+        delay += stagger;
+      });
+    },
+  };
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     Ripple — click ripple effect
+     ═════════════════════════════════════════════════════════════════════════ */
+  var Ripple = {
+    /**
+     * Create a ripple at click position on an element.
+     */
+    create: function (e, opts) {
+      opts = opts || {};
+      var el = e.currentTarget;
+      var rect = el.getBoundingClientRect();
+      var size = opts.size || 20;
+      var color = opts.color || 'rgba(255,255,255,0.3)';
+      var duration = opts.duration || 500;
+
+      var ripple = document.createElement('span');
+      ripple.style.cssText =
+        'position:absolute;border-radius:50%;background:' + color + ';' +
+        'width:' + size + 'px;height:' + size + 'px;' +
+        'left:' + (e.clientX - rect.left - size / 2) + 'px;' +
+        'top:' + (e.clientY - rect.top - size / 2) + 'px;' +
+        'transform:scale(0);animation:rippleOut ' + (duration / 1000) + 's ease-out forwards;' +
+        'pointer-events:none;z-index:1';
+
+      el.style.position = 'relative';
+      el.style.overflow = 'hidden';
+      el.appendChild(ripple);
+      setTimeout(function () { ripple.remove(); }, duration + 100);
+    },
+
+    /**
+     * Bind ripple to all matching elements.
+     */
+    bind: function (selector, opts) {
+      document.querySelectorAll(selector).forEach(function (el) {
+        if (el._rippleBound) return;
+        el._rippleBound = true;
+        el.addEventListener('click', function (e) {
+          Ripple.create(e, opts);
+        });
+      });
+    },
+  };
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     Magnetic — magnetic hover effect on buttons
+     ═════════════════════════════════════════════════════════════════════════ */
+  var Magnetic = {
+    /**
+     * Apply magnetic effect to an element.
+     */
+    bind: function (el, opts) {
+      opts = opts || {};
+      var strength = opts.strength || 0.3;
+      var radius = opts.radius || 200;
+
+      if (el._magneticBound) return;
+      el._magneticBound = true;
+
+      el.addEventListener('mousemove', function (e) {
+        var rect = el.getBoundingClientRect();
+        var x = e.clientX - rect.left - rect.width / 2;
+        var y = e.clientY - rect.top - rect.height / 2;
+        var distance = Math.sqrt(x * x + y * y);
+
+        if (distance < radius) {
+          var power = (1 - distance / radius) * strength;
+          el.style.transform = 'translate(' + (x * power) + 'px, ' + (y * power) + 'px)';
+          el.style.transition = 'transform 0.1s ease-out';
+        }
+      });
+
+      el.addEventListener('mouseleave', function () {
+        el.style.transform = 'translate(0, 0)';
+        el.style.transition = 'transform 0.3s ease-out';
+      });
+    },
+
+    /**
+     * Bind magnetic to all matching elements.
+     */
+    bindAll: function (selector, opts) {
+      document.querySelectorAll(selector).forEach(function (el) {
+        Magnetic.bind(el, opts);
+      });
+    },
+  };
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     Typewriter — typewriter effect
+     ═════════════════════════════════════════════════════════════════════════ */
+  var Typewriter = {
+    /**
+     * Type text into an element character by character.
+     */
+    type: function (el, text, opts) {
+      opts = opts || {};
+      if (!el) return;
+      if (REDUCED_MOTION) { el.textContent = text; return; }
+
+      var speed = opts.speed || 40;
+      var cursor = opts.cursor !== false;
+      var index = 0;
+
+      el.textContent = '';
+      if (cursor) {
+        var cursorEl = document.createElement('span');
+        cursorEl.className = 'typewriter-cursor';
+        cursorEl.textContent = '▊';
+        cursorEl.style.cssText = 'animation:blink 0.8s step-end infinite;color:var(--cyan);margin-left:2px';
+        el.appendChild(cursorEl);
+      }
+
+      function tick() {
+        if (index < text.length) {
+          if (cursor) {
+            cursorEl.parentNode.insertBefore(document.createTextNode(text[index]), cursorEl);
+          } else {
+            el.textContent += text[index];
+          }
+          index++;
+          setTimeout(tick, speed + (Math.random() * speed * 0.5));
+        } else {
+          if (opts.onComplete) opts.onComplete();
+        }
+      }
+      tick();
+    },
+
+    /**
+     * Type into multiple elements sequentially.
+     */
+    typeAll: function (pairs, opts) {
+      opts = opts || {};
+      var delay = 0;
+      pairs.forEach(function (pair) {
+        setTimeout(function () {
+          Typewriter.type(pair.el, pair.text, opts);
+        }, delay);
+        delay += (pair.text.length * (opts.speed || 40)) + 400;
+      });
+    },
+  };
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     Path resolution helpers
+     ═════════════════════════════════════════════════════════════════════════ */
   function siteRootPrefix() {
     var path = location.pathname.replace(/\\/g, '/');
     var marker = '/experience-modules/';
@@ -489,38 +769,35 @@
     return siteRootPrefix() + t.replace(/^\/+/, '');
   }
 
-  /* ── Page bootstrap ── */
-  function bootPage(pageId) {
-    GlobalPalette.init();
-    if (pageId) SessionState.visit(pageId);
-    injectCoreStyles();
-    injectSessionBadge();
-    loadQoL();
-    // Demo / portfolio mode: unlock all games so any page is directly accessible
-    if (/[?&]demo=true/.test(location.search) || /[?&]recruiter=true/.test(location.search)) {
-      try {
-        var SEQ = ['the_terminal','the_breach','the_ghost_network','the_cipher','the_simulation',
-          'the_interrogation_room','the_forge','the_deep_archive','the_heist','the_lab',
-          'the_cartography','the_memorial','the_resonance'];
-        SEQ.forEach(function (gid) {
-          var key = 'habibi-xp-' + gid;
-          var raw = localStorage.getItem(key);
-          var data = raw ? JSON.parse(raw) : {};
-          data.unlocked = true;
-          if (!data.gameId) data.gameId = gid;
-          localStorage.setItem(key, JSON.stringify(data));
-        });
-      } catch (_) { /* storage may be unavailable */ }
-    }
-    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-      navigator.serviceWorker.register(resolveSwPath()).catch(function () { /* offline optional */ });
-    }
+  function resolveAssetPath(rel) {
+    return resolveSiteHref(rel);
   }
 
   function resolveSwPath() {
     return resolveSiteHref('sw.js');
   }
 
+  /* ═════════════════════════════════════════════════════════════════════════
+     QoL loader
+     ═════════════════════════════════════════════════════════════════════════ */
+  function loadQoL() {
+    if (document.getElementById('siem-qol-script')) {
+      if (global.SiemQoL && !global.SiemQoL._inited) global.SiemQoL.init();
+      return;
+    }
+    if (global.SiemQoL && global.SiemQoL._inited) return;
+    var s = document.createElement('script');
+    s.id = 'siem-qol-script';
+    s.src = resolveAssetPath('assets/siem-qol.js');
+    s.onload = function () {
+      if (global.SiemQoL) global.SiemQoL.init();
+    };
+    document.body.appendChild(s);
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     Core styles injection
+     ═════════════════════════════════════════════════════════════════════════ */
   function injectCoreStyles() {
     if (document.getElementById('siem-core-styles')) return;
     var s = document.createElement('style');
@@ -532,10 +809,14 @@
       '.siem-toast--visible{opacity:1;transform:none}.siem-toast-icon{color:#fbbf24;font-size:16px}' +
       '.siem-session-badge{position:fixed;bottom:8px;left:8px;z-index:9000;font:9px/1 "IBM Plex Mono",monospace;' +
       'color:rgba(148,163,184,.55);letter-spacing:1px;pointer-events:none}.siem-egg-badge{margin-left:8px;color:#fbbf24}' +
+      '@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}' +
       '@media(prefers-reduced-motion:reduce){.siem-toast{transition:none}}@media(max-width:900px){.siem-session-badge{display:none}}';
     document.head.appendChild(s);
   }
 
+  /* ═════════════════════════════════════════════════════════════════════════
+     Session badge injection
+     ═════════════════════════════════════════════════════════════════════════ */
   function injectSessionBadge() {
     if (document.getElementById('siem-session-badge')) return;
     var el = document.createElement('div');
@@ -553,6 +834,50 @@
     document.body.appendChild(el);
   }
 
+  /* ═════════════════════════════════════════════════════════════════════════
+     Page bootstrap
+     ═════════════════════════════════════════════════════════════════════════ */
+  function bootPage(pageId) {
+    GlobalPalette.init();
+    if (pageId) SessionState.visit(pageId);
+    injectCoreStyles();
+    injectSessionBadge();
+    loadQoL();
+
+    // Demo / portfolio mode: unlock all games
+    if (/[?&]demo=true/.test(location.search) || /[?&]recruiter=true/.test(location.search)) {
+      try {
+        var SEQ = ['the_terminal','the_breach','the_ghost_network','the_cipher','the_simulation',
+          'the_interrogation_room','the_forge','the_deep_archive','the_heist','the_lab',
+          'the_cartography','the_memorial','the_resonance'];
+        SEQ.forEach(function (gid) {
+          var key = 'habibi-xp-' + gid;
+          var raw = localStorage.getItem(key);
+          var data = raw ? JSON.parse(raw) : {};
+          data.unlocked = true;
+          if (!data.gameId) data.gameId = gid;
+          localStorage.setItem(key, JSON.stringify(data));
+        });
+      } catch (_) { /* storage may be unavailable */ }
+    }
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      navigator.serviceWorker.register(resolveSwPath()).catch(function () { /* offline optional */ });
+    }
+
+    // Auto-play master timeline on next frame
+    requestAnimationFrame(function () {
+      MasterTimeline.play({
+        container: document.querySelector('main') || document.body,
+        titleEl: document.querySelector('h1'),
+        subtitleEl: document.querySelector('.subtitle'),
+      });
+    });
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     Expose public API
+     ═════════════════════════════════════════════════════════════════════════ */
   global.SiemCore = {
     VERSION: VERSION,
     SessionState: SessionState,
@@ -562,9 +887,16 @@
     Broadcast: Broadcast,
     EventEngine: EventEngine,
     CanvasLoop: CanvasLoop,
+    MasterTimeline: MasterTimeline,
+    ScrambleText: ScrambleText,
+    Ripple: Ripple,
+    Magnetic: Magnetic,
+    Typewriter: Typewriter,
     bootPage: bootPage,
     siteRootPrefix: siteRootPrefix,
     resolveSiteHref: resolveSiteHref,
     REDUCED_MOTION: REDUCED_MOTION,
   };
 })(typeof window !== 'undefined' ? window : this);
+
+
