@@ -1,5 +1,5 @@
 /**
- * wormhole-for-claude.js  v9.0.0 — HABIBI-SIEM COSMOS ENGINE
+ * wormhole-portal.js  v9.0.0 — HABIBI-SIEM COSMOS ENGINE
  * ─────────────────────────────────────────────────────────────
  * Drop-in upgrade. Same public API:
  *

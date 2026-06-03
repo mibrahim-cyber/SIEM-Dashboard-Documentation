@@ -8,9 +8,9 @@
 var DIO_STORYLINE = {
   'index': {
     enter: [
-      "You have arrived at HABIBI-SIEM. I am DIO, your operations guide.",
+      "You have arrived at HABIBI-SIEM. I'm OPERATOR, your operations guide.",
       "Operation MERIDIAN-7 — thirteen trials, one breach, one story.",
-      "Click the button below when you are ready. Only I can begin your investigation."
+      "Click the button below when you're ready to begin your investigation."
     ],
     tips: [
       "Each module unlocks the next in sequence.",
@@ -23,14 +23,14 @@ var DIO_STORYLINE = {
       "The Terminal. Where all analysts begin.",
       "Type commands. The system responds. Learn to read what it tells you.",
       "This is reconnaissance — the first phase of every investigation.",
-      "Complete all 5 levels. I will be watching."
+      "Complete all 5 levels to continue."
     ],
     level1: ["Level 1. Basic commands. Type: ls, then pwd, whoami, date, echo hello."],
     level2: ["Chain commands. find . -name '*.log' -mmin -60"],
     level3: ["grep 192.168.1.100 auth.log — watch the load bar."],
     level4: ["grep ACCESS, CMD, MODIFY, NET — rebuild the timeline."],
     level5: ["Epilogue. Your choices carry forward to The Breach."],
-    complete: ["WRYYY. The Breach awaits. An incident is already in progress."],
+    complete: ["The Breach is next. An incident is already in progress."],
     nextAction: { label: "Enter The Breach", url: "experience-modules/game2-breach/index.html" }
   },
   'game2-breach': {
@@ -111,11 +111,9 @@ var DIO_STORYLINE = {
   'game13-resonance': {
     enter: ["The Resonance. Tune thresholds. Maximise signal."],
     complete: [
-      "ZA WARUDO.",
       "All 13 trials complete.",
       "You traced MERIDIAN-7 from first alert to attribution.",
-      "Your Debrief Report is ready.",
-      "WRYYY."
+      "Your Debrief Report is ready."
     ],
     nextAction: { label: "View Debrief Report", url: "debrief.html" }
   },
@@ -136,7 +134,7 @@ var DIO_STORYLINE = {
 };
 
 var RECRUITER_SCRIPT = [
-  "I am DIO. 90-second overview.",
+  "I'm OPERATOR. 90-second overview.",
   "HABIBI-SIEM is a Security Operations Centre simulator built entirely in-browser.",
   "13 games. Each teaches one phase of real SOC work — from log analysis to malware sandboxing.",
   "Built with Three.js, Cannon-es physics, and a shared progression engine.",
@@ -148,7 +146,7 @@ var RECRUITER_SCRIPT = [
   "The 13 games span all 5 NIST CSF functions: Identify, Protect, Detect, Respond, Recover.",
   "The detection engine in the companion dashboard maps to STRIDE and MITRE ATT&CK.",
   "28 modules. 245 guides. One connected investigation across 13 playable experiences.",
-  "That is HABIBI-SIEM. ZA WARUDO."
+  "That's HABIBI-SIEM."
 ];
 
 /* ─── DioSprite (SVG + CSS animations) ──────────────────────────────── */
@@ -188,82 +186,14 @@ DioSprite.prototype._buildSVG = function () {
   this.svg.setAttribute('height', '170');
   this.svg.id = 'dio-svg-char';
   this.svg.innerHTML =
-    /* ── HAIR ─────────────────────────────────────────────────────────
-       Outer silhouette (dark gold) — wide dramatic crown shape
-       Inner layer (bright gold) — front-facing lighter section
-       All y-coords positive so nothing is clipped by the viewBox     */
-    '<polygon points="28,52 18,36 13,20 22,9 34,4 50,3 66,4 78,9 87,20 82,36 72,52" fill="#C8A000"/>' +
-    '<polygon points="35,52 28,36 26,20 33,11 44,6 50,4 56,6 67,11 74,20 72,36 65,52" fill="#FFE000"/>' +
-    /* Bright highlight at the crown spike */
-    '<polygon points="50,4 44,13 50,10 56,13" fill="#FFF080"/>' +
-    /* Subtle texture lines down each side */
-    '<line x1="30" y1="46" x2="24" y2="14" stroke="#D4A000" stroke-width="1" opacity="0.35"/>' +
-    '<line x1="70" y1="46" x2="76" y2="14" stroke="#D4A000" stroke-width="1" opacity="0.35"/>' +
-    /* ── HEADBAND ──────────────────────────────────────────────────── */
-    '<rect x="34" y="50" width="32" height="5" rx="2.5" fill="#C8A020"/>' +
-    '<rect x="34" y="50" width="32" height="2" rx="1" fill="#FFD700" opacity="0.4"/>' +
-    /* Diamond gem */
-    '<polygon points="50,48 55,52.5 50,57 45,52.5" fill="#00EE60" stroke="#00AA44" stroke-width="0.5"/>' +
-    '<polygon points="50,49.5 54,52.5 50,55.5 46,52.5" fill="#88FFB8" opacity="0.45"/>' +
-    /* ── FACE ──────────────────────────────────────────────────────── */
-    '<ellipse cx="50" cy="68" rx="14" ry="17" fill="#F2D898" stroke="#2A1400" stroke-width="0.4"/>' +
-    /* Jaw sharpening line */
-    '<path d="M36,73 Q40,83 50,86 Q60,83 64,73" stroke="#D4A060" stroke-width="0.5" fill="none" opacity="0.3"/>' +
-    /* Eyebrows — strong, angled inward */
-    '<path d="M35,60 Q40,57 46,59" stroke="#7A5010" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-    '<path d="M65,60 Q60,57 54,59" stroke="#7A5010" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-    /* Left eye */
-    '<ellipse cx="42" cy="66" rx="5.5" ry="4.5" fill="#7730C0"/>' +
-    '<ellipse cx="42" cy="66" rx="3.5" ry="3" fill="#5518A0"/>' +
-    '<ellipse cx="42" cy="66" rx="2" ry="2" fill="#080018"/>' +
-    '<ellipse cx="40.5" cy="64.5" rx="1.3" ry="0.9" fill="white" opacity="0.9"/>' +
-    '<ellipse cx="42" cy="66" rx="5.5" ry="4.5" fill="none" stroke="#1A0040" stroke-width="0.8"/>' +
-    /* Right eye */
-    '<ellipse cx="58" cy="66" rx="5.5" ry="4.5" fill="#7730C0"/>' +
-    '<ellipse cx="58" cy="66" rx="3.5" ry="3" fill="#5518A0"/>' +
-    '<ellipse cx="58" cy="66" rx="2" ry="2" fill="#080018"/>' +
-    '<ellipse cx="56.5" cy="64.5" rx="1.3" ry="0.9" fill="white" opacity="0.9"/>' +
-    '<ellipse cx="58" cy="66" rx="5.5" ry="4.5" fill="none" stroke="#1A0040" stroke-width="0.8"/>' +
-    /* Nose */
-    '<path d="M47,74 Q50,77 53,74" stroke="#C89040" stroke-width="0.9" fill="none" stroke-linecap="round"/>' +
-    /* Mouth — closed default */
-    '<path id="dio-mouth-c" d="M44,80 Q50,83 56,80" stroke="#8B2020" stroke-width="1.2" fill="none" stroke-linecap="round"/>' +
-    /* Mouth — open (talk animation) */
-    '<g id="dio-mouth-open" opacity="0">' +
-      '<path d="M44,79 Q50,76 56,79 Q56,86 50,87.5 Q44,86 44,79Z" fill="#8B0000"/>' +
-      '<rect x="46" y="79" width="3.5" height="3" rx="0.5" fill="#F0F0E0"/>' +
-      '<rect x="50.5" y="79" width="3.5" height="3" rx="0.5" fill="#F0F0E0"/>' +
-      '<path d="M44,82 Q50,84 56,82" stroke="#660000" stroke-width="0.5" fill="none"/>' +
-    '</g>' +
-    /* ── NECK ──────────────────────────────────────────────────────── */
-    '<rect x="44" y="85" width="12" height="8" fill="#E8C870" stroke="#2A1400" stroke-width="0.4"/>' +
-    '<path d="M34,91 Q44,88 50,88 Q56,88 66,91" stroke="#C8A020" stroke-width="2.5" fill="none"/>' +
-    /* ── COAT ──────────────────────────────────────────────────────── */
-    '<path d="M28,93 C20,99 17,132 15,168 L85,168 C83,132 80,99 72,93 C62,89 38,89 28,93Z" fill="#1A0A2E" stroke="#0A0015" stroke-width="0.5"/>' +
-    /* Centre shirt strip */
-    '<path d="M44,93 L43,168 L57,168 L56,93 Q50,90 44,93Z" fill="#241640"/>' +
-    /* Gold lapel trim */
-    '<path d="M44,93 Q36,98 29,114 Q24,130 26,154" stroke="#C8A020" stroke-width="1.8" fill="none"/>' +
-    '<path d="M56,93 Q64,98 71,114 Q76,130 74,154" stroke="#C8A020" stroke-width="1.8" fill="none"/>' +
-    /* Centre seam + buttons */
-    '<line x1="50" y1="88" x2="50" y2="168" stroke="#C8A020" stroke-width="0.8" opacity="0.45"/>' +
-    '<circle cx="50" cy="99" r="2.5" fill="#C8A020" opacity="0.65"/>' +
-    '<circle cx="50" cy="110" r="2" fill="#C8A020" opacity="0.45"/>' +
-    /* Hem */
-    '<line x1="15" y1="168" x2="85" y2="168" stroke="#C8A020" stroke-width="1.5"/>' +
-    /* ── LEFT ARM ──────────────────────────────────────────────────── */
-    '<path d="M22,99 C16,117 15,139 18,156" stroke="#1A0A2E" stroke-width="11" stroke-linecap="round" fill="none"/>' +
-    '<path d="M22,99 C16,117 15,139 18,156" stroke="#C8A020" stroke-width="1.2" stroke-linecap="round" fill="none"/>' +
-    '<ellipse cx="18" cy="157" rx="5.5" ry="3.5" fill="#C8A020"/>' +
-    '<ellipse cx="18" cy="162" rx="5" ry="5" fill="#E8C870"/>' +
-    /* ── RIGHT ARM (animates on point) ────────────────────────────── */
-    '<g id="dio-right-arm">' +
-      '<path d="M78,99 C84,117 85,139 82,156" stroke="#1A0A2E" stroke-width="11" stroke-linecap="round" fill="none"/>' +
-      '<path d="M78,99 C84,117 85,139 82,156" stroke="#C8A020" stroke-width="1.2" stroke-linecap="round" fill="none"/>' +
-      '<ellipse cx="82" cy="157" rx="5.5" ry="3.5" fill="#C8A020"/>' +
-      '<ellipse cx="82" cy="162" rx="5" ry="5" fill="#E8C870"/>' +
-      '<line x1="82" y1="160" x2="87" y2="150" stroke="#E8C870" stroke-width="3.5" stroke-linecap="round"/>' +
-    '</g>';
+    '<defs><linearGradient id="op-grad" x1="0" y1="0" x2="1" y2="1">' +
+    '<stop offset="0%" stop-color="#7dd3fc"/><stop offset="100%" stop-color="#38bdf8"/>' +
+    '</linearGradient></defs>' +
+    '<circle cx="50" cy="86" r="46" fill="#38bdf8" opacity="0.06"/>' +
+    '<circle cx="50" cy="86" r="36" fill="#38bdf8" opacity="0.05"/>' +
+    '<path d="M50 42 L84 60 V98 C84 119 69 131 50 137 C31 131 16 119 16 98 V60 Z" fill="rgba(8,16,30,0.88)" stroke="url(#op-grad)" stroke-width="2.5"/>' +
+    '<path d="M37 88 l9 9 l17 -21" fill="none" stroke="url(#op-grad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<circle cx="50" cy="62" r="2.6" fill="#7dd3fc"/>';
   this.container.appendChild(this.svg);
   this.playAnimation('idle');
 };
@@ -358,7 +288,7 @@ DioGuide.prototype.buildDOM = function () {
   this.actionSlot.className = 'dio-actions';
   var name = document.createElement('div');
   name.className = 'dio-speaker-name';
-  name.textContent = 'DIO';
+  name.textContent = 'OPERATOR';
   var subtitle = document.createElement('div');
   subtitle.className = 'dio-speaker-sub';
   subtitle.textContent = 'Operations Guide · MERIDIAN-7';
