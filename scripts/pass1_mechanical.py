@@ -15,7 +15,7 @@ from humanize_lib import WORD_REPLACEMENTS, clean_front_matter, humanize as lib_
 
 EM = "\u2014"
 RAW = re.compile(
-    r"https://raw\.githubusercontent\.com/Number-1-Python-Glazer/SIEM-Dashboard-Documentation/main/"
+    r"https://raw\.githubusercontent\.com/mibrahim-cyber/SIEM-Dashboard-Documentation/main/"
 )
 UI_LABEL = re.compile(
     r"(\*\*[A-Z0-9][A-Z0-9 /\-]*\*\*|\`[A-Z0-9][A-Z0-9 /\-]*\`|"

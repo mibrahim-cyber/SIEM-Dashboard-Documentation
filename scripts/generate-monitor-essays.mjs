@@ -294,7 +294,7 @@ function buildEssay({ module, sidebar, essay, body, includeScreenshot, screensho
   }
 
   const shot = includeScreenshot
-    ? `\n![${module} main view](https://raw.githubusercontent.com/Number-1-Python-Glazer/SIEM-Dashboard-Documentation/main/screenshots/guides/${screenshot})\n`
+    ? `\n![${module} main view](https://raw.githubusercontent.com/mibrahim-cyber/SIEM-Dashboard-Documentation/main/screenshots/guides/${screenshot})\n`
     : '';
 
   return `---

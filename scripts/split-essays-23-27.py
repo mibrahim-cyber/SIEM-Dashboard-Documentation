@@ -11,7 +11,7 @@ MODULE_META = {
         "module": "Executive View",
         "sidebar": "Reporting → Executive View",
         "section": "Reporting",
-        "screenshot": "https://raw.githubusercontent.com/Number-1-Python-Glazer/SIEM-Dashboard-Documentation/main/screenshots/guides/reporting-executive-view.png",
+        "screenshot": "https://raw.githubusercontent.com/mibrahim-cyber/SIEM-Dashboard-Documentation/main/screenshots/guides/reporting-executive-view.png",
         "sections": [
             "Why executives need a different view",
             "Every KPI element in plain English",
@@ -26,7 +26,7 @@ MODULE_META = {
         "module": "Reports",
         "sidebar": "Reporting → Reports",
         "section": "Reporting",
-        "screenshot": "https://raw.githubusercontent.com/Number-1-Python-Glazer/SIEM-Dashboard-Documentation/main/screenshots/guides/reporting-reports.png",
+        "screenshot": "https://raw.githubusercontent.com/mibrahim-cyber/SIEM-Dashboard-Documentation/main/screenshots/guides/reporting-reports.png",
         "sections": [
             "Report types",
             "Compliance mapping",
@@ -40,7 +40,7 @@ MODULE_META = {
         "module": "Report Scheduler",
         "sidebar": "Reporting → Scheduler",
         "section": "Reporting",
-        "screenshot": "https://raw.githubusercontent.com/Number-1-Python-Glazer/SIEM-Dashboard-Documentation/main/screenshots/guides/reporting-scheduler.png",
+        "screenshot": "https://raw.githubusercontent.com/mibrahim-cyber/SIEM-Dashboard-Documentation/main/screenshots/guides/reporting-scheduler.png",
         "sections": [
             "Operational case for scheduled",
             "Cron syntax",
@@ -54,7 +54,7 @@ MODULE_META = {
         "module": "Log Ingestion",
         "sidebar": "Ingest & Config → Log Ingestion",
         "section": "Ingest & Config",
-        "screenshot": "https://raw.githubusercontent.com/Number-1-Python-Glazer/SIEM-Dashboard-Documentation/main/screenshots/guides/ingest-config-log-ingestion.png",
+        "screenshot": "https://raw.githubusercontent.com/mibrahim-cyber/SIEM-Dashboard-Documentation/main/screenshots/guides/ingest-config-log-ingestion.png",
         "sections": [
             "Ingestion pipeline end to end",
             "Log source types",
@@ -70,7 +70,7 @@ MODULE_META = {
         "module": "Settings",
         "sidebar": "Ingest & Config → Settings",
         "section": "Ingest & Config",
-        "screenshot": "https://raw.githubusercontent.com/Number-1-Python-Glazer/SIEM-Dashboard-Documentation/main/screenshots/guides/ingest-config-settings.png",
+        "screenshot": "https://raw.githubusercontent.com/mibrahim-cyber/SIEM-Dashboard-Documentation/main/screenshots/guides/ingest-config-settings.png",
         "sections": [
             "Settings architecture",
             "Authentication settings",
