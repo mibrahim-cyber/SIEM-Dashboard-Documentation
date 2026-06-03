@@ -1,5 +1,5 @@
 /**
- * wormhole-for-claude.js  v12.1 — GARGANTUA (smoky volumetric dust + pure void)
+ * wormhole-portal.js  v12.1 — GARGANTUA (smoky volumetric dust + pure void)
  * ──────────────────────────────────────────────────────────────────────────────
  * Same drop-in API:
  *   drawGargantua(ctx, cx, cy, r, time, { width, height, heat, spinMul, showLabel, reducedMotion, landingMode, deckMode })

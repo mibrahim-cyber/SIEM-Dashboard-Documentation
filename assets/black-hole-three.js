@@ -1,5 +1,5 @@
 /**
- * Photorealistic black hole — Three.js + GLSL (vanilla port of Claude BlackHole.jsx)
+ * Photorealistic black hole — Three.js + GLSL (vanilla GLSL black-hole shader)
  * Meridian-7 landing hero only. Observation deck unchanged.
  */
 import * as THREE from 'three';
