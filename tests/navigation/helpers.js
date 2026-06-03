@@ -53,9 +53,9 @@ async function dismissOverlays(page) {
     }
     var load = document.getElementById('siem-load-screen');
     if (load) load.remove();
-    var dio = document.getElementById('dio-guide');
-    if (dio) dio.remove();
-    document.body.classList.remove('landing-dio-mode');
+    var guide = document.getElementById('operator-guide');
+    if (guide) guide.remove();
+    document.body.classList.remove('landing-operator-mode');
   });
 }
 

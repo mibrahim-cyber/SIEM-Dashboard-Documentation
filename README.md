@@ -8,18 +8,18 @@ The fastest way to make a non-technical stakeholder understand threat detection 
 
 <div align="center">
 
-<a href="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/?v=12.2.0-orbit">
+<a href="https://mibrahim-cyber.github.io/SIEM-Dashboard-Documentation/?v=12.2.0-orbit">
 <img src="assets/readme-wormhole-hero.png?v=12.2.0-orbit" alt="Meridian-7 wormhole with orbiting SOC modules; SQL Injection, Correlation web, and more. Click to enter live site." width="720" />
 </a>
 
 <br /><br />
 
-[![ENTER LIVE SITE](https://img.shields.io/badge/ENTER_LIVE_SITE-0284c7?style=for-the-badge&logo=githubpages&logoColor=white&labelColor=0a0618)](https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/?v=15.2.0)
-[![Observation Deck](https://img.shields.io/badge/OBSERVATION_DECK-7c3aed?style=for-the-badge&labelColor=0a0618)](https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/brain/?v=15.2.0)
+[![ENTER LIVE SITE](https://img.shields.io/badge/ENTER_LIVE_SITE-0284c7?style=for-the-badge&logo=githubpages&logoColor=white&labelColor=0a0618)](https://mibrahim-cyber.github.io/SIEM-Dashboard-Documentation/?v=15.2.0)
+[![Observation Deck](https://img.shields.io/badge/OBSERVATION_DECK-7c3aed?style=for-the-badge&labelColor=0a0618)](https://mibrahim-cyber.github.io/SIEM-Dashboard-Documentation/brain/?v=15.2.0)
 
 <br />
 
-[![Experiences](https://img.shields.io/badge/experiences-17-00d4ff?style=flat-square&labelColor=0a0618)](https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/)
+[![Experiences](https://img.shields.io/badge/experiences-17-00d4ff?style=flat-square&labelColor=0a0618)](https://mibrahim-cyber.github.io/SIEM-Dashboard-Documentation/)
 [![Docs](https://img.shields.io/badge/volumes-10-a78bfa?style=flat-square&labelColor=0a0618)](docs/)
 [![Guides](https://img.shields.io/badge/guides-27-f97316?style=flat-square&labelColor=0a0618)](guides/)
 [![Pentests](https://img.shields.io/badge/pentests-3-ef4444?style=flat-square&labelColor=0a0618)](pentests/)
@@ -80,14 +80,14 @@ GSAP · CodeMirror · interact.js · Lenis · Howler.js · Chart.js
 <table>
 <tr>
 <td align="center" width="50%">
-<a href="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/brain/?v=7.0.0-wormhole">
+<a href="https://mibrahim-cyber.github.io/SIEM-Dashboard-Documentation/brain/?v=7.0.0-wormhole">
 <img src="screenshots/guides/monitor-overview.png" alt="SOC Overview" width="420" />
 </a>
 <br /><strong>SOC Overview</strong><br />
 <sub><a href="guides/monitor/overview/01-how-to-use.md">Guide →</a></sub>
 </td>
 <td align="center" width="50%">
-<a href="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/">
+<a href="https://mibrahim-cyber.github.io/SIEM-Dashboard-Documentation/">
 <img src="screenshots/guides/monitor-alert-manager.png" alt="Alert Manager" width="420" />
 </a>
 <br /><strong>Alert Manager</strong><br />
@@ -100,7 +100,7 @@ GSAP · CodeMirror · interact.js · Lenis · Howler.js · Chart.js
 <br /><strong>Login</strong>
 </td>
 <td align="center">
-<a href="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/brain/?v=7.0.0-wormhole">
+<a href="https://mibrahim-cyber.github.io/SIEM-Dashboard-Documentation/brain/?v=7.0.0-wormhole">
 <img src="assets/readme-wormhole-map-preview.png" alt="Wormhole observation deck preview" width="320" />
 </a>
 <br /><strong>Architecture map</strong> · interactive module index

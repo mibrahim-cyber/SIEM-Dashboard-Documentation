@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
-#dio-guide {
+#operator-guide {
   position: fixed;
   z-index: 9999;
   cursor: default;
@@ -9,7 +9,7 @@
   font-family: 'IBM Plex Mono', 'Consolas', monospace;
 }
 
-.dio-panel {
+.operator-panel {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
@@ -17,7 +17,7 @@
   filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.45));
 }
 
-#dio-speech {
+#operator-speech {
   position: relative;
   width: min(320px, 72vw);
   background: rgba(15, 23, 42, 0.96);
@@ -33,7 +33,7 @@
   margin-right: -4px;
 }
 
-.dio-speaker-name {
+.operator-speaker-name {
   font-family: 'IBM Plex Mono', monospace;
   color: #38bdf8;
   font-size: 11px;
@@ -44,28 +44,28 @@
   text-transform: uppercase;
 }
 
-.dio-speaker-sub {
+.operator-speaker-sub {
   font-size: 9px;
   letter-spacing: 0.5px;
   color: #64748b;
   margin-bottom: 8px;
 }
 
-#dio-speech-text {
+#operator-speech-text {
   min-height: 2.6em;
   color: #e2e8f0;
 }
 
-.dio-actions {
+.operator-actions {
   margin-top: 10px;
 }
 
-.dio-actions:empty {
+.operator-actions:empty {
   display: none;
 }
 
-.dio-next-btn,
-#dio-next-btn {
+.operator-next-btn,
+#operator-next-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -84,17 +84,17 @@
   transition: background 0.15s ease;
 }
 
-.dio-next-btn::before,
-#dio-next-btn::before {
+.operator-next-btn::before,
+#operator-next-btn::before {
   content: '→ ';
 }
 
-.dio-next-btn:hover,
-#dio-next-btn:hover {
+.operator-next-btn:hover,
+#operator-next-btn:hover {
   background: #0284c7;
 }
 
-.dio-speech-tail {
+.operator-speech-tail {
   position: absolute;
   bottom: 32px;
   right: -8px;
@@ -105,54 +105,54 @@
   border-left: 10px solid #334155;
 }
 
-.dio-avatar {
+.operator-avatar {
   flex-shrink: 0;
   position: relative;
   z-index: 2;
 }
 
-.dio-avatar svg {
+.operator-avatar svg {
   display: block;
   width: 100px;
   height: 170px;
   overflow: visible;
 }
 
-#dio-guide.dio-landing {
+#operator-guide.operator-landing {
   max-width: min(560px, 96vw);
   bottom: 48px !important;
 }
 
-#dio-guide.dio-landing .dio-panel {
+#operator-guide.operator-landing .operator-panel {
   transform: none;
 }
 
-#dio-guide.dio-landing .dio-avatar svg {
+#operator-guide.operator-landing .operator-avatar svg {
   width: 88px;
   height: 149px;
 }
 
-#dio-guide.dio-landing #dio-speech {
+#operator-guide.operator-landing #operator-speech {
   width: min(320px, 72vw);
   font-size: 11px;
 }
 
-body.dio-start-only .orbit-field,
-body.landing-dio-mode .orbit-field {
+body.operator-start-only .orbit-field,
+body.landing-operator-mode .orbit-field {
   display: none !important;
 }
 
-body.landing-dio-mode.hero-ready .orbit-field {
+body.landing-operator-mode.hero-ready .orbit-field {
   display: block !important;
   visibility: visible !important;
   pointer-events: auto !important;
 }
 
-body.landing-dio-mode #dio-guide {
+body.landing-operator-mode #operator-guide {
   z-index: 100001;
 }
 
-#dio-recruiter-bar {
+#operator-recruiter-bar {
   position: fixed;
   top: 0;
   left: 0;
@@ -167,7 +167,7 @@ body.landing-dio-mode #dio-guide {
   text-align: center;
 }
 
-#dio-recruiter-fill {
+#operator-recruiter-fill {
   height: 3px;
   background: #0ea5e9;
   width: 0;
@@ -176,17 +176,17 @@ body.landing-dio-mode #dio-guide {
 }
 
 @media (max-width: 768px) {
-  .dio-panel {
+  .operator-panel {
     flex-direction: column-reverse;
     align-items: flex-end;
   }
 
-  #dio-speech {
+  #operator-speech {
     width: min(280px, 88vw);
     margin-right: 0;
   }
 
-  .dio-speech-tail {
+  .operator-speech-tail {
     bottom: -8px;
     right: 48px;
     border-left: 8px solid transparent;
@@ -195,16 +195,16 @@ body.landing-dio-mode #dio-guide {
     border-bottom: none;
   }
 
-  #dio-guide.dio-landing .dio-panel {
+  #operator-guide.operator-landing .operator-panel {
     transform: none;
   }
 
-  #dio-guide.dio-landing .dio-avatar svg {
+  #operator-guide.operator-landing .operator-avatar svg {
     width: 72px;
     height: 122px;
   }
 }
 
 @media (max-width: 480px) {
-  #dio-speech { font-size: 10px; }
+  #operator-speech { font-size: 10px; }
 }

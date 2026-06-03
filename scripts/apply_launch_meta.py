@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SCREENSHOTS = ROOT / "screenshots"
 SITE = "HABIBI-SIEM"
-BASE_OG = "https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation"
+BASE_OG = "https://mibrahim-cyber.github.io/SIEM-Dashboard-Documentation"
 
 PAGES: dict[str, dict[str, str]] = {
     "index.html": {

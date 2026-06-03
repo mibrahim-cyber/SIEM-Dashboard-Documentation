@@ -82,6 +82,6 @@ Example, **Configure → Correlation Builder:**
 
 <div align="center">
 
- [Back to main README](../README.md) · [Live docs site](https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/)
+ [Back to main README](../README.md) · [Live docs site](https://mibrahim-cyber.github.io/SIEM-Dashboard-Documentation/)
 
 </div>

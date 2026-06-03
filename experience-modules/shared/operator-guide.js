@@ -5,7 +5,7 @@
 
 
 /* ─── Dialogue scripts ───────────────────────────────────────────────── */
-var DIO_STORYLINE = {
+var OPERATOR_STORYLINE = {
   'index': {
     enter: [
       "You have arrived at HABIBI-SIEM. I'm OPERATOR, your operations guide.",
@@ -149,8 +149,8 @@ var RECRUITER_SCRIPT = [
   "That's HABIBI-SIEM."
 ];
 
-/* ─── DioSprite (SVG + CSS animations) ──────────────────────────────── */
-function DioSprite(container) {
+/* ─── OperatorSprite (SVG + CSS animations) ──────────────────────────────── */
+function OperatorSprite(container) {
   this.container = container;
   this.currentAnimation = 'idle';
   this.guide = null;
@@ -159,32 +159,32 @@ function DioSprite(container) {
   this._buildSVG();
 }
 
-DioSprite.prototype._ensureStyles = function () {
-  if (document.getElementById('dio-svg-styles')) return;
+OperatorSprite.prototype._ensureStyles = function () {
+  if (document.getElementById('operator-svg-styles')) return;
   var s = document.createElement('style');
-  s.id = 'dio-svg-styles';
+  s.id = 'operator-svg-styles';
   s.textContent =
     '@keyframes dioBreath{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.014)}}' +
     '@keyframes dioMouthPulse{0%,49%{opacity:1}50%,100%{opacity:0}}' +
     '@keyframes dioArmRaise{0%{transform:rotate(0deg)}35%{transform:rotate(-100deg)}70%{transform:rotate(-100deg)}100%{transform:rotate(0deg)}}' +
     '@keyframes dioDodge{0%{transform:rotate(0deg) scaleX(1)}25%{transform:rotate(14deg) scaleX(0.86)}55%{transform:rotate(-7deg) scaleX(1.09)}82%{transform:rotate(2deg) scaleX(0.99)}100%{transform:rotate(0deg) scaleX(1)}}' +
     '@keyframes dioZaWarudo{0%{filter:none}15%{filter:drop-shadow(0 0 10px #CC66FF) drop-shadow(0 0 22px #8800FF) brightness(1.6)}32%{filter:none}55%{filter:drop-shadow(0 0 6px #CC66FF) brightness(1.2)}70%{filter:drop-shadow(0 0 15px #FF88FF) drop-shadow(0 0 30px #AA00FF) brightness(1.9)}86%{filter:none}100%{filter:drop-shadow(0 0 4px #CC66FF)}}' +
-    '#dio-svg-char.dio-idle{animation:dioBreath 3s ease-in-out infinite;transform-origin:50px 85px}' +
-    '#dio-svg-char.dio-talk #dio-mouth-open{opacity:1;animation:dioMouthPulse 0.4s steps(1) infinite}' +
-    '#dio-svg-char.dio-talk #dio-mouth-c{opacity:0}' +
-    '#dio-svg-char.dio-point #dio-right-arm{transform-origin:78px 99px;animation:dioArmRaise 1.2s ease-in-out forwards}' +
-    '#dio-svg-char.dio-dodge{animation:dioDodge 0.4s ease-out forwards;transform-origin:50px 86px}' +
-    '#dio-svg-char.dio-zawarudo{animation:dioZaWarudo 1.6s ease-out forwards}';
+    '#operator-svg-char.operator-idle{animation:dioBreath 3s ease-in-out infinite;transform-origin:50px 85px}' +
+    '#operator-svg-char.operator-talk #operator-mouth-open{opacity:1;animation:dioMouthPulse 0.4s steps(1) infinite}' +
+    '#operator-svg-char.operator-talk #operator-mouth-c{opacity:0}' +
+    '#operator-svg-char.operator-point #operator-right-arm{transform-origin:78px 99px;animation:dioArmRaise 1.2s ease-in-out forwards}' +
+    '#operator-svg-char.operator-dodge{animation:dioDodge 0.4s ease-out forwards;transform-origin:50px 86px}' +
+    '#operator-svg-char.operator-zawarudo{animation:dioZaWarudo 1.6s ease-out forwards}';
   document.head.appendChild(s);
 };
 
-DioSprite.prototype._buildSVG = function () {
+OperatorSprite.prototype._buildSVG = function () {
   var ns = 'http://www.w3.org/2000/svg';
   this.svg = document.createElementNS(ns, 'svg');
   this.svg.setAttribute('viewBox', '0 0 100 170');
   this.svg.setAttribute('width', '100');
   this.svg.setAttribute('height', '170');
-  this.svg.id = 'dio-svg-char';
+  this.svg.id = 'operator-svg-char';
   this.svg.innerHTML =
     '<defs><linearGradient id="op-grad" x1="0" y1="0" x2="1" y2="1">' +
     '<stop offset="0%" stop-color="#7dd3fc"/><stop offset="100%" stop-color="#38bdf8"/>' +
@@ -198,16 +198,16 @@ DioSprite.prototype._buildSVG = function () {
   this.playAnimation('idle');
 };
 
-DioSprite.prototype.playAnimation = function (name) {
+OperatorSprite.prototype.playAnimation = function (name) {
   if (this.currentAnimation === name && (name === 'idle' || name === 'hover')) return;
   this.currentAnimation = name;
   if (this._animTimer) { clearTimeout(this._animTimer); this._animTimer = null; }
-  this.svg.classList.remove('dio-idle', 'dio-talk', 'dio-point', 'dio-dodge', 'dio-zawarudo');
+  this.svg.classList.remove('operator-idle', 'operator-talk', 'operator-point', 'operator-dodge', 'operator-zawarudo');
   var MAP = {
-    idle: 'dio-idle', hover: 'dio-idle', walk: 'dio-idle',
-    talk: 'dio-talk', point: 'dio-point', dodge: 'dio-dodge', za_warudo: 'dio-zawarudo'
+    idle: 'operator-idle', hover: 'operator-idle', walk: 'operator-idle',
+    talk: 'operator-talk', point: 'operator-point', dodge: 'operator-dodge', za_warudo: 'operator-zawarudo'
   };
-  this.svg.classList.add(MAP[name] || 'dio-idle');
+  this.svg.classList.add(MAP[name] || 'operator-idle');
   var DURATIONS = { point: 1250, dodge: 430, za_warudo: 1700 };
   if (DURATIONS[name]) {
     var self = this;
@@ -218,17 +218,17 @@ DioSprite.prototype.playAnimation = function (name) {
   }
 };
 
-DioSprite.prototype.update = function () { /* CSS drives animation */ };
-DioSprite.prototype.drawFrame = function () { /* no-op */ };
+OperatorSprite.prototype.update = function () { /* CSS drives animation */ };
+OperatorSprite.prototype.drawFrame = function () { /* no-op */ };
 
-DioSprite.prototype.onAnimationComplete = function (animName) {
+OperatorSprite.prototype.onAnimationComplete = function (animName) {
   if (animName === 'point' || animName === 'talk') this.playAnimation('idle');
   if (animName === 'za_warudo') this.playAnimation('idle');
   if (animName === 'dodge' && this.guide) this.guide.onDodgeComplete();
 };
 
-/* ─── DioGuide ───────────────────────────────────────────────────────── */
-function DioGuide() {
+/* ─── OperatorGuide ───────────────────────────────────────────────────────── */
+function OperatorGuide() {
   this.container = null;
   this.canvas = null;
   this.speechBubble = null;
@@ -258,7 +258,7 @@ function DioGuide() {
   this.panelClickActive = false;
 }
 
-DioGuide.prototype.init = function () {
+OperatorGuide.prototype.init = function () {
   var params = new URLSearchParams(window.location.search);
   this.recruiterMode = params.get('recruiter') === 'true';
   this.buildDOM();
@@ -274,28 +274,28 @@ DioGuide.prototype.init = function () {
   window.addEventListener('resize', function () { if (!self.isDodging) self.applyLayout(); });
 };
 
-DioGuide.prototype.buildDOM = function () {
+OperatorGuide.prototype.buildDOM = function () {
   this.container = document.createElement('div');
-  this.container.id = 'dio-guide';
+  this.container.id = 'operator-guide';
   this.panel = document.createElement('div');
-  this.panel.className = 'dio-panel';
+  this.panel.className = 'operator-panel';
   this.speechBubble = document.createElement('div');
-  this.speechBubble.id = 'dio-speech';
+  this.speechBubble.id = 'operator-speech';
   this.speechText = document.createElement('div');
-  this.speechText.id = 'dio-speech-text';
+  this.speechText.id = 'operator-speech-text';
   this.actionSlot = document.createElement('div');
-  this.actionSlot.id = 'dio-actions';
-  this.actionSlot.className = 'dio-actions';
+  this.actionSlot.id = 'operator-actions';
+  this.actionSlot.className = 'operator-actions';
   var name = document.createElement('div');
-  name.className = 'dio-speaker-name';
+  name.className = 'operator-speaker-name';
   name.textContent = 'OPERATOR';
   var subtitle = document.createElement('div');
-  subtitle.className = 'dio-speaker-sub';
+  subtitle.className = 'operator-speaker-sub';
   subtitle.textContent = 'Operations Guide · MERIDIAN-7';
   var tail = document.createElement('div');
-  tail.className = 'dio-speech-tail';
+  tail.className = 'operator-speech-tail';
   this.avatarWrap = document.createElement('div');
-  this.avatarWrap.className = 'dio-avatar';
+  this.avatarWrap.className = 'operator-avatar';
   this.speechBubble.appendChild(name);
   this.speechBubble.appendChild(subtitle);
   this.speechBubble.appendChild(this.speechText);
@@ -305,17 +305,17 @@ DioGuide.prototype.buildDOM = function () {
   this.panel.appendChild(this.avatarWrap);
   this.container.appendChild(this.panel);
   document.body.appendChild(this.container);
-  this.sprite = new DioSprite(this.avatarWrap);
+  this.sprite = new OperatorSprite(this.avatarWrap);
   this.sprite.guide = this;
   this.applyLayout();
 };
 
-DioGuide.prototype.bindEvents = function () {
+OperatorGuide.prototype.bindEvents = function () {
   var self = this;
   this.panel.addEventListener('mousedown', function () { self.panelClickActive = true; });
   document.addEventListener('mouseup', function () { self.panelClickActive = false; });
   this.panel.addEventListener('click', function (e) {
-    if (e.target.closest('#dio-next-btn')) return;
+    if (e.target.closest('#operator-next-btn')) return;
     if (!self.isDodging && !self.recruiterMode) self.advanceDialogue();
   });
   document.addEventListener('mousemove', function (e) {
@@ -325,9 +325,9 @@ DioGuide.prototype.bindEvents = function () {
   });
 };
 
-DioGuide.prototype.applyLayout = function () {
+OperatorGuide.prototype.applyLayout = function () {
   if (this.isLanding) {
-    this.container.classList.add('dio-landing');
+    this.container.classList.add('operator-landing');
     this.container.style.left = '50%';
     this.container.style.right = 'auto';
     this.container.style.top = 'auto';
@@ -336,7 +336,7 @@ DioGuide.prototype.applyLayout = function () {
     this.y = window.innerHeight - 200;
     return;
   }
-  this.container.classList.remove('dio-landing');
+  this.container.classList.remove('operator-landing');
   this.x = Math.min(window.innerWidth - 420, Math.max(16, window.innerWidth * 0.62));
   this.y = Math.max(80, window.innerHeight - 220);
   this.container.style.left = this.x + 'px';
@@ -345,7 +345,7 @@ DioGuide.prototype.applyLayout = function () {
   this.container.style.right = 'auto';
 };
 
-DioGuide.prototype.checkHoverDistance = function () {
+OperatorGuide.prototype.checkHoverDistance = function () {
   if (this.isDodging || this.recruiterMode || this.isLanding) return;
   var rect = this.avatarWrap.getBoundingClientRect();
   var cx = rect.left + rect.width / 2;
@@ -354,7 +354,7 @@ DioGuide.prototype.checkHoverDistance = function () {
   if (dist < 60) this.dodge();
 };
 
-DioGuide.prototype.dodge = function () {
+OperatorGuide.prototype.dodge = function () {
   var self = this;
   this.isDodging = true;
   this.sprite.playAnimation('dodge');
@@ -381,13 +381,13 @@ DioGuide.prototype.dodge = function () {
   }, 16);
 };
 
-DioGuide.prototype.onDodgeComplete = function () {
+OperatorGuide.prototype.onDodgeComplete = function () {
   var self = this;
   this.sprite.playAnimation('idle');
   setTimeout(function () { self.isDodging = false; }, 500);
 };
 
-DioGuide.prototype.startLoop = function () {
+OperatorGuide.prototype.startLoop = function () {
   var self = this;
   var lastTime = performance.now();
   function loop(now) {
@@ -407,15 +407,15 @@ DioGuide.prototype.startLoop = function () {
   self.animFrame = requestAnimationFrame(loop);
 };
 
-DioGuide.prototype.updatePosition = function () {
+OperatorGuide.prototype.updatePosition = function () {
   if (!this.isLanding) {
     this.container.style.left = this.x + 'px';
     this.container.style.top = this.y + 'px';
   }
 };
 
-DioGuide.prototype.resolvePageKey = function () {
-  if (document.body.classList.contains('landing-dio-mode')) return 'index';
+OperatorGuide.prototype.resolvePageKey = function () {
+  if (document.body.classList.contains('landing-operator-mode')) return 'index';
   var path = window.location.pathname;
   var parts = path.split('/').filter(Boolean);
   var filename = (parts[parts.length - 1] || 'index').replace('.html', '');
@@ -435,12 +435,12 @@ DioGuide.prototype.resolvePageKey = function () {
   return filename || 'index';
 };
 
-DioGuide.prototype.detectCurrentPage = function () {
+OperatorGuide.prototype.detectCurrentPage = function () {
   this.storylinePosition = this.resolvePageKey();
   this.isLanding = this.storylinePosition === 'index' && !this.recruiterMode;
   this.applyLayout();
-  if (DIO_STORYLINE[this.storylinePosition]) {
-    var script = DIO_STORYLINE[this.storylinePosition];
+  if (OPERATOR_STORYLINE[this.storylinePosition]) {
+    var script = OPERATOR_STORYLINE[this.storylinePosition];
     if (script.nextAction) this.pendingAction = script.nextAction;
     if (this.isLanding && script.nextAction) this.showNextActionButton(script.nextAction);
     if (script.enter && !this.recruiterMode) {
@@ -467,12 +467,12 @@ DioGuide.prototype.detectCurrentPage = function () {
   }
 };
 
-DioGuide.prototype.queueDialogue = function (lines) {
+OperatorGuide.prototype.queueDialogue = function (lines) {
   this.dialogueQueue = lines.slice();
   this.advanceDialogue();
 };
 
-DioGuide.prototype.advanceDialogue = function () {
+OperatorGuide.prototype.advanceDialogue = function () {
   var self = this;
   if (this.dialogueQueue.length === 0) {
     this.sprite.playAnimation('idle');
@@ -493,30 +493,30 @@ DioGuide.prototype.advanceDialogue = function () {
   }, readTime);
 };
 
-DioGuide.prototype.showSpeechBubble = function (text) {
+OperatorGuide.prototype.showSpeechBubble = function (text) {
   this.speechText.textContent = text;
   this.speechBubble.style.opacity = '1';
 };
 
-DioGuide.prototype.hideSpeechBubble = function () {
+OperatorGuide.prototype.hideSpeechBubble = function () {
   this.speechBubble.style.opacity = '0';
 };
 
-DioGuide.prototype.showNextActionButton = function (action) {
+OperatorGuide.prototype.showNextActionButton = function (action) {
   if (!this.actionSlot) return;
   this.actionSlot.innerHTML = '';
   var btn = document.createElement('a');
   btn.href = (window.SiemCore && window.SiemCore.resolveSiteHref)
     ? window.SiemCore.resolveSiteHref(action.url)
     : action.url;
-  btn.id = 'dio-next-btn';
-  btn.className = 'dio-next-btn';
+  btn.id = 'operator-next-btn';
+  btn.className = 'operator-next-btn';
   btn.textContent = action.label;
   this.actionSlot.appendChild(btn);
   this.speechBubble.style.opacity = '1';
 };
 
-DioGuide.prototype.initLevelTracking = function () {
+OperatorGuide.prototype.initLevelTracking = function () {
   var self = this;
   var gameMap = {
     'game1-terminal': 'the_terminal', 'game2-breach': 'the_breach',
@@ -538,7 +538,7 @@ DioGuide.prototype.initLevelTracking = function () {
       var level = data.currentLevel || 1;
       if (level !== self.lastLevel) {
         self.lastLevel = level;
-        var script = DIO_STORYLINE[pageKey];
+        var script = OPERATOR_STORYLINE[pageKey];
         var levelKey = 'level' + level;
         if (script && script[levelKey]) {
           self.queueDialogue(script[levelKey]);
@@ -553,7 +553,7 @@ DioGuide.prototype.initLevelTracking = function () {
   }, 2000);
 };
 
-DioGuide.prototype.onGameComplete = function (gameId) {
+OperatorGuide.prototype.onGameComplete = function (gameId) {
   if (!this._completedGames) this._completedGames = {};
   if (this._completedGames[gameId]) return;
   this._completedGames[gameId] = true;
@@ -566,8 +566,8 @@ DioGuide.prototype.onGameComplete = function (gameId) {
     the_resonance: 'game13-resonance'
   };
   var key = map[gameId];
-  if (!key || !DIO_STORYLINE[key]) return;
-  var script = DIO_STORYLINE[key];
+  if (!key || !OPERATOR_STORYLINE[key]) return;
+  var script = OPERATOR_STORYLINE[key];
   if (script.complete) {
     this.queueDialogue(script.complete);
     this.sprite.playAnimation('za_warudo');
@@ -576,13 +576,13 @@ DioGuide.prototype.onGameComplete = function (gameId) {
   if (window.HabibiNarrative) HabibiNarrative.recordGameComplete(gameId, {});
 };
 
-DioGuide.prototype.startRecruiterTour = function () {
+OperatorGuide.prototype.startRecruiterTour = function () {
   var self = this;
   this.recruiterStart = Date.now();
   this.recruiterIndex = 0;
   var bar = document.createElement('div');
-  bar.id = 'dio-recruiter-bar';
-  bar.innerHTML = 'Recruiter Preview — 90 seconds <div id="dio-recruiter-fill"></div>';
+  bar.id = 'operator-recruiter-bar';
+  bar.innerHTML = 'Recruiter Preview — 90 seconds <div id="operator-recruiter-fill"></div>';
   document.body.prepend(bar);
   function nextLine() {
     if (self.recruiterIndex >= RECRUITER_SCRIPT.length) {
@@ -594,25 +594,25 @@ DioGuide.prototype.startRecruiterTour = function () {
     self.recruiterIndex++;
     var elapsed = Date.now() - self.recruiterStart;
     var pct = Math.min(100, (elapsed / 90000) * 100);
-    var fill = document.getElementById('dio-recruiter-fill');
+    var fill = document.getElementById('operator-recruiter-fill');
     if (fill) fill.style.width = pct + '%';
     setTimeout(nextLine, 6000);
   }
   nextLine();
 };
 
-window.DioGuide = DioGuide;
+window.OperatorGuide = OperatorGuide;
 document.addEventListener('DOMContentLoaded', function () {
-  window.DIO = new DioGuide();
-  window.DIO.init();
+  window.OPERATOR = new OperatorGuide();
+  window.OPERATOR.init();
 });
 
 // Clean up timers/rAF on page unload to prevent cross-page leaks
 window.addEventListener('pagehide', function () {
-  if (window.DIO) {
-    if (window.DIO.animFrame)          { cancelAnimationFrame(window.DIO.animFrame); window.DIO.animFrame = null; }
-    if (window.DIO.levelTrackInterval) { clearInterval(window.DIO.levelTrackInterval); window.DIO.levelTrackInterval = null; }
-    if (window.DIO.autoAdvanceTimer)   { clearTimeout(window.DIO.autoAdvanceTimer);   window.DIO.autoAdvanceTimer = null; }
+  if (window.OPERATOR) {
+    if (window.OPERATOR.animFrame)          { cancelAnimationFrame(window.OPERATOR.animFrame); window.OPERATOR.animFrame = null; }
+    if (window.OPERATOR.levelTrackInterval) { clearInterval(window.OPERATOR.levelTrackInterval); window.OPERATOR.levelTrackInterval = null; }
+    if (window.OPERATOR.autoAdvanceTimer)   { clearTimeout(window.OPERATOR.autoAdvanceTimer);   window.OPERATOR.autoAdvanceTimer = null; }
   }
 });
 
