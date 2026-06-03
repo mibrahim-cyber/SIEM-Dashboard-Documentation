@@ -1,390 +1,3101 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-map-version="9.0.0-cosmos" data-deck-page="brain">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HABIBI-SIEM — Observation Deck</title>
-  <meta name="description" content="Central HABIBI-SIEM operations dashboard with real-time metrics, threat map, and system status.">
-  <meta name="theme-color" content="#020617">
-  <link rel="icon" href="../favicon.ico" sizes="any">
-  <link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
-  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/palette.css">
-  <link rel="stylesheet" href="../assets/components.css">
+  <meta charset="UTF-8" />
+  <link rel="icon" href="../favicon.ico" sizes="any" />
+  <link rel="icon" href="../favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <meta name="description" content="Module graph and documentation hub — explore architecture, detection, and all thirteen deck experiences." />
+  <meta property="og:title" content="Observation Deck — HABIBI-SIEM" />
+  <meta property="og:description" content="Module graph and documentation hub — explore architecture, detection, and all thirteen deck experiences." />
+  <meta property="og:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/brain-og.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Observation Deck — HABIBI-SIEM" />
+  <meta name="twitter:description" content="Module graph and documentation hub — explore architecture, detection, and all thirteen deck experiences." />
+  <meta name="twitter:image" content="https://number-1-python-glazer.github.io/SIEM-Dashboard-Documentation/screenshots/brain-og.png" />
+  <link rel="stylesheet" href="../assets/deck-nav.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>SIEM Dashboard — Observation Deck</title>
   <style>
-    .deck {
-      min-height: 100vh;
-      background: var(--void-0);
-      position: relative;
-    }
-
-    .deck::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 70% 50% at 50% 0%, rgba(56,189,248,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 40% at 80% 90%, rgba(167,139,250,0.04) 0%, transparent 50%);
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+    canvas { display: block; position: fixed; inset: 0; width: 100%; height: 100%; }
+    #bg { z-index: 0; }
+    #deck-smoke {
+      z-index: 1;
       pointer-events: none;
-      z-index: 0;
+      mix-blend-mode: screen;
+      opacity: 0;
+      transition: opacity 2s ease-out;
     }
-
-    .deck-header {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: var(--space-3) var(--space-4);
-      background: var(--void-glass);
-      border-bottom: 1px solid var(--border-subtle);
-      backdrop-filter: blur(12px);
+    #deck-smoke.lit { opacity: 0.9; }
+    #matrix { z-index: 2; pointer-events: none; }
+    #acc { z-index: 3; pointer-events: none; }
+    #c { z-index: 4; }
+    #fx { z-index: 5; pointer-events: none; }
+    #deck-particles {
+      position: fixed; inset: 0; pointer-events: none; z-index: 5;
+      opacity: 0;
+      transition: opacity 2.4s ease-out;
     }
-
-    .deck-brand {
-      font-family: var(--font-display);
-      font-size: 12px;
-      letter-spacing: 0.25em;
-      color: var(--cyan);
-      text-decoration: none;
+    #deck-particles.lit { opacity: 1; }
+    #deck-particles canvas {
+      position: absolute !important;
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
     }
-
-    .deck-header-actions {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
+    #overlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 6;
+      background:
+        radial-gradient(ellipse at 72% 18%, rgba(14, 116, 144, 0.12) 0%, transparent 52%),
+        radial-gradient(ellipse at 18% 82%, rgba(109, 40, 217, 0.08) 0%, transparent 55%),
+        radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.55) 72%, #000 100%);
     }
-
-    .deck-content {
-      position: relative;
-      z-index: 1;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: var(--space-4);
+    #grain {
+      position: fixed; inset: 0; pointer-events: none; z-index: 7; opacity: 0.028;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
-
-    /* ── Status Bar ── */
-    .status-bar {
-      display: flex;
-      gap: var(--space-3);
-      margin-bottom: var(--space-4);
-      flex-wrap: wrap;
+    #click-flash {
+      position: fixed; inset: 0; pointer-events: none; z-index: 8; opacity: 0;
+      background: radial-gradient(circle 220px at var(--fx-x, 50%) var(--fx-y, 50%), rgba(167,139,250,0.12), transparent 72%);
+      transition: opacity 0.18s ease-out;
     }
-
-    .status-item {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      padding: var(--space-2) var(--space-3);
-      background: var(--void-glass);
-      border: 1px solid var(--border-dim);
-      border-radius: var(--radius-sm);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--text-secondary);
+    #click-flash.on { opacity: 1; }
+    #web-corruption {
+      position: fixed; inset: 0; z-index: 6;
+      pointer-events: none;
+      mix-blend-mode: screen;
     }
-
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
+    #fog-burst {
+      position: fixed; inset: 0; z-index: 7;
+      pointer-events: none;
+      mix-blend-mode: screen;
     }
-
-    .status-dot--live { background: var(--green); box-shadow: 0 0 6px var(--green); }
-    .status-dot--idle { background: var(--gold); }
-    .status-dot--off { background: var(--red); }
-
-    /* ── Metrics Grid ── */
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: var(--space-3);
-      margin-bottom: var(--space-4);
+    #boot {
+      position: fixed; inset: 0; z-index: 100; background: #000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 18px; transition: opacity 0.4s ease-out; cursor: pointer;
     }
-
-    .metric-card {
-      background: var(--void-glass);
-      border: 1px solid var(--border-dim);
-      border-radius: var(--radius-md);
-      padding: var(--space-4);
-      text-align: center;
-      transition: border-color var(--t-mid);
+    #boot.hide { opacity: 0; pointer-events: none; visibility: hidden; }
+    #boot span {
+      font: 600 11px/1 'Consolas', 'Courier New', monospace; letter-spacing: 8px;
+      color: #c4b5fd; text-transform: uppercase;
     }
-
-    .metric-card:hover { border-color: var(--border-bright); }
-
-    .metric-value {
-      font-family: var(--font-display);
-      font-size: 28px;
-      color: var(--cyan);
-    }
-
-    .metric-value--gold { color: var(--gold); }
-    .metric-value--red { color: var(--red); }
-    .metric-value--green { color: var(--green); }
-
-    .metric-label {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      color: var(--text-muted);
-      letter-spacing: 0.15em;
+    #boot small { font: 10px monospace; color: #6b21a8; letter-spacing: 2px; }
+    #boot-enter {
+      margin-top: 32px; padding: 10px 28px;
+      border: 1px solid rgba(167,139,250,0.5); border-radius: 3px;
+      font: 600 10px/1 'Consolas', monospace; letter-spacing: 4px; color: #a78bfa;
       text-transform: uppercase;
-      margin-top: 2px;
+      animation: boot-pulse 1.8s ease-in-out infinite;
     }
-
-    .metric-change {
-      font-size: 9px;
-      margin-top: 4px;
+    @keyframes boot-pulse {
+      0%, 100% { opacity: 0.4; border-color: rgba(167,139,250,0.25); }
+      50% { opacity: 1; border-color: rgba(167,139,250,0.9); }
     }
-
-    .metric-change--up { color: var(--green); }
-    .metric-change--down { color: var(--red); }
-
-    /* ── Section ── */
-    .section {
-      margin-bottom: var(--space-4);
+    #bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+      padding: 14px 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      background: linear-gradient(180deg, rgba(8,4,16,0.94) 0%, transparent);
+      border-bottom: 1px solid rgba(167,139,250,0.2);
     }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: var(--space-3);
+    #bar h1 {
+      font: 600 11px/1 'Consolas', monospace; letter-spacing: 3px;
+      color: #c4b5fd; text-transform: uppercase;
+      text-shadow: 0 0 14px rgba(167,139,250,0.55);
     }
-
-    .section-title {
-      font-family: var(--font-display);
-      font-size: 14px;
-      color: var(--text-primary);
-      letter-spacing: 0.12em;
+    #bar p { font: 400 10px/1.4 'Consolas', monospace; color: #6b7280; max-width: 520px; }
+    #search {
+      margin-left: auto; pointer-events: auto;
+      background: rgba(12,8,24,0.9); border: 1px solid rgba(167,139,250,0.35);
+      border-radius: 4px; padding: 8px 12px; color: #ddd6fe; width: 180px;
+      font: 11px 'Consolas', monospace; outline: none;
     }
-
-    .section-actions {
-      display: flex;
-      gap: var(--space-2);
+    #card {
+      position: fixed; bottom: 20px; left: 20px; z-index: 10; max-width: 340px;
+      background: rgba(8,4,18,0.95); border: 1px solid rgba(167,139,250,0.35);
+      border-radius: 4px; padding: 14px;       opacity: 0; transform: translateY(6px);
+      pointer-events: none;
+      font-family: Consolas, monospace;
     }
-
-    /* ── Activity Feed ── */
-    .activity-feed {
-      background: var(--void-glass);
-      border: 1px solid var(--border-dim);
-      border-radius: var(--radius-md);
-      overflow: hidden;
+    #card.on { opacity: 1; transform: none; box-shadow: 0 0 28px rgba(167,139,250,0.35); }
+    #card b { display: block; color: #c4b5fd; font-size: 13px; margin-bottom: 4px; }
+    #card span { color: #9ca3af; font-size: 11px; line-height: 1.5; }
+    #recenter {
+      pointer-events: auto; cursor: pointer;
+      background: rgba(12,8,24,0.9); border: 1px solid rgba(167,139,250,0.35);
+      border-radius: 50%; width: 32px; height: 32px; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: #c4b5fd; font-size: 14px; line-height: 1;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
-
-    .activity-item {
-      display: flex;
-      align-items: flex-start;
-      gap: var(--space-3);
-      padding: var(--space-3) var(--space-4);
-      border-bottom: 1px solid var(--border-subtle);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--text-secondary);
-      transition: background var(--t-fast);
+    #recenter:hover { border-color: #fef9c3; box-shadow: 0 0 12px rgba(254,249,195,0.35); }
+    #stats {
+      position: fixed; bottom: 20px; right: 20px; z-index: 10;
+      font: 9px/1.6 Consolas, monospace; color: #4c1d95; text-align: right;
     }
-
-    .activity-item:last-child { border-bottom: none; }
-    .activity-item:hover { background: rgba(56,189,248,0.02); }
-
-    .activity-icon { flex-shrink: 0; font-size: 14px; }
-    .activity-time { color: var(--text-muted); margin-right: var(--space-2); flex-shrink: 0; }
-    .activity-text { flex: 1; }
-    .activity-severity {
+    #stats .stable { color: #34d399; }
+    #stats .alert { color: #f59e0b; }
+    #deck-brief {
+      position: fixed; inset: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; pointer-events: none; opacity: 0;
+      transition: opacity 0.22s ease-out;
+    }
+    #deck-brief.on { pointer-events: auto; opacity: 1; }
+    #deck-brief-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(4px);
+    }
+    #deck-brief-panel {
+      position: relative; z-index: 1;
+      width: min(640px, 100%);
+      max-height: min(88vh, 780px);
+      overflow-x: hidden;
+      overflow-y: auto;
+      display: flex; flex-direction: column;
+      background: rgba(8,4,18,0.97);
+      border: 1px solid rgba(167,139,250,0.45);
+      border-radius: 6px;
+      box-shadow: 0 0 48px rgba(167,139,250,0.25), 0 24px 80px rgba(0,0,0,0.6);
+      transform: translateY(12px) scale(0.98);
+      transition: transform 0.24s ease-out;
+      font-family: Consolas, 'Courier New', monospace;
+    }
+    #deck-brief.on #deck-brief-panel { transform: none; }
+    #deck-brief-head {
+      padding: 18px 20px 12px;
+      border-bottom: 1px solid rgba(167,139,250,0.2);
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    #deck-brief-head h2 {
+      flex: 1; margin: 0;
+      font: 600 15px/1.3 Consolas, monospace;
+      color: #e9d5ff; letter-spacing: 1px;
+    }
+    #deck-brief-close {
+      pointer-events: auto; cursor: pointer;
+      background: transparent; border: 1px solid rgba(167,139,250,0.35);
+      border-radius: 4px; width: 28px; height: 28px; padding: 0;
+      color: #c4b5fd; font-size: 16px; line-height: 1;
       flex-shrink: 0;
-      padding: 1px 6px;
-      font-size: 8px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      border-radius: var(--radius-pill);
     }
-
-    .activity-severity--high { background: rgba(248,113,113,0.15); color: var(--red); }
-    .activity-severity--medium { background: rgba(251,191,36,0.15); color: var(--gold); }
-    .activity-severity--low { background: rgba(148,163,184,0.1); color: var(--text-secondary); }
-
-    /* ── Quick Actions ── */
-    .quick-actions {
-      display: flex;
-      gap: var(--space-2);
-      flex-wrap: wrap;
+    #deck-brief-close:hover { border-color: #fef9c3; color: #fef9c3; }
+    #deck-brief-body {
+      padding: 16px 20px 8px;
+      overflow-y: auto;
+      font: 400 12px/1.75 Consolas, monospace;
+      color: #cbd5e1;
     }
-
-    /* ── Footer ── */
-    .deck-footer {
-      position: relative;
-      z-index: 1;
-      padding: var(--space-4);
-      text-align: center;
-      border-top: 1px solid var(--border-subtle);
-      font-family: var(--font-mono);
-      font-size: 9px;
-      color: var(--text-muted);
+    #deck-brief-foot {
+      padding: 14px 20px 18px;
+      border-top: 1px solid rgba(167,139,250,0.2);
+      flex-shrink: 0;
     }
-
-    .deck-footer a { color: var(--cyan); text-decoration: none; }
-
-    @media (max-width: 768px) {
-      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
-      .deck-header { flex-wrap: wrap; gap: var(--space-2); }
+    #deck-brief-dir {
+      display: block; margin-bottom: 10px;
+      font: 10px/1.5 Consolas, monospace;
+      color: #6b7280; letter-spacing: 0.5px;
     }
+    #deck-brief-dir code {
+      color: #a78bfa; font-size: 10px;
+    }
+    #deck-brief-go {
+      display: inline-flex; align-items: center; gap: 10px;
+      pointer-events: auto; cursor: pointer; text-decoration: none;
+      background: rgba(109,40,217,0.35);
+      border: 1px solid rgba(167,139,250,0.55);
+      border-radius: 4px; padding: 10px 16px;
+      font: 600 11px/1 Consolas, monospace;
+      color: #fef9c3; letter-spacing: 1px; text-transform: uppercase;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    #deck-brief-go:hover {
+      border-color: #fef9c3;
+      box-shadow: 0 0 20px rgba(254,249,195,0.35);
+    }
+    #deck-brief-pulse {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 0 0 rgba(52,211,153,0.6);
+      animation: deck-pulse 1.6s ease-out infinite;
+    }
+    @keyframes deck-pulse {
+      0% { box-shadow: 0 0 0 0 rgba(52,211,153,0.55); }
+      70% { box-shadow: 0 0 0 10px rgba(52,211,153,0); }
+      100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+    }
+    #deck-modes-bar {
+      position: fixed; top: 52px; left: 0; right: 0; z-index: 11;
+      padding: 8px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+      background: rgba(8,4,16,0.88); border-bottom: 1px solid rgba(167,139,250,0.15);
+      pointer-events: auto; font-family: Consolas, monospace;
+    }
+    #deck-modes-bar select, #deck-modes-bar button, #deck-modes-bar input[type=text] {
+      background: rgba(12,8,24,0.92); border: 1px solid rgba(167,139,250,0.35);
+      border-radius: 4px; padding: 5px 8px; color: #ddd6fe;
+      font: 9px Consolas, monospace; cursor: pointer;
+    }
+    #deck-modes-bar button.on, #deck-modes-bar .deck-ext-on { border-color: #fef9c3; color: #fef9c3; }
+    #deck-ext-sidebar {
+      position: fixed; top: 96px; right: 12px; z-index: 11; width: 180px;
+      background: rgba(8,4,18,0.94); border: 1px solid rgba(167,139,250,0.3);
+      border-radius: 4px; padding: 10px; pointer-events: auto;
+      font: 9px/1.5 Consolas, monospace; color: #9ca3af;
+    }
+    #deck-persona-order { list-style: none; margin: 6px 0 0; padding: 0; }
+    .deck-reading-order-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    #deck-reading-order-toggle {
+      background: rgba(12,8,24,0.92); border: 1px solid rgba(167,139,250,0.35);
+      border-radius: 4px; padding: 3px 6px; color: #9ca3af;
+      font: 8px Consolas, monospace; cursor: pointer;
+    }
+    #deck-reading-order-toggle.on { border-color: #fef9c3; color: #fef9c3; }
+    #deck-ext-sidebar.deck-reading-order-off { opacity: 0.92; }
+    .deck-reading-order-hint { color: #6b7280; font-style: italic; line-height: 1.4; }
+    #deck-persona-order button {
+      background: none; border: none; color: #a78bfa; cursor: pointer;
+      font: inherit; padding: 2px 0; text-align: left; width: 100%;
+    }
+    #deck-persona-order button:hover { color: #fef9c3; }
+    #deck-skill-bar {
+      position: fixed; top: 88px; left: 16px; z-index: 11; width: 140px; height: 4px;
+      background: rgba(76,29,149,0.5); border-radius: 2px; overflow: hidden;
+    }
+    #deck-skill-fill { height: 100%; width: 0; background: #34d399; transition: width 0.3s; }
+    #deck-chain-panel, #deck-tabletop-panel, #deck-challenge-panel {
+      position: fixed; left: 16px; z-index: 11; max-width: 320px;
+      background: rgba(8,4,18,0.96); border: 1px solid rgba(167,139,250,0.4);
+      border-radius: 4px; padding: 12px; pointer-events: auto;
+      font: 10px/1.55 Consolas, monospace; color: #cbd5e1;
+    }
+    #deck-chain-panel { bottom: 72px; }
+    #deck-tabletop-panel { bottom: 72px; max-width: 360px; }
+    #deck-challenge-panel { top: 100px; left: 50%; transform: translateX(-50%); max-width: 480px; }
+    #deck-challenge-prompt { color: #fecaca; font-weight: 600; margin-bottom: 6px; }
+    #deck-replay-bar {
+      position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%); z-index: 12;
+      display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+      background: rgba(8,4,18,0.92); border: 1px solid rgba(167,139,250,0.35);
+      border-radius: 4px; pointer-events: auto; font: 9px Consolas, monospace; color: #6b7280;
+    }
+    #deck-replay-scrub { width: 200px; accent-color: #a78bfa; }
+    #deck-tunnel {
+      position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.94); opacity: 0; pointer-events: none; transition: opacity 0.25s;
+    }
+    #deck-tunnel.on { opacity: 1; pointer-events: auto; }
+    #deck-tunnel-panel {
+      width: min(720px, 92vw); max-height: 80vh; overflow-y: auto;
+      padding: 28px 32px; border: 1px solid rgba(167,139,250,0.5); border-radius: 6px;
+      background: rgba(12,8,24,0.98); font: 13px/1.75 Consolas, monospace; color: #e9d5ff;
+    }
+    #deck-tunnel-panel h2 { font-size: 18px; margin-bottom: 16px; color: #fef9c3; }
+    #deck-xref-popover, #deck-changelog-tip {
+      position: fixed; z-index: 130; max-width: 280px; padding: 10px 12px;
+      background: rgba(8,4,18,0.98); border: 1px solid rgba(167,139,250,0.5);
+      border-radius: 4px; font: 10px/1.5 Consolas, monospace; color: #cbd5e1;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    #deck-xref-popover ul { margin: 6px 0 0; padding: 0; list-style: none; }
+    #deck-xref-popover button { background: none; border: none; color: #a78bfa; cursor: pointer; font: inherit; }
+    .deck-xref-term { border-bottom: 1px dotted #34d399; cursor: pointer; color: #6ee7b7; }
+    #deck-annotate-layer { position: fixed; inset: 0; z-index: 9; pointer-events: none; }
+    .deck-annotate-marker {
+      position: absolute; font-size: 14px; transform: translate(-50%, -50%);
+      border: 2px solid; border-radius: 50%; width: 12px; height: 12px;
+      background: rgba(8,4,18,0.8); pointer-events: auto; cursor: help;
+    }
+    @media (max-width: 900px) {
+      #bar p { display: none; }
+      #search { width: 120px; margin-left: 0; }
+      #deck-recent { display: none; }
+      #deck-controls { flex-wrap: wrap; }
+      #deck-ext-sidebar, #deck-chain-panel { display: none; }
+    }
+    #deck-controls {
+      display: flex; align-items: center; gap: 8px; margin-left: auto; pointer-events: auto;
+    }
+    #deck-role, #deck-trail-toggle, #deck-alert-sim {
+      background: rgba(12,8,24,0.9); border: 1px solid rgba(167,139,250,0.35);
+      border-radius: 4px; padding: 7px 10px; color: #ddd6fe;
+      font: 10px Consolas, monospace; cursor: pointer; outline: none;
+    }
+    #deck-v2-bar {
+      position: fixed; top: 96px; left: 16px; z-index: 11;
+      display: flex; flex-wrap: wrap; gap: 6px; max-width: 420px;
+      pointer-events: auto;
+    }
+    #deck-v2-bar button, #deck-v2-bar select {
+      background: linear-gradient(180deg, rgba(12,8,28,0.95), rgba(8,4,18,0.98));
+      border: 1px solid rgba(167,139,250,0.4);
+      border-radius: 4px; padding: 6px 10px; color: #ddd6fe;
+      font: 10px Consolas, monospace; cursor: pointer;
+      box-shadow: 0 0 12px rgba(109,40,217,0.15);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    #deck-v2-bar button:hover { border-color: #c4b5fd; box-shadow: 0 0 18px rgba(167,139,250,0.35); }
+    #deck-v2-bar button.on { border-color: #fef9c3; color: #fef9c3; box-shadow: 0 0 22px rgba(254,249,195,0.3); }
+    #deck-trail-toggle.on, #deck-alert-sim.on {
+      border-color: #fef9c3; color: #fef9c3;
+      box-shadow: 0 0 14px rgba(254,249,195,0.25);
+    }
+    #deck-alert-sim.on { border-color: #f87171; color: #fecaca; box-shadow: 0 0 14px rgba(248,113,113,0.35); }
+    #deck-recent {
+      position: fixed; top: 58px; right: 16px; z-index: 11;
+      display: flex; flex-wrap: wrap; gap: 6px; max-width: 320px;
+      justify-content: flex-end; pointer-events: auto;
+    }
+    #deck-recent button {
+      background: rgba(8,4,18,0.92); border: 1px solid rgba(167,139,250,0.3);
+      border-radius: 3px; padding: 4px 8px; color: #a78bfa;
+      font: 9px Consolas, monospace; cursor: pointer;
+    }
+    #deck-recent button:hover { border-color: #fef9c3; color: #fef9c3; }
+    #deck-bcrumb {
+      padding: 10px 20px 0; font: 9px/1.6 Consolas, monospace; color: #6b7280;
+    }
+    #deck-bcrumb a, #deck-bcrumb button {
+      background: none; border: none; padding: 0; color: #a78bfa; cursor: pointer;
+      font: inherit; text-decoration: none;
+    }
+    #deck-bcrumb a:hover, #deck-bcrumb button:hover { color: #fef9c3; }
+    #deck-bcrumb span { color: #4b5563; margin: 0 4px; }
+    #deck-brief-pages {
+      font: 600 9px Consolas, monospace; color: #34d399;
+      background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.35);
+      border-radius: 3px; padding: 3px 7px; letter-spacing: 0.5px; flex-shrink: 0;
+    }
+    #deck-brief-print {
+      pointer-events: auto; cursor: pointer; background: transparent;
+      border: 1px solid rgba(167,139,250,0.35); border-radius: 4px;
+      width: 28px; height: 28px; padding: 0; color: #c4b5fd; font-size: 13px;
+      flex-shrink: 0;
+    }
+    #deck-brief-print:hover { border-color: #fef9c3; color: #fef9c3; }
+    #deck-brief-alert-banner {
+      padding: 10px 20px; background: rgba(127,29,29,0.55);
+      border-bottom: 1px solid rgba(248,113,113,0.45);
+      color: #fecaca; font: 600 10px/1.4 Consolas, monospace; letter-spacing: 0.08em;
+    }
+    #deck-brief-related {
+      padding: 12px 20px 16px; border-top: 1px solid rgba(167,139,250,0.15);
+      flex-shrink: 0; position: relative; z-index: 2;
+    }
+    #deck-brief-related h3 {
+      font: 600 9px Consolas, monospace; color: #6b7280;
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;
+    }
+    #deck-brief-related div { display: flex; flex-wrap: wrap; gap: 8px; }
+    #deck-brief-related button {
+      pointer-events: auto; cursor: pointer;
+      background: rgba(109,40,217,0.2); border: 1px solid rgba(167,139,250,0.4);
+      border-radius: 4px; padding: 6px 10px; color: #c4b5fd;
+      font: 10px Consolas, monospace;
+    }
+    #deck-brief-related button:hover { border-color: #fef9c3; color: #fef9c3; }
+    #deck-brief-split { display: flex; flex: 0 1 auto; max-height: 38vh; min-height: 100px; min-width: 0; overflow-y: auto; }
+    #deck-brief-split.compare #deck-brief-body,
+    #deck-brief-split.compare #deck-brief-body-b {
+      flex: 1; overflow-y: auto; min-width: 0;
+    }
+    #deck-brief-split.compare #deck-brief-body {
+      border-right: 1px solid rgba(167,139,250,0.2);
+    }
+    #deck-brief-body-b { display: none; padding: 16px 20px 8px; }
+    #deck-brief-split.compare #deck-brief-body-b { display: block; }
+    #deck-brief-body-b h3 {
+      font: 600 12px Consolas, monospace; color: #e9d5ff; margin-bottom: 8px;
+    }
+    .glossary-term {
+      border-bottom: 1px dotted rgba(167,139,250,0.55); cursor: help;
+      color: #e9d5ff;
+    }
+    #deck-glossary-tip {
+      position: fixed; z-index: 120; max-width: 260px;
+      padding: 10px 12px; background: rgba(8,4,18,0.98);
+      border: 1px solid rgba(167,139,250,0.5); border-radius: 4px;
+      font: 10px/1.5 Consolas, monospace; color: #cbd5e1;
+      pointer-events: none; opacity: 0; transition: opacity 0.12s;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    #deck-glossary-tip.on { opacity: 1; }
+    #deck-glossary-tip b { display: block; color: #c4b5fd; margin-bottom: 4px; font-size: 11px; }
+    #deck-tour {
+      position: fixed; inset: 0; z-index: 90; pointer-events: none; opacity: 0;
+      transition: opacity 0.25s;
+    }
+    #deck-tour.on { pointer-events: auto; opacity: 1; }
+    #deck-tour-backdrop {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.65);
+    }
+    #deck-tour-card {
+      position: absolute; z-index: 1; max-width: 360px;
+      background: rgba(8,4,18,0.98); border: 1px solid rgba(167,139,250,0.5);
+      border-radius: 6px; padding: 18px 20px;
+      font: 11px/1.65 Consolas, monospace; color: #cbd5e1;
+      box-shadow: 0 0 40px rgba(167,139,250,0.3);
+    }
+    #deck-tour-card h2 { font-size: 13px; color: #e9d5ff; margin-bottom: 8px; }
+    #deck-tour-card button {
+      margin-top: 12px; margin-right: 8px; pointer-events: auto; cursor: pointer;
+      background: rgba(109,40,217,0.35); border: 1px solid rgba(167,139,250,0.55);
+      border-radius: 4px; padding: 8px 14px; color: #fef9c3;
+      font: 600 10px Consolas, monospace; letter-spacing: 0.5px;
+    }
+    #deck-tour-spot {
+      position: absolute; border: 2px solid #fef9c3;
+      border-radius: 50%; box-shadow: 0 0 24px rgba(254,249,195,0.45);
+      pointer-events: none; transition: all 0.35s ease-out;
+    }
+    .node-dimmed { opacity: 0.18 !important; }
+    .node-heat-fresh { filter: drop-shadow(0 0 8px rgba(52,211,153,0.5)); }
+    .node-heat-warm { filter: drop-shadow(0 0 6px rgba(251,191,36,0.35)); }
+    .node-heat-stale { filter: drop-shadow(0 0 4px rgba(107,114,128,0.25)); }
+    .node-alert-pulse { animation: rule-pulse 0.9s ease-in-out infinite; }
+    @keyframes rule-pulse {
+      0%, 100% { filter: drop-shadow(0 0 6px rgba(248,113,113,0.4)); }
+      50% { filter: drop-shadow(0 0 16px rgba(248,113,113,0.85)); }
+    }
+    @media print {
+      body * { visibility: hidden; }
+      #deck-brief.on #deck-brief-panel,
+      #deck-brief.on #deck-brief-panel * { visibility: visible; }
+      #deck-brief.on {
+        position: absolute; inset: 0; opacity: 1 !important;
+        background: #fff; padding: 0;
+      }
+      #deck-brief-panel {
+        position: static !important; max-height: none !important;
+        width: 100% !important; box-shadow: none !important;
+        background: #fff !important; border: none !important; color: #111 !important;
+      }
+      #deck-brief-backdrop, #deck-brief-close, #deck-brief-print,
+      #deck-brief-go, #deck-brief-related, #deck-brief-alert-banner { display: none !important; }
+      #deck-brief-body, #deck-brief-body-b { color: #111 !important; }
+      #deck-brief-title { color: #111 !important; }
+    }
+    #deck-experience-orbit {
+      position: fixed; left: 50%; top: 50%; z-index: 35;
+      width: 0; height: 0; pointer-events: none;
+    }
+    .deck-exp-tile {
+      position: absolute; left: 0; top: 0;
+      width: 118px; margin-left: -59px;
+      padding: 8px 10px; pointer-events: auto;
+      background: rgba(10, 6, 20, 0.72);
+      border: 1px solid rgba(167, 139, 250, 0.35);
+      border-radius: 6px; text-decoration: none; color: #e9d5ff;
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 0 18px rgba(167, 139, 250, 0.15);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      animation: deck-exp-orbit 120s linear infinite;
+      will-change: transform;
+    }
+    .deck-exp-tile:hover {
+      border-color: rgba(254, 249, 195, 0.55);
+      box-shadow: 0 0 22px rgba(254, 249, 195, 0.25);
+      z-index: 2;
+    }
+    .deck-exp-tile h3 {
+      font: 600 9px/1.2 Consolas, monospace;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      margin: 0 0 4px; color: #fef9c3;
+    }
+    .deck-exp-tile p {
+      font-size: 9px; line-height: 1.35; margin: 0;
+      color: rgba(196, 181, 253, 0.85);
+    }
+    .deck-exp-tile:nth-child(1) { animation-delay: 0s; }
+    .deck-exp-tile:nth-child(2) { animation-delay: -9.2s; }
+    .deck-exp-tile:nth-child(3) { animation-delay: -18.5s; }
+    .deck-exp-tile:nth-child(4) { animation-delay: -27.7s; }
+    .deck-exp-tile:nth-child(5) { animation-delay: -36.9s; }
+    .deck-exp-tile:nth-child(6) { animation-delay: -46.2s; }
+    .deck-exp-tile:nth-child(7) { animation-delay: -55.4s; }
+    .deck-exp-tile:nth-child(8) { animation-delay: -64.6s; }
+    .deck-exp-tile:nth-child(9) { animation-delay: -73.8s; }
+    .deck-exp-tile:nth-child(10) { animation-delay: -83.1s; }
+    .deck-exp-tile:nth-child(11) { animation-delay: -92.3s; }
+    .deck-exp-tile:nth-child(12) { animation-delay: -101.5s; }
+    .deck-exp-tile:nth-child(13) { animation-delay: -110.8s; }
+    @keyframes deck-exp-orbit {
+      from { transform: rotate(0deg) translateX(min(560px, 52vw)) rotate(0deg); }
+      to { transform: rotate(360deg) translateX(min(560px, 52vw)) rotate(-360deg); }
+    }
+    @media (max-width: 900px) {
+      #deck-experience-orbit { display: none; }
+    }
+    #deck-experience-hub {
+      position: fixed; right: 12px; bottom: 12px; z-index: 88;
+      max-width: min(420px, calc(100vw - 24px));
+      font-family: Consolas, monospace;
+    }
+    #deck-experience-hub-toggle {
+      font: 600 10px/1 Consolas, monospace;
+      letter-spacing: 2px; text-transform: uppercase;
+      padding: 10px 14px; cursor: pointer;
+      background: rgba(10, 6, 20, 0.92);
+      border: 1px solid rgba(167, 139, 250, 0.45);
+      color: #fef9c3; border-radius: 6px;
+      box-shadow: 0 0 20px rgba(167, 139, 250, 0.2);
+    }
+    #deck-experience-hub-toggle:hover { border-color: rgba(254, 249, 195, 0.6); }
+    #deck-experience-hub-panel {
+      display: none; margin-top: 8px;
+      max-height: min(62vh, 520px); overflow: auto;
+      background: rgba(8, 4, 18, 0.96);
+      border: 1px solid rgba(167, 139, 250, 0.35);
+      border-radius: 8px; padding: 12px;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    #deck-experience-hub.open #deck-experience-hub-panel { display: block; }
+    #deck-experience-hub-panel h2 {
+      font-size: 10px; letter-spacing: 3px; color: #38bdf8;
+      margin: 0 0 10px; text-transform: uppercase;
+    }
+    .deck-exp-hub-link {
+      display: block; padding: 10px 8px; margin-bottom: 6px;
+      text-decoration: none; color: #e9d5ff;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 5px; transition: border-color 0.15s, background 0.15s;
+    }
+    .deck-exp-hub-link:hover {
+      border-color: rgba(56, 189, 248, 0.45);
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .deck-exp-hub-link strong {
+      display: block; font-size: 10px; letter-spacing: 1.5px;
+      text-transform: uppercase; color: #fef9c3; margin-bottom: 4px;
+    }
+    .deck-exp-hub-link span { font-size: 10px; line-height: 1.45; color: #94a3b8; }
   </style>
+  <link rel="stylesheet" href="../experience-modules/shared/dio-guide.css" />
 </head>
 <body>
-  <div class="deck">
-    <!-- Header -->
-    <header class="deck-header">
-      <a href="../index.html" class="deck-brand">◑ OBSERVATION DECK</a>
-      <div class="deck-header-actions">
-        <span class="status-dot status-dot--live" title="System Online"></span>
-        <a href="../experience-modules/index.html" class="btn-ghost">Experiences</a>
-        <a href="../trophy.html" class="btn-ghost">Achievements</a>
-        <a href="../read.html" class="btn-ghost">Docs</a>
+  <div id="boot"><span>Meridian-7 observation deck</span><small>Operation HABIBI-SIEM · Observation Deck</small><div id="boot-enter">[ Click to Enter ]</div></div>
+  <div id="bar">
+    <h1>SIEM Dashboard · Observation Deck</h1>
+    <p>Click a module for brief · Tab tour · Shift+click compare · ?focus=slug deep link</p>
+    <input id="search" type="search" placeholder="Search components…" aria-label="Search components" />
+    <div id="deck-controls">
+      <select id="deck-role" aria-label="Role lens">
+        <option value="tier1">Tier 1</option>
+        <option value="tier2">Tier 2</option>
+        <option value="manager" selected>Manager</option>
+      </select>
+      <button id="deck-trail-toggle" type="button" title="Incident trail mode">Trail</button>
+      <button id="deck-alert-sim" type="button" title="Alert simulator">Alert sim</button>
+    </div>
+    <button id="recenter" type="button" title="Recenter on wormhole (Home)" aria-label="Recenter wormhole">◎</button>
+  </div>
+  <div id="deck-modes-bar" aria-label="Deck feature controls">
+    <select id="deck-threat-select" aria-label="Threat scenario"><option value="">Threat theater</option></select>
+    <button id="deck-threat-play" type="button">Play</button>
+    <select id="deck-persona-select" aria-label="Analyst persona">
+      <option value="soc">SOC Analyst</option>
+      <option value="ciso">CISO</option>
+      <option value="junior">Junior Analyst</option>
+      <option value="dev">Developer</option>
+      <option value="auditor">Auditor</option>
+    </select>
+    <button id="deck-skill-toggle" type="button" title="Skill tree mode">Skill tree</button>
+    <button id="deck-chain-toggle" type="button" title="Attack path builder">Chain</button>
+    <button id="deck-concept-toggle" type="button" title="Concept constellation">Concepts</button>
+    <button id="deck-changelog-toggle" type="button" class="on" title="Changelog orbit">Changelog</button>
+    <select id="deck-tabletop-select" aria-label="Tabletop card"><option value="">Tabletop</option></select>
+    <button id="deck-tabletop-start" type="button">Run</button>
+    <button id="deck-tunnel-btn" type="button" title="Focus tunnel (F)">Tunnel</button>
+    <button id="deck-health-toggle" type="button" title="Doc health overlay">Health</button>
+    <button id="deck-audio-toggle" type="button" class="on" title="Ambient audio">Audio</button>
+    <button id="deck-portfolio-toggle" type="button" title="PDF portfolio">Portfolio</button>
+    <button id="deck-portfolio-export" type="button" hidden>Export</button>
+    <button id="deck-annotate-toggle" type="button" title="Sticky notes">Notes</button>
+    <input id="deck-annotate-user" type="text" placeholder="Your name" aria-label="Annotator name" style="width:72px" />
+    <button id="deck-challenge-next" type="button">Next challenge</button>
+  </div>
+  <div id="deck-v2-bar" aria-label="Deck v2 feature toolbar">
+    <button id="deck-evidence-toggle" type="button" title="Incident evidence grid — pin beacons and link modules">Evidence Board</button>
+    <button id="deck-actors-toggle" type="button" title="Known threat actor dossiers">Known Actors</button>
+    <select id="deck-wargame-select" aria-label="War game scenario"><option value="">War Game</option></select>
+    <button id="deck-wargame-run" type="button">Run scenario</button>
+    <button id="deck-mission-generate" type="button" title="Generate mission reading order">Generate Mission</button>
+    <button id="deck-constellation-toggle" type="button" title="Incident constellation view">Constellation</button>
+    <button id="deck-sonify-toggle" type="button" title="Pentatonic hover notes and alert sonification">Sonify</button>
+  </div>
+  <div id="deck-skill-bar" hidden><div id="deck-skill-fill"></div></div>
+  <aside id="deck-ext-sidebar">
+    <div class="deck-reading-order-head">
+      <strong>Reading order</strong>
+      <button id="deck-reading-order-toggle" type="button" class="on" title="Disable persona reading order">Custom on</button>
+    </div>
+    <ul id="deck-persona-order"></ul>
+  </aside>
+  <div id="deck-chain-panel" hidden><strong>Attack path</strong><p id="deck-chain-text"></p></div>
+  <div id="deck-tabletop-panel" hidden>
+    <strong>Tabletop exercise</strong>
+    <p class="deck-tabletop-brief"></p>
+    <span id="deck-tabletop-timer">10:00</span>
+  </div>
+  <div id="deck-challenge-panel" hidden>
+    <div id="deck-challenge-prompt"></div>
+    <div id="deck-challenge-score">Pick 3 nodes in order</div>
+  </div>
+  <div id="deck-replay-bar" hidden>
+    <span>Session replay</span>
+    <input id="deck-replay-scrub" type="range" min="0" max="0" value="0" aria-label="Replay timeline" />
+    <button id="deck-replay-play" type="button">Play</button>
+  </div>
+  <div id="deck-tunnel" hidden role="dialog" aria-modal="true">
+    <div id="deck-tunnel-panel">
+      <h2 id="deck-tunnel-title"></h2>
+      <div id="deck-tunnel-body"></div>
+      <p style="margin-top:16px;color:#6b7280;font-size:10px">Press Esc to exit focus tunnel</p>
+    </div>
+  </div>
+  <div id="deck-xref-popover" hidden></div>
+  <div id="deck-changelog-tip" hidden></div>
+  <div id="deck-annotate-layer" aria-hidden="true"></div>
+  <div id="deck-recent" aria-label="Recently visited modules"></div>
+  <canvas id="bg"></canvas>
+  <canvas id="deck-smoke" aria-hidden="true"></canvas>
+  <canvas id="matrix"></canvas>
+  <canvas id="acc"></canvas>
+  <canvas id="c"></canvas>
+  <canvas id="fx"></canvas>
+  <div id="deck-particles" aria-hidden="true"></div>
+  <div id="overlay"></div>
+  <div id="click-flash" aria-hidden="true"></div>
+  <canvas id="web-corruption" aria-hidden="true"></canvas>
+  <canvas id="fog-burst" aria-hidden="true"></canvas>
+  <div id="grain"></div>
+  <div id="card"><b></b><span></span></div>
+  <div id="deck-brief" role="dialog" aria-modal="true" aria-labelledby="deck-brief-title" hidden>
+    <div id="deck-brief-backdrop" aria-hidden="true"></div>
+    <div id="deck-brief-panel">
+      <div id="deck-brief-alert-banner" hidden>ALERT: Simulated critical burst — rule nodes pulsing · triage posture active</div>
+      <nav id="deck-bcrumb" aria-label="Brief breadcrumb"></nav>
+      <div id="deck-brief-head">
+        <h2 id="deck-brief-title"></h2>
+        <span id="deck-brief-pages"></span>
+        <button id="deck-brief-print" type="button" title="Print brief" aria-label="Print brief">⎙</button>
+        <button id="deck-brief-close" type="button" aria-label="Close brief">×</button>
       </div>
-    </header>
-
-    <div class="deck-content">
-      <!-- Status Bar -->
-      <div class="status-bar fade-up">
-        <div class="status-item">
-          <span class="status-dot status-dot--live"></span>
-          <span>SIEM Engine: Active</span>
-        </div>
-        <div class="status-item">
-          <span class="status-dot status-dot--live"></span>
-          <span>Log Ingestion: 1,247 eps</span>
-        </div>
-        <div class="status-item">
-          <span class="status-dot status-dot--idle"></span>
-          <span>Threat Intel: Syncing</span>
-        </div>
-        <div class="status-item">
-          <span class="status-dot status-dot--live"></span>
-          <span>Session: <span id="session-time">0m</span></span>
-        </div>
+      <div id="deck-brief-split">
+        <div id="deck-brief-body"></div>
+        <div id="deck-brief-body-b" aria-hidden="true"><h3 id="deck-brief-title-b"></h3><div id="deck-brief-text-b"></div></div>
       </div>
-
-      <!-- Metrics -->
-      <div class="metrics-grid fade-up">
-        <div class="metric-card">
-          <span class="metric-value" id="metric-alerts">47</span>
-          <span class="metric-label">Active Alerts</span>
-          <div class="metric-change metric-change--up">↑ 12%</div>
-        </div>
-        <div class="metric-card">
-          <span class="metric-value metric-value--gold" id="metric-eps">1.2k</span>
-          <span class="metric-label">Events / Sec</span>
-          <div class="metric-change metric-change--up">↑ 3%</div>
-        </div>
-        <div class="metric-card">
-          <span class="metric-value metric-value--green" id="metric-uptime">99.7%</span>
-          <span class="metric-label">Uptime</span>
-          <div class="metric-change metric-change--up">↑ 0.2%</div>
-        </div>
-        <div class="metric-card">
-          <span class="metric-value metric-value--red" id="metric-critical">3</span>
-          <span class="metric-label">Critical</span>
-          <div class="metric-change metric-change--down">↑ 1</div>
-        </div>
-        <div class="metric-card">
-          <span class="metric-value" id="metric-achievements">0</span>
-          <span class="metric-label">Achievements</span>
-          <div class="metric-change">—</div>
-        </div>
-        <div class="metric-card">
-          <span class="metric-value" id="metric-modules">13</span>
-          <span class="metric-label">Modules Online</span>
-          <div class="metric-change">—</div>
-        </div>
-      </div>
-
-      <!-- Quick Actions -->
-      <div class="section fade-up">
-        <div class="section-header">
-          <h2 class="section-title">Quick Actions</h2>
-        </div>
-        <div class="quick-actions">
-          <a href="../terminal.html" class="btn-primary">Open Terminal</a>
-          <a href="../breach.html" class="btn-secondary">Run Breach Sim</a>
-          <a href="../cipher.html" class="btn-secondary">Solve Cipher</a>
-          <a href="../sim.html" class="btn-secondary">Launch Simulation</a>
-          <a href="../motd.html" class="btn-ghost">Daily Briefing</a>
-        </div>
-      </div>
-
-      <!-- Activity Feed -->
-      <div class="section fade-up">
-        <div class="section-header">
-          <h2 class="section-title">Recent Activity</h2>
-          <div class="section-actions">
-            <button class="btn-ghost" onclick="SiemToast.show('Activity feed refreshed', 'info')">Refresh</button>
-          </div>
-        </div>
-        <div class="activity-feed" id="activity-feed">
-          <div class="activity-item">
-            <span class="activity-icon">◈</span>
-            <span class="activity-time">12s</span>
-            <span class="activity-text">Breach simulation completed — 3 threats contained</span>
-            <span class="activity-severity activity-severity--low">Info</span>
-          </div>
-          <div class="activity-item">
-            <span class="activity-icon">⬢</span>
-            <span class="activity-time">45s</span>
-            <span class="activity-text">Cipher chamber ALPHA solved</span>
-            <span class="activity-severity activity-severity--medium">Achievement</span>
-          </div>
-          <div class="activity-item">
-            <span class="activity-icon">⚠</span>
-            <span class="activity-time">2m</span>
-            <span class="activity-text">Unusual outbound traffic detected on port 8443</span>
-            <span class="activity-severity activity-severity--high">High</span>
-          </div>
-          <div class="activity-item">
-            <span class="activity-icon">◎</span>
-            <span class="activity-time">5m</span>
-            <span class="activity-text">Network topology map updated — 12 new nodes</span>
-            <span class="activity-severity activity-severity--low">Info</span>
-          </div>
-          <div class="activity-item">
-            <span class="activity-icon">▸</span>
-            <span class="activity-time">8m</span>
-            <span class="activity-text">Terminal session started from 10.0.1.45</span>
-            <span class="activity-severity activity-severity--low">Info</span>
-          </div>
-        </div>
+      <div id="deck-brief-related"><h3>Related modules</h3><div id="deck-brief-related-list"></div></div>
+      <div id="deck-brief-foot">
+        <span id="deck-brief-dir">Docs folder: <code></code></span>
+        <a id="deck-brief-go" href="#" target="_blank" rel="noopener">
+          <span id="deck-brief-pulse" aria-hidden="true"></span>
+          <span>Open documentation</span>
+        </a>
       </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="deck-footer">
-      HABIBI-SIEM · Meridian-7 Operations · <a href="https://github.com/mibrahim-cyber/SIEM-Dashboard-Documentation" target="_blank" rel="noopener">GitHub</a>
-    </footer>
   </div>
-
-  <div class="scan-line-overlay" aria-hidden="true"></div>
-  <div id="scroll-progress" role="progressbar" aria-label="Page scroll progress"></div>
-  <button class="back-to-top" aria-label="Back to top">↑</button>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="../assets/siem-core.js"></script>
-  <script src="../assets/components.js"></script>
+  <div id="deck-glossary-tip" role="tooltip" hidden><b></b><span></span></div>
+  <div id="deck-tour" hidden>
+    <div id="deck-tour-backdrop"></div>
+    <div id="deck-tour-spot" aria-hidden="true"></div>
+    <div id="deck-tour-card">
+      <h2 id="deck-tour-title"></h2>
+      <p id="deck-tour-text"></p>
+      <button id="deck-tour-next" type="button">Next</button>
+      <button id="deck-tour-skip" type="button">Skip tour</button>
+    </div>
+  </div>
+  <div id="stats"></div>
+  <nav id="deck-experience-orbit" aria-label="Experience hub">
+    <a class="deck-exp-tile" href="../experience-modules/game1-terminal/index.html"><h3>Terminal</h3><p>SOC shell boot sequence</p></a>
+    <a class="deck-exp-tile" href="../experience-modules/game2-breach/index.html"><h3>Breach</h3><p>Red-team containment sim</p></a>
+    <a class="deck-exp-tile" href="../experience-modules/game3-network/index.html"><h3>Ghost Net</h3><p>45-node threat graph</p></a>
+    <a class="deck-exp-tile" href="../experience-modules/game4-cipher/index.html"><h3>Cipher</h3><p>Crypto puzzle room</p></a>
+    <a class="deck-exp-tile" href="../experience-modules/game5-simulation/index.html"><h3>Simulation</h3><p>Incident timeline replay</p></a>
+    <a class="deck-exp-tile" href="../experience-modules/game6-intercept/index.html"><h3>Interrogation</h3><p>Signal decode chamber</p></a>
+    <a class="deck-exp-tile" href="../experience-modules/game7-forge/index.html"><h3>Forge</h3><p>Rule crafting workshop</p></a>
+    <a class="deck-exp-tile" href="../experience-modules/game8-archive/index.html"><h3>Archive</h3><p>Deep log vault dive</p></a>
+    <a class="deck-exp-tile" href="../experience-modules/game9-heist/index.html"><h3>Heist</h3><p>Stealth data extraction</p></a>
+    <a class="deck-exp-tile" href="../experience-modules/game11-cartography/index.html"><h3>Cartography</h3><p>Threat terrain map</p></a>
+    <a class="deck-exp-tile" href="../experience-modules/game10-lab/index.html"><h3>Lab</h3><p>Detection experiment bay</p></a>
+    <a class="deck-exp-tile" href="../experience-modules/game12-memorial/index.html"><h3>Memorial</h3><p>Incident remembrance wall</p></a>
+    <a class="deck-exp-tile" href="../experience-modules/game13-resonance/index.html"><h3>Resonance</h3><p>6-channel alert sonics</p></a>
+  </nav>
+  <aside id="deck-experience-hub" aria-label="Experience hub">
+    <button type="button" id="deck-experience-hub-toggle" aria-expanded="false" aria-controls="deck-experience-hub-panel">Experiences · 13</button>
+    <div id="deck-experience-hub-panel" role="region" aria-label="All deck experiences">
+      <h2>Deck experiences</h2>
+      <a class="deck-exp-hub-link" href="../experience-modules/game1-terminal/index.html"><strong>The Terminal</strong><span>SOC shell boot sequence — command-line triage and virtual log filesystem.</span></a>
+      <a class="deck-exp-hub-link" href="../experience-modules/game2-breach/index.html"><strong>The Breach</strong><span>Red-team containment sim — isolate nodes and stop lateral movement.</span></a>
+      <a class="deck-exp-hub-link" href="../experience-modules/game3-network/index.html"><strong>The Ghost Network</strong><span>45-node threat graph with packet capture and live events.</span></a>
+      <a class="deck-exp-hub-link" href="../experience-modules/game4-cipher/index.html"><strong>The Cipher</strong><span>Cryptographic puzzle room — decode signals and unlock briefs.</span></a>
+      <a class="deck-exp-hub-link" href="../experience-modules/game5-simulation/index.html"><strong>The Simulation</strong><span>Incident timeline replay — scrub detections and analyst actions.</span></a>
+      <a class="deck-exp-hub-link" href="../experience-modules/game6-intercept/index.html"><strong>The Interrogation Room</strong><span>Signal decode chamber — interrogate traffic and extract IOCs.</span></a>
+      <a class="deck-exp-hub-link" href="../experience-modules/game7-forge/index.html"><strong>The Forge</strong><span>Detection rule workshop — build and test STRIDE-aligned rules.</span></a>
+      <a class="deck-exp-hub-link" href="../experience-modules/game8-archive/index.html"><strong>The Deep Archive</strong><span>Three-dimensional log vault — navigate retained evidence spatially.</span></a>
+      <a class="deck-exp-hub-link" href="../experience-modules/game9-heist/index.html"><strong>The Heist</strong><span>Stealth data extraction — evade guards across segmented zones.</span></a>
+      <a class="deck-exp-hub-link" href="../experience-modules/game11-cartography/index.html"><strong>The Cartography</strong><span>WebGL threat globe — plot actor arcs and attack paths.</span></a>
+      <a class="deck-exp-hub-link" href="../experience-modules/game10-lab/index.html"><strong>The Lab</strong><span>Detection experiment bay — tune rules against synthetic campaigns.</span></a>
+      <a class="deck-exp-hub-link" href="../experience-modules/game12-memorial/index.html"><strong>The Memorial</strong><span>Incident remembrance wall — major breaches and lessons learned.</span></a>
+      <a class="deck-exp-hub-link" href="../experience-modules/game13-resonance/index.html"><strong>The Resonance</strong><span>Six-channel alert sonification — mix ingest, rules, and threat feeds.</span></a>
+    </div>
+  </aside>
+  <div id="deck-nav-root"></div>
+  <script type="importmap">{"imports":{"animejs":"https://esm.sh/animejs@4.4.1","simplex-noise":"https://esm.sh/simplex-noise@4.0.3"}}</script>
+  <script type="module" src="../assets/anime-init.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tsparticles/slim@3.7.1/tsparticles.slim.bundle.min.js" defer></script>
+  <script src="../assets/wormhole-portal.js?v=13.3.0-camdrift"></script>
+  <script src="../assets/atmosphere.js?v=13.3.0-camdrift"></script>
+  <script src="../assets/cosmic-web.js?v=13.3.0-camdrift"></script>
   <script>
-    SiemCore.bootPage('brain');
+(() => {
+  'use strict';
+  const VER = '13.3.0-camdrift-deck';
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const SPIN = REDUCED ? 0.08 : 0.25;
+  const SEED = 7742;
+  const TAU = Math.PI * 2;
+  const startMs = performance.now();
+  const ALERT_RE = /sql|xss|brute/i;
 
-    // Live session time
-    setInterval(function () {
-      var el = document.getElementById('session-time');
-      if (el) el.textContent = SiemCore.SessionState.sessionMinutes() + 'm';
-    }, 10000);
+  const PAL = ['#c4b5fd','#5eead4','#f472b6','#fbbf24','#34d399','#a78bfa','#38bdf8','#fb7185','#86efac','#fcd34d'];
+  const CORE = [
+    ['SIEM Dashboard','doc','Browser SOC console — API, database, shared session',32],
+    ['Documentation','doc','Ten technical volumes under docs/',14],
+    ['Architecture','doc','How browser, API, and pipeline fit together',13],
+    ['Backend API','backend','Login, alerts, threat checks, audit routes',14],
+    ['SQLite DB','backend','Durable alerts, users, settings, audit rows',13],
+    ['RBAC','backend','Five roles — server enforces write and admin',12],
+    ['Cryptography','backend','AES-256-GCM for secrets at rest',12],
+    ['Validation','backend','Server-side ingest sanitisation and caps',12],
+    ['Threat Intel','backend','AbuseIPDB and VirusTotal proxy with cache',12],
+    ['GeoIP','backend','MaxMind enrichment when database present',12],
+    ['React Shell','frontend','Sidebar groups and module navigation',13],
+    ['AuthContext','frontend','Session cookie and permission flags',12],
+    ['SiemContext','frontend','Shared alerts, logs, incidents, risk',14],
+    ['API Client','frontend','REST calls with CSRF on mutations',12],
+    ['DetectionEngine','detect','Rule evaluation on the hot log buffer',14],
+    ['rules.js','detect','Ten bundled STRIDE and MITRE rules',13],
+    ['Correlation','detect','IP clustering into incidents — 60s window',12],
+    ['SQL Injection','detect','Critical rule — SQL metacharacters in requests',11],
+    ['XSS Attempt','detect','High rule — script and sink patterns',11],
+    ['Brute Force','detect','High rule — five fails per minute per IP',11],
+    ['Dashboard','frontend','Monitor overview — KPIs and simulate',12],
+    ['Alert Manager','frontend','Triage queue — ack, filter, MITRE tags',12],
+    ['SOAR Console','frontend','Playbooks, block, watchlist, audit log',12],
+    ['Geo Map','frontend','Country plot and impossible-travel lines',11],
+    ['Pentest RBAC','infra','Broken access control lab report',11],
+    ['Pentest CSRF','infra','Session and CSRF lab report',11],
+    ['Pentest Input','infra','Log poisoning and input abuse report',11],
+  ];
 
-    // Live achievement count
-    setInterval(function () {
-      var el = document.getElementById('metric-achievements');
-      if (el) el.textContent = SiemCore.AchievementSystem.count();
-    }, 5000);
+  let deckBriefs = {};
+  let docIndex = null;
+  let briefOpen = false;
+  let currentBriefLabel = '';
+  let compareLabel = '';
+  let comparePick = null;
+  let keyboardFocusIdx = -1;
+  let incidentTrailOn = false;
+  let alertSimOn = false;
+  let trailPulse = 0;
+  let tourStep = -1;
+  let currentRole = 'manager';
+  let wormholeIntroDone = false;
+
+  const TRAIL_PATH = ['Validation', 'DetectionEngine', 'Alert Manager', 'SOAR Console'];
+  const TOUR_STEPS = [
+    { label: 'SIEM Dashboard', title: 'Start at the core', text: 'The wormhole is your anchor. Every module orbits shared session state. Click any planet for a full brief.' },
+    { label: 'Architecture', title: 'See the split', text: 'Architecture explains which layer owns auth, ingest, rules, and triage. Good second stop when onboarding.' },
+    { label: 'DetectionEngine', title: 'Rules fire here', text: 'Detection evaluates the hot log buffer. Rule nodes around this ring show what fires in lab campaigns.' },
+    { label: 'Alert Manager', title: 'Triage queue', text: 'Alert Manager is where tier-two work happens: ack, filter, MITRE tags. Open its docs when teaching shift handoff.' },
+  ];
+  const GLOSSARY = {
+    'AES-256-GCM': 'Symmetric encryption with authenticated additional data. Used here for secrets at rest on the server.',
+    'CSRF': 'Cross-site request forgery. Mutating API calls require a token tied to your session cookie.',
+    'RBAC': 'Role-based access control. Five demo roles gate write, admin, and export on the server.',
+    'MITRE': 'ATT&CK technique tags on alerts for mapping detections to known adversary behavior.',
+    'SOAR': 'Security orchestration — playbooks, block lists, and watchlists with an audit trail.',
+    'SQLite': 'Embedded database file holding alerts, users, settings, and audit rows for the lab.',
+    'STRIDE': 'Spoofing, tampering, repudiation, info disclosure, denial of service, elevation — rule categories in coursework.',
+    'XSS': 'Cross-site scripting — script or sink patterns injected through request fields.',
+    'SQL injection': 'SQL metacharacters or comment sequences smuggled into HTTP parameters or bodies.',
+    'WAL': 'Write-ahead logging mode in SQLite — concurrent reads while writes append.',
+    'GeoIP': 'Country and city enrichment from a MaxMind database on the server host.',
+    'IOC': 'Indicator of compromise — IPs, hashes, or domains worth watching.',
+    'SLA': 'Service-level agreement timers on alerts — how long before triage is overdue.',
+  };
+  const ROLE_ACCESS = {
+    tier1: new Set(['SIEM Dashboard', 'Documentation', 'Architecture', 'Dashboard', 'Alert Manager', 'Geo Map', 'DetectionEngine', 'rules.js', 'Correlation', 'SQL Injection', 'XSS Attempt', 'Brute Force', 'React Shell', 'SiemContext']),
+    tier2: new Set(['SIEM Dashboard', 'Documentation', 'Architecture', 'Backend API', 'SQLite DB', 'RBAC', 'Validation', 'Threat Intel', 'GeoIP', 'React Shell', 'AuthContext', 'SiemContext', 'API Client', 'DetectionEngine', 'rules.js', 'Correlation', 'SQL Injection', 'XSS Attempt', 'Brute Force', 'Dashboard', 'Alert Manager', 'SOAR Console', 'Geo Map', 'Cryptography']),
+    manager: null,
+  };
+  const RULE_LABELS = new Set(['SQL Injection', 'XSS Attempt', 'Brute Force', 'rules.js', 'DetectionEngine']);
+
+  const briefEl = document.getElementById('deck-brief');
+  const briefSplit = document.getElementById('deck-brief-split');
+  const briefTitle = document.getElementById('deck-brief-title');
+  const briefBody = document.getElementById('deck-brief-body');
+  const briefTitleB = document.getElementById('deck-brief-title-b');
+  const briefTextB = document.getElementById('deck-brief-text-b');
+  const briefDir = document.querySelector('#deck-brief-dir code');
+  const briefGo = document.getElementById('deck-brief-go');
+  const briefClose = document.getElementById('deck-brief-close');
+  const briefBackdrop = document.getElementById('deck-brief-backdrop');
+  const briefPages = document.getElementById('deck-brief-pages');
+  const briefPrint = document.getElementById('deck-brief-print');
+  const briefRelated = document.getElementById('deck-brief-related-list');
+  const briefBcrumb = document.getElementById('deck-bcrumb');
+  const briefAlertBanner = document.getElementById('deck-brief-alert-banner');
+  const glossaryTip = document.getElementById('deck-glossary-tip');
+  const deckRecent = document.getElementById('deck-recent');
+  const deckRole = document.getElementById('deck-role');
+  const deckTrailBtn = document.getElementById('deck-trail-toggle');
+  const deckAlertSim = document.getElementById('deck-alert-sim');
+  const deckTour = document.getElementById('deck-tour');
+  const deckTourTitle = document.getElementById('deck-tour-title');
+  const deckTourText = document.getElementById('deck-tour-text');
+  const deckTourSpot = document.getElementById('deck-tour-spot');
+  const deckTourNext = document.getElementById('deck-tour-next');
+  const deckTourSkip = document.getElementById('deck-tour-skip');
+  const deckTourCard = document.getElementById('deck-tour-card');
+
+  function deckSiteRoot() {
+    var p = location.pathname || '/';
+    var brainIdx = p.indexOf('/brain');
+    if (brainIdx >= 0) return p.slice(0, brainIdx + 1);
+    return p.endsWith('/') ? p : p.slice(0, p.lastIndexOf('/') + 1);
+  }
+
+  function deckAssetUrl(rel) {
+    return deckSiteRoot() + String(rel || '').replace(/^\.\.\//, '');
+  }
+
+  function ensureBriefForLabel(label) {
+    if (deckBriefs[label]) return deckBriefs[label];
+    var node = nodeByLabel(label);
+    if (!node) return null;
+    var fallback = {
+      href: '../docs/02-architecture/00-system-overview.md',
+      dir: 'docs/',
+      category: node.type || 'Module',
+      pages: 0,
+      related: [],
+      body: node.desc || 'Module overview for ' + label + '.',
+    };
+    deckBriefs[label] = fallback;
+    return fallback;
+  }
+
+  function presentNodeCard(n) {
+    card.querySelector('b').textContent = n.label;
+    card.querySelector('span').textContent = n.desc || '';
+    showCard(true);
+  }
+
+  function labelToSlug(label) {
+    return (label || '').toLowerCase().replace(/\./g, '-').replace(/\s+/g, '-');
+  }
+
+  function slugToLabel(slug) {
+    if (!slug) return null;
+    for (const [label] of CORE) {
+      if (labelToSlug(label) === slug) return label;
+    }
+    return null;
+  }
+
+  function nodeByLabel(label) {
+    return nodes.find((n) => n.core && n.label === label) || null;
+  }
+
+  function canAccessLabel(label) {
+    const allowed = ROLE_ACCESS[currentRole];
+    if (!allowed) return true;
+    return allowed.has(label);
+  }
+
+  function pageCountFor(label) {
+    const b = deckBriefs[label];
+    if (b && b.pages) return b.pages;
+    if (docIndex && docIndex.modules) {
+      const dir = b && b.dir ? b.dir.replace(/\/$/, '') : '';
+      const mod = docIndex.modules.find((m) => m.index_path && m.index_path.indexOf(dir.replace('guides/', '')) >= 0);
+      if (mod && mod.pages) return mod.pages.length;
+    }
+    return null;
+  }
+
+  function heatClassFor(label) {
+    const pages = pageCountFor(label) || 0;
+    if (pages >= 15) return 'node-heat-fresh';
+    if (pages >= 8) return 'node-heat-warm';
+    return 'node-heat-stale';
+  }
+
+  function pushRecent(label) {
+    try {
+      let list = JSON.parse(localStorage.getItem('deck-last-visited') || '[]');
+      list = list.filter((x) => x !== label);
+      list.unshift(label);
+      list = list.slice(0, 5);
+      localStorage.setItem('deck-last-visited', JSON.stringify(list));
+      renderRecent();
+    } catch (_) { /* private mode */ }
+  }
+
+  function renderRecent() {
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem('deck-last-visited') || '[]'); } catch (_) {}
+    deckRecent.innerHTML = '';
+    list.forEach((label) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = label;
+      btn.title = 'Revisit ' + label;
+      btn.addEventListener('click', () => navigateToModule(label));
+      deckRecent.appendChild(btn);
+    });
+  }
+
+  function applyGlossary(html) {
+    let out = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const terms = Object.keys(GLOSSARY).sort((a, b) => b.length - a.length);
+    for (const term of terms) {
+      const re = new RegExp('\\b(' + term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')\\b', 'gi');
+      out = out.replace(re, '<span class="glossary-term" data-term="$1">$1</span>');
+    }
+    return out;
+  }
+
+  function bindGlossary(el) {
+    el.querySelectorAll('.glossary-term').forEach((span) => {
+      span.addEventListener('mouseenter', (e) => {
+        const term = span.dataset.term || span.textContent;
+        const def = GLOSSARY[term] || GLOSSARY[term.toLowerCase()] || GLOSSARY[Object.keys(GLOSSARY).find((k) => k.toLowerCase() === term.toLowerCase())];
+        if (!def) return;
+        glossaryTip.querySelector('b').textContent = term;
+        glossaryTip.querySelector('span').textContent = def;
+        glossaryTip.hidden = false;
+        glossaryTip.classList.add('on');
+        glossaryTip.style.left = Math.min(e.clientX + 12, innerWidth - 280) + 'px';
+        glossaryTip.style.top = Math.min(e.clientY + 12, innerHeight - 80) + 'px';
+      });
+      span.addEventListener('mouseleave', () => {
+        glossaryTip.classList.remove('on');
+        glossaryTip.hidden = true;
+      });
+    });
+  }
+
+  function renderBreadcrumb(label) {
+    const b = deckBriefs[label] || {};
+    const cat = b.category || 'Deck';
+    briefBcrumb.innerHTML = '';
+    const parts = [
+      { text: 'Deck', action: () => { closeDeckBrief(); recenterWormhole(); } },
+      { text: cat, action: null },
+      { text: label, action: null },
+      { text: b.dir || 'docs/', action: null, code: true },
+    ];
+    parts.forEach((p, i) => {
+      if (i > 0) {
+        const sep = document.createElement('span');
+        sep.textContent = '→';
+        briefBcrumb.appendChild(sep);
+      }
+      if (p.action) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = p.text;
+        btn.addEventListener('click', p.action);
+        briefBcrumb.appendChild(btn);
+      } else {
+        const el = p.code ? document.createElement('code') : document.createElement('span');
+        el.textContent = p.text;
+        if (p.code) el.style.color = '#a78bfa';
+        briefBcrumb.appendChild(el);
+      }
+    });
+  }
+
+  function renderRelated(label) {
+    const b = deckBriefs[label] || {};
+    const rel = (b.related || []).filter((rl) => deckBriefs[rl]).slice(0, 3);
+    const wrap = document.getElementById('deck-brief-related');
+    briefRelated.innerHTML = '';
+    if (!rel.length) {
+      if (wrap) wrap.hidden = true;
+      return;
+    }
+    if (wrap) wrap.hidden = false;
+    rel.forEach((rl) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = rl;
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        navigateToModule(rl);
+      });
+      briefRelated.appendChild(btn);
+    });
+  }
+
+  function fillBriefPanel(label, titleEl, bodyEl) {
+    const b = ensureBriefForLabel(label);
+    if (!b) return false;
+    titleEl.textContent = label;
+    bodyEl.innerHTML = applyGlossary(b.body || '');
+    bindGlossary(bodyEl);
+    return true;
+  }
+
+  function siteBaseUrl() {
+    const p = location.pathname;
+    const brainIdx = p.indexOf('/brain/');
+    if (brainIdx >= 0) return location.origin + p.slice(0, brainIdx + 1);
+    const last = p.lastIndexOf('/');
+    return location.origin + (last >= 0 ? p.slice(0, last + 1) : '/');
+  }
+
+  function docReadUrl(href) {
+    if (!href || href === '#') return siteBaseUrl() + 'read.html';
+    let path = href;
+    if (path.startsWith('../')) path = path.slice(3);
+    else if (path.startsWith('./')) path = path.slice(2);
+    return siteBaseUrl() + 'read.html#doc=' + encodeURIComponent(path.replace(/^\/+/, ''));
+  }
+
+  function printBrief() {
+    if (!briefOpen || !currentBriefLabel) return;
+    const b = deckBriefs[currentBriefLabel] || {};
+    const title = briefTitle.textContent || currentBriefLabel;
+    const dir = b.dir || briefDir.textContent || '';
+    const bodyHtml = briefBody.innerHTML;
+    const pages = briefPages.textContent || '';
+    const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + title.replace(/</g, '&lt;') + '</title><style>body{font-family:Georgia,serif;max-width:680px;margin:40px auto;padding:0 24px;color:#111;line-height:1.65}h1{font-size:22px;margin-bottom:8px}.meta{color:#555;font-size:12px;margin-bottom:20px;font-family:Consolas,monospace}.glossary-term{border-bottom:none;color:inherit}@media print{body{margin:0;padding:16px}}</style></head><body><h1>' + title.replace(/</g, '&lt;') + '</h1><p class="meta">' + String(dir).replace(/</g, '&lt;') + (pages ? ' · ' + String(pages).replace(/</g, '&lt;') : '') + '</p><div>' + bodyHtml + '</div></body></html>';
+    const frame = document.createElement('iframe');
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+    document.body.appendChild(frame);
+    const doc = frame.contentDocument || frame.contentWindow.document;
+    doc.open();
+    doc.write(html);
+    doc.close();
+    const doPrint = function () {
+      try {
+        frame.contentWindow.focus();
+        frame.contentWindow.print();
+      } catch (_) { /* ignore */ }
+      setTimeout(function () { frame.remove(); }, 1500);
+    };
+    if (frame.contentWindow.document.readyState === 'complete') doPrint();
+    else frame.onload = doPrint;
+  }
+
+  function openDocLink(e) {
+    if (e) e.preventDefault();
+    const b = deckBriefs[currentBriefLabel];
+    if (!b || !b.href) return;
+    window.open(docReadUrl(b.href), '_blank', 'noopener,noreferrer');
+  }
+
+  function openDeckBrief(label, secondLabel) {
+    const b = ensureBriefForLabel(label);
+    if (!b) return;
+    currentBriefLabel = label;
+    compareLabel = secondLabel || '';
+    fillBriefPanel(label, briefTitle, briefBody);
+    briefDir.textContent = b.dir || 'docs/';
+    briefGo.href = docReadUrl(b.href || 'docs/02-architecture/00-system-overview.md');
+    const pc = pageCountFor(label);
+    briefPages.textContent = pc ? pc + ' pages' : '';
+    briefPages.style.display = pc ? '' : 'none';
+    renderBreadcrumb(label);
+    renderRelated(label);
+    briefAlertBanner.hidden = !alertSimOn;
+    if (compareLabel && deckBriefs[compareLabel]) {
+      briefSplit.classList.add('compare');
+      briefTitleB.textContent = compareLabel;
+      briefTextB.innerHTML = applyGlossary(deckBriefs[compareLabel].body || '');
+      bindGlossary(briefTextB);
+      document.getElementById('deck-brief-body-b').hidden = false;
+    } else {
+      briefSplit.classList.remove('compare');
+      document.getElementById('deck-brief-body-b').hidden = true;
+    }
+    briefEl.hidden = false;
+    briefEl.classList.add('on');
+    briefOpen = true;
+    pushRecent(label);
+    if (animateFn && !REDUCED) {
+      briefGoTween = stopTween(briefGoTween);
+      briefGoTween = animateFn(briefGo, { scale: [1, 1.04, 1], duration: 900, ease: 'outElastic(1, .6)' });
+    }
+    if (window.siemDeckExt && window.siemDeckExt.onNavigate) window.siemDeckExt.onNavigate(label);
+  }
+
+  function closeDeckBrief() {
+    briefEl.classList.remove('on');
+    briefOpen = false;
+    comparePick = null;
+    compareLabel = '';
+    setTimeout(() => { if (!briefOpen) briefEl.hidden = true; }, 220);
+    releaseNodeFocus();
+  }
+
+  function navigateToModule(label) {
+    if (!deckBriefs[label]) return;
+    if (window.siemDeckExt && window.siemDeckExt.beforeNavigate && !window.siemDeckExt.beforeNavigate(label)) return;
+    const n = nodeByLabel(label);
+    if (n) {
+      frameNode(n);
+      spawnClickPop(n.x, n.y, n.color, label);
+    }
+    comparePick = null;
+    compareLabel = '';
+    briefSplit.classList.remove('compare');
+    openDeckBrief(label);
+    lastInput = performance.now();
+  }
+
+  function coreNodesFiltered() {
+    return nodes.filter((n) => n.core && !n.isRoot && match(n));
+  }
+
+  function handleNodeClick(n, shiftKey) {
+    if (!n || !n.core) return;
+    const now = performance.now();
+    if (now - lastNodeClickAt < 220) return;
+    lastNodeClickAt = now;
+    if (!shiftKey && briefOpen && currentBriefLabel === n.label) {
+      closeDeckBrief();
+      return;
+    }
+    if (window.siemDeckExt && window.siemDeckExt.handleClick(n, shiftKey)) return;
+    if (!canAccessLabel(n.label)) {
+      presentNodeCard(n);
+      card.querySelector('span').textContent = 'Outside your role lens — switch to Tier 2 or Manager to open this brief.';
+      frameNode(n);
+      return;
+    }
+    if (shiftKey) {
+      if (!comparePick) {
+        comparePick = n;
+        frameNode(n);
+        presentNodeCard(n);
+        card.querySelector('span').textContent = n.desc + ' — pick second module (Shift+click)';
+        return;
+      }
+      if (comparePick.label === n.label) return;
+      frameNode(n);
+      openDeckBrief(comparePick.label, n.label);
+      comparePick = null;
+      return;
+    }
+    comparePick = null;
+    spawnClickPop(n.x, n.y, n.color, n.label);
+    pulseCardPop();
+    presentNodeCard(n);
+    frameNode(n);
+    openDeckBrief(n.label);
+  }
+
+  Promise.all([
+    fetch(deckAssetUrl('assets/deck-briefs.json')).then((r) => r.json()).catch(() => ({})),
+    fetch(deckAssetUrl('assets/doc-index.json')).then((r) => r.json()).catch(() => null),
+  ]).then(([briefs, idx]) => {
+    deckBriefs = briefs || {};
+    docIndex = idx;
+    renderRecent();
+    const focusSlug = new URLSearchParams(location.search).get('focus');
+    const focusLabel = slugToLabel(focusSlug);
+    if (focusLabel) {
+      setTimeout(() => navigateToModule(focusLabel), 800);
+    } else if (!localStorage.getItem('deck-tour-done')) {
+      setTimeout(startTour, 1400);
+    }
+    if (window.siemDeck) {
+      window.siemDeck.ready = true;
+      window.siemDeck.briefsLoaded = true;
+      dispatchEvent(new CustomEvent('siem-deck-ready'));
+    }
+  });
+
+  briefClose.addEventListener('click', closeDeckBrief);
+  briefBackdrop.addEventListener('click', closeDeckBrief);
+  document.getElementById('deck-brief-panel').addEventListener('click', (e) => e.stopPropagation());
+  briefPrint.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); printBrief(); });
+  briefGo.addEventListener('click', function (e) { e.stopPropagation(); openDocLink(e); });
+
+  deckRole.addEventListener('change', () => {
+    currentRole = deckRole.value;
+    try { localStorage.setItem('deck-role-lens', currentRole); } catch (_) {}
+  });
+  try {
+    const savedRole = localStorage.getItem('deck-role-lens');
+    if (savedRole && ROLE_ACCESS[savedRole] !== undefined) {
+      currentRole = savedRole;
+      deckRole.value = savedRole;
+    }
+  } catch (_) {}
+
+  deckTrailBtn.addEventListener('click', () => {
+    incidentTrailOn = !incidentTrailOn;
+    deckTrailBtn.classList.toggle('on', incidentTrailOn);
+    trailPulse = incidentTrailOn ? 1 : 0;
+    if (incidentTrailOn) {
+      const first = nodeByLabel(TRAIL_PATH[0]);
+      if (first) frameNode(first);
+    }
+  });
+
+  deckAlertSim.addEventListener('click', () => {
+    alertSimOn = !alertSimOn;
+    deckAlertSim.classList.toggle('on', alertSimOn);
+    if (alertSimOn) {
+      wormhole.heat = 1;
+      wormhole.spinMul = 2.2;
+      if (typeof drawGargantua !== 'undefined' && drawGargantua.criticalAlert) {
+        drawGargantua.criticalAlert(whX(), whY());
+      }
+      if (briefOpen) briefAlertBanner.hidden = false;
+    } else {
+      tweenWormhole({ heat: 0, spinMul: 1 }, 600);
+      briefAlertBanner.hidden = true;
+    }
+  });
+
+  function startTour() {
+    tourStep = 0;
+    deckTour.hidden = false;
+    deckTour.classList.add('on');
+    showTourStep();
+  }
+
+  function endTour() {
+    tourStep = -1;
+    deckTour.classList.remove('on');
+    deckTour.hidden = true;
+    try { localStorage.setItem('deck-tour-done', '1'); } catch (_) {}
+  }
+
+  function showTourStep() {
+    const step = TOUR_STEPS[tourStep];
+    if (!step) { endTour(); return; }
+    deckTourTitle.textContent = step.title;
+    deckTourText.textContent = step.text;
+    deckTourNext.textContent = tourStep >= TOUR_STEPS.length - 1 ? 'Done' : 'Next';
+    const n = nodeByLabel(step.label);
+    if (n) {
+      frameNode(n);
+      const p = worldToScreen(n.x, n.y + n.r);
+      deckTourSpot.style.width = (n.r * 4 * camScale) + 'px';
+      deckTourSpot.style.height = (n.r * 4 * camScale) + 'px';
+      deckTourSpot.style.left = (p.sx - n.r * 2 * camScale) + 'px';
+      deckTourSpot.style.top = (p.sy - n.r * 2 * camScale) + 'px';
+      deckTourCard.style.left = Math.min(Math.max(20, p.sx - 180), W - 380) + 'px';
+      deckTourCard.style.top = Math.min(Math.max(80, p.sy + 40), H - 200) + 'px';
+    }
+  }
+  deckTourNext.addEventListener('click', () => {
+    if (tourStep >= TOUR_STEPS.length - 1) endTour();
+    else { tourStep++; showTourStep(); }
+  });
+  deckTourSkip.addEventListener('click', endTour);
+  deckTour.querySelector('#deck-tour-backdrop').addEventListener('click', endTour);
+
+  const bgC = document.getElementById('bg');
+  const bgCtx = bgC.getContext('2d', { alpha: false });
+  const webC = document.getElementById('matrix');
+  const webCtx = webC.getContext('2d');
+  const accC = document.getElementById('acc');
+  const accCtx = accC.getContext('2d');
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const fxC = document.getElementById('fx');
+  const fxCtx = fxC.getContext('2d');
+  const card = document.getElementById('card');
+  const stats = document.getElementById('stats');
+  const bootEl = document.getElementById('boot');
+  const searchEl = document.getElementById('search');
+  const recenterBtn = document.getElementById('recenter');
+
+  let W, H, DPR = 1, S = 1, t = 0, mx = -9999, my = -9999, hover = null, filter = '';
+  let camX = 0, camY = 0, camScale = 1;
+  let animateFn, staggerFn;
+  const camAnim = { x: 0, y: 0, scale: 1 };
+  let camTween = null, whTween = null, cardTween = null, lastHover = null;
+  let quality = 1, fps = 60, lastT = performance.now(), lastInput = performance.now();
+  let bootT = 0, bootDone = false, recenterFlash = 0, throatView = false, throatT = 0, lastAlert = false;
+  const nodes = [], links = [], stars = [], streams = [], orbitRings = [];
+  const linkGraph = [], accessories = [], inflow = [], nebulae = [];
+  let atmosphere = [];
+  let cosmicMesh = null;
+  const wormhole = { heat: 0, spinMul: 1 };
+  const camParallax = { x: 0, y: 0, tx: 0, ty: 0 };
+  const shakeOff = { x: 0, y: 0, mag: 0 };
+  let mouseRipple = 0;
+  let rapidClickT = 0;
+  let suppressCanvasClickUntil = 0;
+  let lastFxClickAt = 0;
+  let fxBurstCount = 0;
+  let fxBurstResetAt = 0;
+  let flashClickTimer = 0;
+  let lastCanvasClickAt = 0;
+  let lastNodeClickAt = 0;
+  let fxDisabledUntil = 0;
+  let nodeFocusReleasedAt = 0;
+  let briefGoTween = null;
+  let lowFpsStreak = 0;
+  /** Smooth camera drift target — null when idle. */
+  let camFocus = null;
+  const clickFlash = document.getElementById('click-flash');
+
+  function stopTween(tw) {
+    if (!tw) return null;
+    try {
+      if (typeof tw.cancel === 'function') tw.cancel();
+      else if (typeof tw.pause === 'function') tw.pause();
+    } catch (_) { /* anime v4 edge cases */ }
+    return null;
+  }
+
+  function pulseCardPop() {
+    card.style.transform = 'scale(1.1)';
+    setTimeout(() => { card.style.transform = ''; }, 160);
+  }
+
+  function flashClickAt(sx, sy) {
+    if (REDUCED || !clickFlash) return;
+    clickFlash.style.setProperty('--fx-x', sx + 'px');
+    clickFlash.style.setProperty('--fx-y', sy + 'px');
+    clickFlash.classList.add('on');
+    clearTimeout(flashClickTimer);
+    flashClickTimer = setTimeout(() => clickFlash.classList.remove('on'), 180);
+  }
+
+  function resetClickFx() {
+    if (window.siemWebCorruption) window.siemWebCorruption.reset();
+    if (window.siemFogBurst) window.siemFogBurst.reset();
+    fxBurstCount = 0;
+    fxBurstResetAt = performance.now();
+    fxDisabledUntil = performance.now() + 1200;
+    shakeOff.x = shakeOff.y = shakeOff.mag = 0;
+    wormhole.heat = 0;
+    wormhole.spinMul = 1;
+    throatView = false;
+    throatT = 0;
+    mouseRipple = 0;
+    lowFpsStreak = 0;
+  }
+
+  function webCorruptClick(sx, sy, color, label) {
+    if (REDUCED) return;
+    const now = performance.now();
+    if (now < fxDisabledUntil || now - lastFxClickAt < 450) return;
+    if (now - nodeFocusReleasedAt < 650) return;
+    lastFxClickAt = now;
+    rapidClickT = now;
+    if (now - fxBurstResetAt > 3000) {
+      fxBurstCount = 0;
+      fxBurstResetAt = now;
+    }
+    fxBurstCount++;
+    if (fxBurstCount > 4) {
+      resetClickFx();
+      flashClickAt(sx, sy);
+      return;
+    }
+    flashClickAt(sx, sy);
+    const liveFps = fps || 60;
+    if (liveFps < 36 || quality < 0.62 || fxBurstCount > 2) return;
+    if (window.siemWebCorruption) {
+      window.siemWebCorruption.corrupt(sx, sy, { color: color || '#a78bfa', label: label || '', intensity: 0.35 });
+    }
+    if (liveFps >= 48 && quality >= 0.75 && fxBurstCount <= 2 && window.siemFogBurst) {
+      window.siemFogBurst.burst(sx, sy, { color: color || '#a78bfa', intensity: 0.45 });
+    }
+    mouseRipple = Math.min(0.24, mouseRipple + 0.08);
+    shakeOff.mag = Math.min(0.16, shakeOff.mag + 0.025);
+    wormhole.heat = Math.min(0.28, wormhole.heat + 0.02);
+    wormhole.spinMul = Math.min(1.12, wormhole.spinMul + 0.008);
+  }
+
+  function spawnClickPop(wx, wy, color, label) {
+    webCorruptClick(mx, my, color, label);
+  }
+
+  function camPivot() {
+    return { x: whX(), y: whY() };
+  }
+
+  /** World → screen (matches main canvas transform). */
+  function worldToScreen(wx, wy, opts) {
+    opts = opts || {};
+    const s = opts.scale != null ? opts.scale : camScale;
+    const cx = opts.camX != null ? opts.camX : camX;
+    const cy = opts.camY != null ? opts.camY : camY;
+    const pv = camPivot();
+    const parX = opts.parallax === false ? 0 : camParallax.x;
+    const parY = opts.parallax === false ? 0 : camParallax.y;
+    const shX = opts.shake === false ? 0 : shakeOff.x;
+    const shY = opts.shake === false ? 0 : shakeOff.y;
+    return {
+      sx: s * (wx - W / 2 - cx + (1 - s) * (pv.x - W / 2) + parX + shX) + W / 2,
+      sy: s * (wy - H / 2 - cy + (1 - s) * (pv.y - H / 2) + parY + shY) + H / 2,
+    };
+  }
+
+  /** Screen → world (inverse of worldToScreen). */
+  function screenToWorld(sx, sy, opts) {
+    opts = opts || {};
+    const s = opts.scale != null ? opts.scale : camScale;
+    const cx = opts.camX != null ? opts.camX : camX;
+    const cy = opts.camY != null ? opts.camY : camY;
+    const pv = camPivot();
+    const parX = opts.parallax === false ? 0 : camParallax.x;
+    const parY = opts.parallax === false ? 0 : camParallax.y;
+    const shX = opts.shake === false ? 0 : shakeOff.x;
+    const shY = opts.shake === false ? 0 : shakeOff.y;
+    return {
+      wx: (sx - W / 2) / s + W / 2 + cx - (1 - s) * (pv.x - W / 2) - parX - shX,
+      wy: (sy - H / 2) / s + H / 2 + cy - (1 - s) * (pv.y - H / 2) - parY - shY,
+    };
+  }
+
+  /** Camera offset so world point (wx,wy) appears at screen (sx,sy) at given scale. */
+  function camForWorldPointAtScreen(wx, wy, sx, sy, scale) {
+    const pv = camPivot();
+    const s = scale;
+    return {
+      x: wx - W / 2 + (1 - s) * (pv.x - W / 2) - (sx - W / 2) / s,
+      y: wy - H / 2 + (1 - s) * (pv.y - H / 2) - (sy - H / 2) / s,
+    };
+  }
+
+  function nodeVisualCenter(n) {
+    const r = n.r || (n.baseR || 8) * S;
+    return { x: n.x, y: n.y + r * 0.55 };
+  }
+
+  function startCamFocus(opts) {
+    camParallax.x = camParallax.y = camParallax.tx = camParallax.ty = 0;
+    shakeOff.x = shakeOff.y = shakeOff.mag = 0;
+    camTween = stopTween(camTween);
+    camFocus = opts;
+  }
+
+  function getCamFocusWorld() {
+    if (!camFocus) return null;
+    if (camFocus.node) return nodeVisualCenter(camFocus.node);
+    return { x: camFocus.wx, y: camFocus.wy };
+  }
+
+  function updateCamFocus() {
+    if (!camFocus) return;
+    const w = getCamFocusWorld();
+    if (!w) return;
+    const target = camForWorldPointAtScreen(w.x, w.y, camFocus.sx, camFocus.sy, camFocus.scale);
+    const ease = camFocus.ease != null ? camFocus.ease : 0.042;
+    const easeS = camFocus.easeS != null ? camFocus.easeS : 0.034;
+    camAnim.x += (target.x - camAnim.x) * ease;
+    camAnim.y += (target.y - camAnim.y) * ease;
+    camAnim.scale += (camFocus.scale - camAnim.scale) * easeS;
+    if (Math.hypot(target.x - camAnim.x, target.y - camAnim.y) < 0.25 && Math.abs(camFocus.scale - camAnim.scale) < 0.003) {
+      camAnim.x = target.x;
+      camAnim.y = target.y;
+      camAnim.scale = camFocus.scale;
+      if (!camFocus.node) camFocus = null;
+    }
+  }
+
+  function focusWorldPoint(wx, wy, sx, sy, scale, opts) {
+    opts = opts || {};
+    startCamFocus({
+      wx, wy,
+      sx, sy,
+      scale,
+      ease: opts.ease != null ? opts.ease : 0.038,
+      easeS: opts.easeS != null ? opts.easeS : 0.028,
+    });
+    lastInput = performance.now();
+  }
+
+  function frameNode(n) {
+    const scale = Math.min(1.38, Math.max(1.05, 1.08 + ((n.baseR || n.r) / (42 * S)) * 0.1));
+    startCamFocus({
+      node: n,
+      sx: W * 0.5,
+      sy: H * 0.5,
+      scale,
+      ease: 0.036,
+      easeS: 0.03,
+    });
+    lastInput = performance.now();
+  }
+
+  function releaseNodeFocus() {
+    showCard(false);
+    lastHover = null;
+    const hadNode = !!(camFocus && camFocus.node);
+    const zoomed = camAnim.scale > 1.02 || Math.hypot(camAnim.x, camAnim.y) > 8;
+    if (!hadNode && !zoomed) {
+      camFocus = null;
+      return;
+    }
+    nodeFocusReleasedAt = performance.now();
+    ensureWormholeCentered();
+  }
+
+  function resetPeripheralFx() {
+    if (window.siemDeckFeatures && window.siemDeckFeatures.resetArchitectZoom) {
+      window.siemDeckFeatures.resetArchitectZoom();
+    }
+    if (window.siemWebCorruption) window.siemWebCorruption.reset();
+    if (window.siemFogBurst) window.siemFogBurst.reset();
+  }
+
+  /** Keep the wormhole anchored at screen center after dismiss / empty clicks. */
+  function ensureWormholeCentered(opts) {
+    opts = opts || {};
+    const pv = camPivot();
+    throatView = false;
+    throatT = 0;
+    camFocus = null;
+    camTween = stopTween(camTween);
+    shakeOff.x = shakeOff.y = shakeOff.mag = 0;
+    camParallax.x = camParallax.y = camParallax.tx = camParallax.ty = 0;
+    resetPeripheralFx();
+    if (opts.animate) {
+      focusWorldPoint(pv.x, pv.y, W / 2, H / 2, 1, {
+        ease: opts.ease != null ? opts.ease : 0.052,
+        easeS: opts.easeS != null ? opts.easeS : 0.036,
+      });
+    } else {
+      camAnim.x = 0;
+      camAnim.y = 0;
+      camAnim.scale = 1;
+      camX = 0;
+      camY = 0;
+      camScale = 1;
+    }
+    if (opts.resetWormholeFx !== false) tweenWormhole({ heat: 0, spinMul: 1 }, 420);
+    lastInput = performance.now();
+  }
+
+  /** Benign empty-canvas click — snap view back to wormhole core. */
+  function dismissEmptyCanvasClick() {
+    showCard(false);
+    lastHover = null;
+    comparePick = null;
+    nodeFocusReleasedAt = performance.now();
+    ensureWormholeCentered({ animate: false });
+  }
+
+  function applyCameraToCtx(c, parallax, shake) {
+    const pv = camPivot();
+    const parX = parallax ? camParallax.x : 0;
+    const parY = parallax ? camParallax.y : 0;
+    const shX = shake ? shakeOff.x : 0;
+    const shY = shake ? shakeOff.y : 0;
+    c.translate(W / 2, H / 2);
+    c.scale(camScale, camScale);
+    c.translate(
+      -W / 2 - camX + (1 - camScale) * (pv.x - W / 2) + parX + shX,
+      -H / 2 - camY + (1 - camScale) * (pv.y - H / 2) + parY + shY
+    );
+  }
+
+  function nodeScreenDist(n) {
+    const p = worldToScreen(n.x, n.y);
+    return Math.hypot(p.sx - mx, p.sy - my);
+  }
+
+  function nodeProximity(n) {
+    if (mx < 0 || REDUCED) return 0;
+    const reach = 160 * S + n.r * 3;
+    const d = nodeScreenDist(n);
+    if (d >= reach) return 0;
+    return 1 - d / reach;
+  }
+
+  function applyFxTransform() {
+    fxCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    applyCameraToCtx(fxCtx, false, false);
+  }
+
+  function drawInteractionFx() {
+    fxCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    fxCtx.clearRect(0, 0, W, H);
+    if (REDUCED) return;
+
+    shakeOff.x *= 0.78;
+    shakeOff.y *= 0.78;
+    if (shakeOff.mag > 0.02) {
+      shakeOff.x += (Math.random() - 0.5) * 10 * shakeOff.mag;
+      shakeOff.y += (Math.random() - 0.5) * 8 * shakeOff.mag;
+      shakeOff.mag *= 0.82;
+    } else {
+      shakeOff.mag = 0;
+    }
+
+    camParallax.x += (camParallax.tx - camParallax.x) * 0.08;
+    camParallax.y += (camParallax.ty - camParallax.y) * 0.08;
+
+    if (mx > 0 && mouseRipple > 0) {
+      mouseRipple = Math.max(0, mouseRipple - 0.032);
+      const pulseR = 22 + (1 - mouseRipple) * Math.min(W, H) * 0.12;
+      fxCtx.strokeStyle = 'rgba(196,181,253,' + (mouseRipple * 0.28) + ')';
+      fxCtx.lineWidth = 1.2;
+      fxCtx.beginPath();
+      fxCtx.arc(mx, my, pulseR, 0, TAU);
+      fxCtx.stroke();
+    }
+
+    if (mx > 0 && hover && match(hover)) {
+      fxCtx.save();
+      const ptr = screenToWorld(mx, my, { parallax: false, shake: false });
+      applyFxTransform();
+      fxCtx.globalAlpha = 0.65;
+      fxCtx.strokeStyle = hover.color || '#a78bfa';
+      fxCtx.lineWidth = 2;
+      fxCtx.setLineDash([8, 12]);
+      fxCtx.beginPath();
+      fxCtx.moveTo(ptr.wx, ptr.wy);
+      fxCtx.lineTo(hover.x, hover.y);
+      fxCtx.stroke();
+      fxCtx.setLineDash([]);
+      fxCtx.restore();
+    }
+  }
+
+  function initWormholeIntro() {
+    if (wormholeIntroDone || REDUCED || !animateFn || typeof drawGargantua === 'undefined' || !drawGargantua.params) return;
+    wormholeIntroDone = true;
+    animateFn(drawGargantua.params, {
+      tilt: 0.18,
+      spin: 1.5,
+      bloom: 1.25,
+      duration: 4500,
+      ease: 'outCubic',
+    });
+  }
+
+  function bindAnime() {
+    if (!window.siemAnimate || !window.siemAnimate.ready) return;
+    animateFn = window.siemAnimate.animate;
+    staggerFn = window.siemAnimate.stagger;
+    initAnimeBoot();
+    initWormholeIntro();
+  }
+  addEventListener('siem-animate-ready', bindAnime);
+  if (window.siemAnimate && window.siemAnimate.ready) bindAnime();
+
+  function tweenCam(tx, ty, tScale, dur) {
+    dur = dur == null ? 800 : dur;
+    if (!animateFn || REDUCED) {
+      camAnim.x = tx; camAnim.y = ty; camAnim.scale = tScale;
+      camX = tx; camY = ty; camScale = tScale;
+      return;
+    }
+    camTween = stopTween(camTween);
+    camTween = animateFn(camAnim, {
+      x: tx, y: ty, scale: tScale,
+      duration: dur,
+      ease: 'outExpo',
+    });
+  }
+
+  function tweenWormhole(targets, dur) {
+    dur = dur == null ? 600 : dur;
+    if (!animateFn || REDUCED) {
+      if (targets.heat != null) wormhole.heat = targets.heat;
+      if (targets.spinMul != null) wormhole.spinMul = targets.spinMul;
+      return;
+    }
+    whTween = stopTween(whTween);
+    whTween = animateFn(wormhole, Object.assign({}, targets, {
+      duration: dur,
+      ease: 'outExpo',
+    }));
+  }
+
+  function pulseRecenterBtn() {
+    if (!animateFn || REDUCED) return;
+    animateFn(recenterBtn, {
+      scale: [1, 1.28, 1],
+      duration: 650,
+      ease: 'outElastic(1, .55)',
+    });
+  }
+
+  function dismissBoot() {
+    if (bootDone) return;
+    bootDone = true;
+    bootEl.classList.add('hide');
+    bootEl.setAttribute('aria-hidden', 'true');
+    document.querySelectorAll('#bar > *').forEach((el) => { el.style.opacity = ''; el.style.transform = ''; });
+  }
+
+  function initAnimeBoot() {
+    if (bootDone) return;
+    if (REDUCED) {
+      dismissBoot();
+      return;
+    }
+    const barKids = document.querySelectorAll('#bar > *');
+    barKids.forEach((el) => { el.style.opacity = '0'; el.style.transform = 'translateY(10px)'; });
+    animateFn(bootEl, {
+      opacity: [1, 0],
+      duration: 500,
+      delay: 650,
+      ease: 'outExpo',
+      onComplete: dismissBoot,
+    });
+    animateFn(barKids, {
+      opacity: [0, 1],
+      translateY: [10, 0],
+      duration: 700,
+      delay: staggerFn(70, { start: 850 }),
+      ease: 'outExpo',
+    });
+  }
+
+  function showCard(on) {
+    cardTween = stopTween(cardTween);
+    if (on) {
+      card.classList.add('on');
+      card.style.pointerEvents = 'auto';
+      card.style.opacity = '1';
+    } else {
+      card.classList.remove('on');
+      card.style.pointerEvents = 'none';
+      card.style.opacity = '0';
+    }
+  }
+
+  const CX = () => W / 2;
+  const CY = () => H / 2;
+  const whX = () => nodes[0] ? nodes[0].x : CX();
+  const whY = () => nodes[0] ? nodes[0].y : CY();
+  const whR = () => (nodes[0] ? nodes[0].r : 22 * S) * (throatView ? 1.12 : 1);
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t2 = Math.imul(a ^ (a >>> 15), 1 | a);
+      t2 = (t2 + Math.imul(t2 ^ (t2 >>> 7), 61 | t2)) ^ t2;
+      return ((t2 ^ (t2 >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function getScale() { return Math.max(0.55, Math.min(1.8, Math.min(W, H) / 900)); }
+  function sysRadius() { return Math.min(W, H) * 0.4; }
+
+  function resizeCanvas(c) {
+    c.width = Math.max(1, (W * DPR) | 0);
+    c.height = Math.max(1, (H * DPR) | 0);
+    c.style.width = W + 'px';
+    c.style.height = H + 'px';
+    c.getContext('2d').setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  function orbitPos(n, ax, ay) {
+    const a = n.orbitAng || 0, oa = n.orbitA || 0, ob = n.orbitB || oa;
+    return { x: ax + Math.cos(a) * oa, y: ay + Math.sin(a) * ob };
+  }
+
+  function isAlertMode() { return filter && ALERT_RE.test(filter); }
+
+  function recenterWormhole() {
+    ensureWormholeCentered({ animate: true, ease: 0.045, easeS: 0.032 });
+    resetClickFx();
+    pulseRecenterBtn();
+    recenterFlash = 30;
+    searchEl.value = ''; filter = '';
+    lastAlert = false;
+  }
+
+  function buildNebulae() {
+    nebulae.length = 0;
+    const rng = mulberry32(SEED + 11);
+    for (let i = 0; i < 3; i++) {
+      nebulae.push({
+        x: rng() * W, y: rng() * H,
+        rx: 120 + rng() * 220, ry: 80 + rng() * 160,
+        hue: i < 3 ? '#0e7490' : '#ea580c',
+        rot: rng() * TAU, tier: i < 3 ? 'far' : 'mid',
+        spd: i < 3 ? 0.00003 : 0.00005,
+      });
+    }
+  }
+
+  function buildStars() {
+    stars.length = 0;
+    const tiers = [{ n: 400, z: 0.3 }, { n: 280, z: 0.6 }, { n: 100, z: 1.0 }];
+    const rng = mulberry32(SEED + 7);
+    for (const tier of tiers) {
+      const count = Math.min(tier.n, Math.max(60, ((W * H) / (tier.z < 0.5 ? 1200 : tier.z < 0.8 ? 900 : 600)) | 0));
+      for (let i = 0; i < count; i++) {
+        stars.push({
+          x: rng() * W, y: rng() * H,
+          r: rng() * 1.6 + 0.1, b: rng(),
+          tw: rng() * 6, z: tier.z,
+          hue: (i + tier.n) % 4 === 0 ? '#fef3c7' : (i + tier.n) % 6 === 0 ? '#5eead4' : '#e2e8f0',
+        });
+      }
+    }
+  }
+
+  function rebuildAtmosphere() {
+    if (typeof Atmosphere === 'undefined') { atmosphere = []; return; }
+    atmosphere = Atmosphere.build({ W, H, S, R: sysRadius(), spin: SPIN, seed: SEED + 1200 });
+  }
+
+  function rebuildCosmicWeb() {
+    if (typeof CosmicWeb === 'undefined' || W < 1 || H < 1) { cosmicMesh = null; return; }
+    cosmicMesh = CosmicWeb.build({
+      W, H,
+      cx: CX(),
+      cy: CY(),
+      excludeRadius: sysRadius() * 0.42,
+      quality,
+      seed: SEED,
+    });
+  }
+
+  function buildInflow() {
+    inflow.length = 0;
+    const rng = mulberry32(SEED + 99);
+    const count = quality > 0.7 ? 140 : quality > 0.5 ? 90 : 50;
+    const r = 22 * S;
+    for (let i = 0; i < count; i++) {
+      inflow.push({
+        angle: rng() * TAU,
+        radius: r * (5 + rng() * 3),
+        rand: rng(),
+      });
+    }
+  }
+
+  function buildLinkGraph() {
+    linkGraph.length = 0;
+    const start = CORE.length;
+    const count = nodes.length - start;
+    if (count < 2) return;
+    const cell = 110 * S;
+    const grid = new Map();
+    for (let i = start; i < nodes.length; i++) {
+      const n = nodes[i];
+      const gx = (n.x / cell) | 0, gy = (n.y / cell) | 0;
+      const k = gx + ',' + gy;
+      if (!grid.has(k)) grid.set(k, []);
+      grid.get(k).push(i);
+    }
+    const maxD = 52 * S, maxD2 = maxD * maxD;
+    for (let i = start; i < nodes.length; i++) {
+      const n = nodes[i];
+      const gx = (n.x / cell) | 0, gy = (n.y / cell) | 0;
+      const cands = [];
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          const bucket = grid.get((gx + dx) + ',' + (gy + dy));
+          if (bucket) cands.push(...bucket);
+        }
+      }
+      let added = 0;
+      for (const j of cands) {
+        if (j <= i) continue;
+        const o = nodes[j];
+        const d2 = (n.x - o.x) ** 2 + (n.y - o.y) ** 2;
+        if (d2 < maxD2) {
+          linkGraph.push({ a: i, b: j, phase: Math.random() * 6, amp: 3 + Math.random() * 8, pulse: Math.random() });
+          added++;
+          if (added >= 4) break;
+        }
+      }
+    }
+    streams.length = 0;
+    const nStream = Math.min(linkGraph.length, quality > 0.7 ? 70 : 35);
+    for (let i = 0; i < nStream; i++) {
+      streams.push({ wi: i % linkGraph.length, t: Math.random(), spd: (0.002 + Math.random() * 0.006) * SPIN });
+    }
+  }
+
+  function spawnAccessories(seed) {
+    accessories.length = 0;
+    const rng = mulberry32(seed);
+    const cx = CX(), cy = CY(), R = sysRadius();
+    const golden = Math.PI * (3 - Math.sqrt(5));
+    const types = [
+      'relay_sat','relay_sat','relay_sat','comms_buoy','comms_buoy','comms_buoy','comms_buoy',
+      'sensor_pod','sensor_pod','telescope','solar_sail','ion_collector',
+      'solar_wing','solar_wing','solar_wing','solar_wing','comms_dish','heat_radiator',
+      'beacon','ice_crystal','ice_crystal','ice_crystal','ice_crystal','ice_crystal',
+      'cargo_box','cargo_box','cargo_box','cargo_box','nav_laser','patrol_drone',
+      'em_arc','em_arc','dust','dust','dust','tether','tether','tether',
+      'log_glyph','log_glyph','log_glyph','bolt','blanket','asteroid','asteroid',
+      'docking_port','docking_port','docking_port','docking_port','docking_port',
+      'cargo_crane','relay_tower','relay_tower','relay_tower','scratch','hatch','holo_kb',
+      'coffee','shield','correlation','thruster','micro_chip','micro_chip',
+      'dust','dust','dust','sensor_pod','ice_crystal','log_glyph',
+      'comms_buoy','bolt','nav_laser','em_arc','patrol_drone','asteroid',
+      'relay_sat','relay_sat','relay_sat','relay_sat','comms_buoy','comms_buoy',
+      'telescope','telescope','solar_sail','solar_sail','ion_collector','ion_collector',
+      'solar_wing','solar_wing','comms_dish','comms_dish','heat_radiator','heat_radiator',
+      'beacon','beacon','cargo_box','cargo_box','nav_laser','nav_laser',
+      'patrol_drone','patrol_drone','sensor_pod','sensor_pod','tether','tether',
+      'em_arc','em_arc','dust','dust','dust','dust','ice_crystal','ice_crystal',
+      'asteroid','asteroid','micro_chip','micro_chip','thruster','thruster',
+    ];
+    const total = types.length;
+    for (let i = 0; i < total; i++) {
+      const type = types[i];
+      const angle = i * golden + rng() * 0.4;
+      const dist = R * (0.35 + (i % 7) * 0.08 + rng() * 0.06);
+      const wx = cx + Math.cos(angle) * dist;
+      const wy = cy + Math.sin(angle) * dist * 0.88;
+      accessories.push({
+        type, x: wx, y: wy, angle, dist, phase: rng() * TAU,
+        scale: 0.7 + rng() * 0.6, alpha: 0.25 + rng() * 0.55,
+        id: 'A' + (i + 1), motion: type === 'patrol_drone' ? 'path' : type === 'beacon' ? 'spin' : 'orbital',
+        tetherEnd: type === 'tether' ? { x: cx + Math.cos(angle + 0.3) * dist * 0.5, y: cy + Math.sin(angle + 0.3) * dist * 0.5 } : null,
+        packetT: rng(),
+        label: type === 'cargo_box' ? 'C-' + ((rng() * 90) | 0) : null,
+        glyph: type === 'log_glyph' ? ['{','}','LOG','ERR','SYS'][i % 5] : null,
+      });
+    }
+  }
+
+  function initBodies() {
+    nodes.length = 0; links.length = 0; orbitRings.length = 0;
+    const cx = CX(), cy = CY(), R = sysRadius();
+    const perRing = 5, ringStep = R * 0.085;
+    CORE.forEach(([label, type, desc, r], i) => {
+      if (i === 0) {
+        nodes.push({
+          x: cx, y: cy, offX: 0, offY: 0, vx: 0, vy: 0,
+          baseR: r, r: r * S, label, desc, type,
+          core: true, color: PAL[i % PAL.length], idx: i,
+          isRoot: true, lightAngle: 0,
+        });
+        return;
+      }
+      const ring = Math.floor((i - 1) / perRing);
+      const slot = (i - 1) % perRing;
+      const orbitA = R * 0.12 + ring * ringStep + slot * (ringStep * 0.08);
+      const orbitB = orbitA * (0.86 + (slot % 3) * 0.04);
+      const orbitAng = (slot / perRing) * TAU + ring * 0.62 + i * 0.11;
+      const orbitSpd = (ring % 2 === 0 ? 1 : -1) * (0.00055 + ring * 0.00018) * SPIN;
+      const pos = { x: cx + Math.cos(orbitAng) * orbitA, y: cy + Math.sin(orbitAng) * orbitB };
+      nodes.push({
+        x: pos.x, y: pos.y, offX: 0, offY: 0, vx: 0, vy: 0,
+        baseR: r, r: r * S, label, desc, type,
+        core: true, color: PAL[i % PAL.length], idx: i,
+        isRoot: false, lightAngle: Math.random() * 6,
+        rings: i % 4 === 0, pulsar: i % 6 === 0,
+        orbitA, orbitB, orbitAng, orbitSpd, ring, orbitCx: cx, orbitCy: cy,
+      });
+      if (slot === 0 && !orbitRings.some((o) => o.ring === ring)) {
+        orbitRings.push({ ring, a: orbitA, b: orbitB * 1.02, tilt: ring * 0.07 });
+      }
+    });
+    const MOONS = Math.min(260, Math.max(120, (W * H / 6200) | 0));
+    const bands = 10;
+    for (let i = 0; i < MOONS; i++) {
+      const band = i % bands;
+      const layer = (band / bands) * 0.78 + 0.08;
+      const orbitA = R * layer + (Math.random() - 0.5) * R * 0.025;
+      const orbitB = orbitA * (0.84 + Math.random() * 0.12);
+      const orbitAng = Math.random() * TAU;
+      const orbitSpd = (Math.random() < 0.14 ? -1 : 1) * (0.001 + Math.random() * 0.0038) * SPIN;
+      const pos = { x: cx + Math.cos(orbitAng) * orbitA, y: cy + Math.sin(orbitAng) * orbitB };
+      nodes.push({
+        x: pos.x, y: pos.y, offX: 0, offY: 0, vx: 0, vy: 0,
+        r: (0.55 + Math.random() * 2.2) * S,
+        core: false, color: PAL[(Math.random() * PAL.length) | 0],
+        alpha: 0.2 + Math.random() * 0.5,
+        orbitA, orbitB, orbitAng, orbitSpd,
+        orbitCx: cx, orbitCy: cy, centerOrbit: true,
+        fleeMul: 0.65 + Math.random() * 0.7,
+        maxRun: R * (0.06 + Math.random() * 0.08),
+      });
+    }
+    for (let i = 1; i < CORE.length; i++) {
+      for (let j = i + 1; j < CORE.length; j++) {
+        if (Math.random() < 0.16) links.push({ a: i, b: j, core: true });
+      }
+    }
+    buildLinkGraph();
+    spawnAccessories(SEED);
+    buildInflow();
+  }
+
+  function resize() {
+    const nw = innerWidth, nh = innerHeight;
+    const had = W > 0 && nodes.length > 0;
+    const ocx = W / 2, ocy = H / 2;
+    W = nw; H = nh; S = getScale();
+    DPR = Math.min(devicePixelRatio || 1, quality < 0.5 ? 1 : quality < 0.65 ? 1 : 1.15);
+    resizeCanvas(bgC); resizeCanvas(webC); resizeCanvas(accC); resizeCanvas(canvas); resizeCanvas(fxC);
+    if (had) {
+      const sx = nw / (ocx * 2 || nw), sy = nh / (ocy * 2 || nh);
+      camAnim.x *= sx; camAnim.y *= sy;
+      camX *= sx; camY *= sy;
+    }
+    initBodies();
+    buildStars();
+    buildNebulae();
+    rebuildAtmosphere();
+    rebuildCosmicWeb();
+    if (window.siemWebCorruption) window.siemWebCorruption.resize(W, H);
+  }
+
+  W = innerWidth; H = innerHeight; S = getScale();
+  DPR = Math.min(devicePixelRatio || 1, 1.25);
+  resizeCanvas(bgC); resizeCanvas(webC); resizeCanvas(accC); resizeCanvas(canvas); resizeCanvas(fxC);
+  try {
+    initBodies(); buildStars(); buildNebulae(); rebuildAtmosphere(); rebuildCosmicWeb();
+  } catch (err) { console.error(err); }
+  // Skip boot entirely when arriving via in-site navigation
+  const _inboundNav = document.referrer && document.referrer.includes(location.hostname || location.host || 'habibi');
+  const _sessionEntry = (() => { try { return sessionStorage.getItem('habibi-visited'); } catch(_){return null;} })();
+  if (_inboundNav || _sessionEntry) {
+    dismissBoot();
+  } else {
+    try { sessionStorage.setItem('habibi-visited', '1'); } catch(_){}
+    setTimeout(() => { if (!bootDone) dismissBoot(); }, 800);
+  }
+  bootEl.addEventListener('click', dismissBoot);
+  addEventListener('resize', resize);
+
+  function match(n) {
+    if (!n) return true;
+    return !filter || (n.label || '').toLowerCase().includes(filter) || (n.desc || '').toLowerCase().includes(filter);
+  }
+
+  function wormholeScreen() {
+    const p = worldToScreen(whX(), whY());
+    const r = whR();
+    return {
+      sx: p.sx,
+      sy: p.sy,
+      r: r * camScale,
+      hitR: r * 1.12 * camScale,
+    };
+  }
+
+  function pickHover() {
+    hover = null;
+    let bd = 36 * S;
+    for (const n of nodes) {
+      if (!n.core || !match(n)) continue;
+      if (n.isRoot) continue;
+      const d = nodeScreenDist(n);
+      if (d < bd + n.r) { bd = d; hover = n; }
+    }
+    const wh = wormholeScreen();
+    if (Math.hypot(mx - wh.sx, my - wh.sy) < wh.hitR) {
+      canvas.style.cursor = 'pointer';
+    } else {
+      canvas.style.cursor = hover ? 'pointer' : 'default';
+    }
+  }
+
+  addEventListener('mousemove', (e) => {
+    mx = e.clientX; my = e.clientY;
+    if (typeof drawGargantua !== 'undefined' && drawGargantua.setMouse) drawGargantua.setMouse(e.clientX, e.clientY);
+    if (!REDUCED) {
+      if (!camFocus) {
+        camParallax.tx = (mx / W - 0.5) * 32 * S;
+        camParallax.ty = (my / H - 0.5) * 24 * S;
+      }
+      const wh = wormholeScreen();
+      const whDist = Math.hypot(mx - wh.sx, my - wh.sy);
+      if (whDist < wh.hitR * 1.5 && !filter) {
+        wormhole.heat = Math.max(wormhole.heat, (1 - whDist / (wh.hitR * 1.5)) * 0.4);
+      }
+    }
+    pickHover(); lastInput = performance.now();
+    if (hover && window.siemDeckExt && window.siemDeckExt.onChangelogHover) {
+      window.siemDeckExt.onChangelogHover(hover, mx, my);
+    } else if (window.siemDeckExt && window.siemDeckExt.hideChangelogTip) {
+      window.siemDeckExt.hideChangelogTip();
+    }
+  });
+  addEventListener('mouseleave', () => { mx = my = -9999; showCard(false); lastHover = null; canvas.style.cursor = 'default'; });
+  addEventListener('touchmove', (e) => {
+    if (!e.touches[0]) return;
+    mx = e.touches[0].clientX; my = e.touches[0].clientY;
+    pickHover(); lastInput = performance.now();
+  }, { passive: true });
+  addEventListener('touchend', () => { mx = my = -9999; showCard(false); lastHover = null; });
+
+  searchEl.addEventListener('input', (e) => {
+    filter = e.target.value.toLowerCase();
+    const heat = filter ? (isAlertMode() ? 1 : 0.4) : 0;
+    tweenWormhole({ heat }, 400);
+    lastInput = performance.now();
+    if (isAlertMode() && !lastAlert) {
+      lastAlert = true;
+      if (typeof drawGargantua !== 'undefined' && drawGargantua.criticalAlert) {
+        drawGargantua.criticalAlert(whX(), whY());
+      }
+    } else if (!isAlertMode()) {
+      lastAlert = false;
+    }
+  });
+
+  searchEl.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const matches = coreNodesFiltered();
+    if (!matches.length) return;
+    e.preventDefault();
+    const n = matches[0];
+    handleNodeClick(n, false);
+  });
+
+  recenterBtn.addEventListener('click', () => recenterWormhole());
+  addEventListener('keydown', (e) => {
+    if (window.siemDeckExt && window.siemDeckExt.onKeydown && window.siemDeckExt.onKeydown(e)) return;
+    if (e.target === searchEl || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
+      if (e.key === 'Escape' && briefOpen) closeDeckBrief();
+      return;
+    }
+    if (e.key === 'Escape' && !e.ctrlKey && !e.metaKey && briefOpen) {
+      closeDeckBrief();
+      return;
+    }
+    if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !briefOpen) {
+      e.preventDefault();
+      const list = coreNodesFiltered().filter((n) => canAccessLabel(n.label));
+      if (!list.length) return;
+      keyboardFocusIdx = (keyboardFocusIdx + 1) % list.length;
+      const n = list[keyboardFocusIdx];
+      hover = n;
+      frameNode(n);
+      showCard(true);
+      card.querySelector('b').textContent = n.label;
+      card.querySelector('span').textContent = n.desc + ' (Tab tour · Enter for brief)';
+      lastInput = performance.now();
+      return;
+    }
+    if (e.key === 'Enter' && hover && hover.core && !hover.isRoot && !briefOpen) {
+      e.preventDefault();
+      handleNodeClick(hover, e.shiftKey);
+      return;
+    }
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key) && !briefOpen) {
+      e.preventDefault();
+      const step = 28 / camScale;
+      const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
+      const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
+      camAnim.x += dx;
+      camAnim.y += dy;
+      if (camFocus && camFocus.node) {
+        camFocus = null;
+      }
+      lastInput = performance.now();
+      return;
+    }
+    if (e.key === 'Home' || (e.key === 'Escape' && !e.ctrlKey && !e.metaKey)) recenterWormhole();
+  });
+
+  bgC.addEventListener('click', () => {
+    if (briefOpen) {
+      closeDeckBrief();
+      return;
+    }
+    if (camFocus && camFocus.node) {
+      releaseNodeFocus();
+      return;
+    }
+    dismissEmptyCanvasClick();
+  });
+  canvas.addEventListener('click', (e) => {
+    const now = performance.now();
+    if (now < suppressCanvasClickUntil) return;
+    mx = e.clientX;
+    my = e.clientY;
+    pickHover();
+    if (hover) {
+      if (now - lastCanvasClickAt < 220) return;
+      lastCanvasClickAt = now;
+      handleNodeClick(hover, e.shiftKey);
+      return;
+    }
+    lastCanvasClickAt = now;
+    if (briefOpen) {
+      closeDeckBrief();
+      return;
+    }
+    if (camFocus && camFocus.node) {
+      releaseNodeFocus();
+      return;
+    }
+    dismissEmptyCanvasClick();
+  });
+  canvas.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    suppressCanvasClickUntil = performance.now() + 380;
+    mx = e.clientX;
+    my = e.clientY;
+    pickHover();
+    const wh = wormholeScreen();
+    if (Math.hypot(mx - wh.sx, my - wh.sy) < wh.r * 0.85) {
+      flashClickAt(mx, my);
+      throatView = true;
+      focusWorldPoint(whX(), whY(), W / 2, H / 2, 1.18, { ease: 0.042, easeS: 0.032 });
+      wormhole.heat = Math.min(1, wormhole.heat + 0.35);
+      throatT = 90;
+      lastInput = performance.now();
+      return;
+    }
+    if (hover) {
+      frameNode(hover);
+      return;
+    }
+    dismissEmptyCanvasClick();
+  });
+
+  function drawNebula() {
+    const g = bgCtx.createRadialGradient(CX(), CY(), 0, CX(), CY(), Math.max(W, H) * 0.85);
+    g.addColorStop(0, '#0a1628'); g.addColorStop(0.4, '#040810'); g.addColorStop(1, '#010204');
+    bgCtx.fillStyle = g; bgCtx.fillRect(0, 0, W, H);
+    const whGlow = bgCtx.createRadialGradient(whX(), whY(), 0, whX(), whY(), whR() * 10);
+    whGlow.addColorStop(0, 'rgba(139, 92, 246, 0.06)');
+    whGlow.addColorStop(0.4, 'rgba(14, 116, 144, 0.04)');
+    whGlow.addColorStop(1, 'transparent');
+    bgCtx.fillStyle = whGlow;
+    bgCtx.fillRect(0, 0, W, H);
+    for (const nb of nebulae) {
+      if (REDUCED) nb.rot += 0;
+      else nb.rot += nb.spd * (nb.tier === 'far' ? 1 : 1.5);
+      bgCtx.save();
+      bgCtx.translate(nb.x, nb.y);
+      bgCtx.rotate(nb.rot);
+      const ng = bgCtx.createRadialGradient(0, 0, 0, 0, 0, nb.rx);
+      ng.addColorStop(0, nb.hue + (nb.tier === 'far' ? '28' : '40'));
+      ng.addColorStop(0.5, nb.hue + '12');
+      ng.addColorStop(1, 'transparent');
+      bgCtx.globalAlpha = nb.tier === 'far' ? 0.35 : 0.28;
+      bgCtx.fillStyle = ng;
+      bgCtx.beginPath(); bgCtx.ellipse(0, 0, nb.rx, nb.ry, 0, 0, TAU); bgCtx.fill();
+      bgCtx.restore();
+    }
+  }
+
+  function drawStars() {
+    const px = (mx - W / 2) * 0.008, py = (my - H / 2) * 0.008;
+    for (const s of stars) {
+      const tw = 0.3 + Math.sin(t * 0.012 * SPIN + s.tw) * 0.3;
+      bgCtx.globalAlpha = s.b * tw * (s.z < 0.5 ? 0.7 : 1);
+      bgCtx.fillStyle = s.hue;
+      const sx = ((s.x + px * s.z * 50) % W + W) % W;
+      const sy = ((s.y + py * s.z * 50) % H + H) % H;
+      bgCtx.fillRect(sx, sy, s.r, s.r);
+    }
+    bgCtx.globalAlpha = 1;
+  }
+
+  function drawWebLayer() {
+    if (quality < 0.42) return;
+    const webSkip = quality < 0.55 ? 2 : 1;
+    if (webSkip > 1 && (t % webSkip) !== 0) return;
+
+    webCtx.save();
+    webCtx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    webCtx.globalCompositeOperation = 'source-over';
+    webCtx.globalAlpha = 1;
+    webCtx.clearRect(0, 0, W, H);
+    if (typeof CosmicWeb !== 'undefined' && cosmicMesh) {
+      CosmicWeb.draw(webCtx, cosmicMesh, t, {
+        quality,
+        reducedMotion: REDUCED,
+        alert: isAlertMode(),
+        spin: SPIN,
+      });
+    }
+    if (quality >= 0.72) {
+      const alert = isAlertMode();
+      webCtx.globalAlpha = 0.22;
+      for (let i = 0; i < 2; i++) {
+        webCtx.beginPath();
+        const baseY = H * (0.62 + i * 0.1);
+        for (let x = 0; x <= W; x += 12) {
+          const y = baseY + Math.sin(x * 0.003 + t * 0.006 * SPIN + i) * (12 + i * 4);
+          if (x === 0) webCtx.moveTo(x, y); else webCtx.lineTo(x, y);
+        }
+        const grad = webCtx.createLinearGradient(0, baseY - 20, 0, baseY + 20);
+        if (alert) {
+          grad.addColorStop(0, 'rgba(244,114,182,0)'); grad.addColorStop(0.5, 'rgba(192,132,252,0.08)'); grad.addColorStop(1, 'rgba(244,114,182,0)');
+        } else {
+          grad.addColorStop(0, 'rgba(124,58,237,0)'); grad.addColorStop(0.5, 'rgba(99,102,241,0.06)'); grad.addColorStop(1, 'rgba(124,58,237,0)');
+        }
+        webCtx.strokeStyle = grad; webCtx.lineWidth = 1;
+        webCtx.stroke();
+      }
+    }
+    webCtx.restore();
+  }
+
+  function drawAtmosphereLayer() {
+    if (!atmosphere.length || typeof Atmosphere === 'undefined') return;
+    Atmosphere.draw(accCtx, atmosphere, {
+      camX, camY, camScale, W, H, S, t, quality,
+      bootFade: bootDone ? 1 : Math.min(1, bootT / 40),
+      alert: isAlertMode(),
+    });
+  }
+
+  function drawWormhole(c, x, y, r, state) {
+    state = state || {};
+    if (typeof drawGargantua !== 'function') { /* fallback minimal void */ return; }
+    drawGargantua(c, x, y, r, performance.now() * 0.001, {
+      reducedMotion: REDUCED,
+      quality: quality,
+      heat: state.heat || 0,
+      spinMul: state.spinMul || 1,
+      bootT: performance.now() - startMs,
+      recenterFlash: recenterFlash,
+      width: W,
+      height: H,
+      showLabel: false,
+      landingMode: false,
+      deckMode: true,
+      threatLevel: isAlertMode() ? 1 : filter ? 0.35 : 0,
+      alertCount: isAlertMode() ? 4 : 0,
+    });
+  }
+
+  function drawAccItem(a, alert) {
+    const sc = a.scale * S;
+    accCtx.save();
+    accCtx.translate(a.x, a.y);
+    accCtx.rotate(a.phase + (a.motion === 'spin' ? t * 0.02 * SPIN : 0));
+    accCtx.globalAlpha = a.alpha * (bootDone ? 1 : Math.min(1, bootT / 40));
+
+    switch (a.type) {
+      case 'relay_sat':
+        accCtx.fillStyle = '#64748b'; accCtx.fillRect(-8 * sc, -3 * sc, 16 * sc, 6 * sc);
+        accCtx.fillStyle = '#0f172a'; accCtx.fillRect(-12 * sc, -1 * sc, 8 * sc, 2 * sc);
+        accCtx.fillRect(4 * sc, -1 * sc, 8 * sc, 2 * sc);
+        accCtx.fillStyle = '#475569'; accCtx.beginPath(); accCtx.arc(0, 4 * sc, 3 * sc, 0, TAU); accCtx.fill();
+        break;
+      case 'comms_buoy':
+        accCtx.fillStyle = '#475569'; accCtx.fillRect(-3 * sc, -10 * sc, 6 * sc, 20 * sc);
+        accCtx.fillStyle = alert ? '#f59e0b' : '#34d399';
+        accCtx.beginPath(); accCtx.arc(0, -12 * sc, 4 * sc, 0, TAU); accCtx.fill();
+        break;
+      case 'sensor_pod':
+        accCtx.fillStyle = '#64748b'; accCtx.beginPath(); accCtx.arc(0, 0, 5 * sc, 0, TAU); accCtx.fill();
+        accCtx.fillStyle = '#38bdf8'; accCtx.beginPath(); accCtx.arc(0, 0, 2 * sc, 0, TAU); accCtx.fill();
+        break;
+      case 'telescope':
+        accCtx.strokeStyle = '#64748b'; accCtx.lineWidth = 1.5 * sc;
+        accCtx.beginPath(); accCtx.moveTo(0, 0); accCtx.lineTo(20 * sc, -8 * sc); accCtx.stroke();
+        accCtx.fillStyle = '#334155'; accCtx.fillRect(18 * sc, -10 * sc, 6 * sc, 4 * sc);
+        break;
+      case 'solar_sail':
+        accCtx.fillStyle = 'rgba(224,242,254,0.25)'; accCtx.beginPath();
+        accCtx.moveTo(0, 0); accCtx.lineTo(18 * sc, -6 * sc); accCtx.lineTo(16 * sc, 8 * sc); accCtx.closePath(); accCtx.fill();
+        break;
+      case 'ion_collector':
+        accCtx.strokeStyle = '#38bdf8'; accCtx.lineWidth = 1;
+        accCtx.beginPath(); accCtx.arc(0, 0, 10 * sc, 0, TAU); accCtx.stroke();
+        for (let i = 0; i < 8; i++) {
+          const ang = i * TAU / 8 + t * 0.01;
+          accCtx.beginPath(); accCtx.moveTo(Math.cos(ang) * 8 * sc, Math.sin(ang) * 8 * sc);
+          accCtx.lineTo(Math.cos(ang) * 14 * sc, Math.sin(ang) * 14 * sc); accCtx.stroke();
+        }
+        break;
+      case 'solar_wing':
+        accCtx.fillStyle = '#1e293b'; accCtx.fillRect(-14 * sc, -8 * sc, 28 * sc, 16 * sc);
+        accCtx.strokeStyle = '#0f172a'; accCtx.lineWidth = 0.5;
+        for (let gx = -12; gx <= 12; gx += 4) {
+          accCtx.beginPath(); accCtx.moveTo(gx * sc, -8 * sc); accCtx.lineTo(gx * sc, 8 * sc); accCtx.stroke();
+          accCtx.beginPath(); accCtx.moveTo(-14 * sc, gx * 0.5 * sc); accCtx.lineTo(14 * sc, gx * 0.5 * sc); accCtx.stroke();
+        }
+        break;
+      case 'comms_dish':
+        accCtx.strokeStyle = '#94a3b8'; accCtx.lineWidth = 1.2 * sc;
+        accCtx.beginPath(); accCtx.arc(0, 0, 12 * sc, -0.8, 0.8); accCtx.stroke();
+        accCtx.beginPath(); accCtx.moveTo(0, 0); accCtx.lineTo(8 * sc, 4 * sc); accCtx.stroke();
+        break;
+      case 'heat_radiator':
+        for (let i = 0; i < 5; i++) {
+          accCtx.strokeStyle = '#475569'; accCtx.lineWidth = 0.8 * sc;
+          accCtx.beginPath(); accCtx.moveTo(-10 * sc + i * 5 * sc, -8 * sc); accCtx.lineTo(-8 * sc + i * 5 * sc, 8 * sc); accCtx.stroke();
+        }
+        break;
+      case 'beacon':
+        accCtx.fillStyle = (Math.sin(t * 0.06) > 0 ? '#ef4444' : '#fff');
+        accCtx.beginPath(); accCtx.arc(0, 0, 4 * sc, 0, TAU); accCtx.fill();
+        break;
+      case 'ice_crystal':
+        accCtx.strokeStyle = 'rgba(224,242,254,0.4)'; accCtx.lineWidth = 1;
+        for (let i = 0; i < 4; i++) {
+          const ang = i * TAU / 4 + a.phase;
+          accCtx.beginPath(); accCtx.moveTo(0, 0);
+          accCtx.lineTo(Math.cos(ang) * 8 * sc, Math.sin(ang) * 8 * sc); accCtx.stroke();
+        }
+        break;
+      case 'cargo_box':
+        accCtx.fillStyle = '#334155'; accCtx.fillRect(-8 * sc, -5 * sc, 16 * sc, 10 * sc);
+        accCtx.strokeStyle = '#64748b'; accCtx.strokeRect(-8 * sc, -5 * sc, 16 * sc, 10 * sc);
+        if (a.label) { accCtx.fillStyle = '#94a3b8'; accCtx.font = (6 * sc) + 'px Consolas,monospace'; accCtx.fillText(a.label, -8 * sc, 3 * sc); }
+        break;
+      case 'nav_laser':
+        accCtx.strokeStyle = 'rgba(239,68,68,' + (0.3 + Math.sin(t * 0.02) * 0.3) + ')';
+        accCtx.lineWidth = 1;
+        const la = Math.sin(t * 0.008) * 1.2;
+        accCtx.beginPath(); accCtx.moveTo(0, 0); accCtx.lineTo(Math.cos(la) * 40 * sc, Math.sin(la) * 40 * sc); accCtx.stroke();
+        break;
+      case 'patrol_drone': {
+        const pathT = (t * 0.0014) % 1;
+        const px = Math.cos(pathT * TAU) * 60 * S, py = Math.sin(pathT * TAU) * 40 * S;
+        accCtx.translate(px, py);
+        accCtx.fillStyle = '#38bdf8'; accCtx.beginPath();
+        accCtx.moveTo(0, -6 * sc); accCtx.lineTo(5 * sc, 4 * sc); accCtx.lineTo(-5 * sc, 4 * sc); accCtx.closePath(); accCtx.fill();
+        accCtx.globalAlpha *= 0.3; accCtx.strokeStyle = '#38bdf8';
+        accCtx.beginPath(); accCtx.moveTo(-8 * sc, 6 * sc); accCtx.lineTo(-16 * sc, 12 * sc); accCtx.stroke();
+        break;
+      }
+      case 'em_arc':
+        accCtx.strokeStyle = 'rgba(56,189,248,0.25)'; accCtx.lineWidth = 1;
+        accCtx.beginPath();
+        accCtx.moveTo(-20 * sc, 0);
+        accCtx.quadraticCurveTo(0, -15 * sc + Math.sin(t * 0.01 + a.phase) * 8 * sc, 20 * sc, 0);
+        accCtx.stroke();
+        break;
+      case 'dust':
+        for (let d = 0; d < 6; d++) {
+          accCtx.fillStyle = 'rgba(120,113,108,' + (0.2 + d * 0.05) + ')';
+          accCtx.fillRect((d * 3 - 8) * sc, (Math.sin(t * 0.005 + d + a.phase) * 4) * sc, 1.5 * sc, 1.5 * sc);
+        }
+        break;
+      case 'tether':
+        if (a.tetherEnd) {
+          accCtx.strokeStyle = '#475569'; accCtx.lineWidth = 1;
+          accCtx.beginPath(); accCtx.moveTo(0, 0); accCtx.lineTo(a.tetherEnd.x - a.x, a.tetherEnd.y - a.y); accCtx.stroke();
+          a.packetT += 0.008 * SPIN; if (a.packetT > 1) a.packetT = 0;
+          const px = a.tetherEnd.x - a.x, py = a.tetherEnd.y - a.y;
+          const dotX = px * a.packetT, dotY = py * a.packetT;
+          accCtx.fillStyle = '#38bdf8'; accCtx.shadowColor = '#38bdf8'; accCtx.shadowBlur = 6;
+          accCtx.beginPath(); accCtx.arc(dotX, dotY, 2 * sc, 0, TAU); accCtx.fill();
+          accCtx.shadowBlur = 0;
+        }
+        break;
+      case 'log_glyph':
+        accCtx.fillStyle = 'rgba(148,163,184,0.5)'; accCtx.font = (8 * sc) + 'px Consolas,monospace';
+        accCtx.fillText(a.glyph || 'LOG', -8 * sc, 3 * sc);
+        break;
+      case 'bolt':
+        accCtx.fillStyle = '#64748b'; accCtx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const ang = i * TAU / 6;
+          const rr = i % 2 ? 4 * sc : 6 * sc;
+          const bx = Math.cos(ang) * rr, by = Math.sin(ang) * rr;
+          if (i === 0) accCtx.moveTo(bx, by); else accCtx.lineTo(bx, by);
+        }
+        accCtx.closePath(); accCtx.fill();
+        break;
+      case 'blanket':
+        accCtx.fillStyle = 'rgba(100,116,139,0.35)'; accCtx.beginPath();
+        accCtx.moveTo(-8 * sc, 0); accCtx.lineTo(-4 * sc, -6 * sc); accCtx.lineTo(6 * sc, -4 * sc);
+        accCtx.lineTo(8 * sc, 4 * sc); accCtx.lineTo(-2 * sc, 6 * sc); accCtx.closePath(); accCtx.fill();
+        break;
+      case 'asteroid':
+        accCtx.fillStyle = '#57534e'; accCtx.beginPath();
+        accCtx.moveTo(-5 * sc, -3 * sc); accCtx.lineTo(4 * sc, -5 * sc); accCtx.lineTo(6 * sc, 2 * sc);
+        accCtx.lineTo(-2 * sc, 5 * sc); accCtx.lineTo(-6 * sc, 1 * sc); accCtx.closePath(); accCtx.fill();
+        break;
+      case 'hull_arc':
+        accCtx.restore();
+        accCtx.save();
+        accCtx.globalAlpha = 0.2 * (bootDone ? 1 : Math.min(1, bootT / 40));
+        accCtx.strokeStyle = '#64748b'; accCtx.lineWidth = 2;
+        accCtx.beginPath(); accCtx.arc(CX(), H + H * 0.15, W * 0.72, -Math.PI * 0.85, -Math.PI * 0.15);
+        accCtx.stroke();
+        for (let rv = -W * 0.35; rv < W * 0.35; rv += 32) {
+          accCtx.fillStyle = '#475569'; accCtx.fillRect(CX() + rv, H - 8, 2, 2);
+        }
+        accCtx.restore();
+        return;
+      case 'dyson_torus':
+        accCtx.restore();
+        accCtx.save();
+        accCtx.translate(CX(), CY());
+        accCtx.globalAlpha = 0.06;
+        accCtx.strokeStyle = '#c4b5fd'; accCtx.lineWidth = 1; accCtx.setLineDash([8, 12]);
+        accCtx.beginPath(); accCtx.ellipse(0, 0, sysRadius() * 1.6, sysRadius() * 0.55, 0.2, 0, TAU);
+        accCtx.stroke(); accCtx.setLineDash([]);
+        accCtx.restore();
+        return;
+      case 'docking_port':
+        accCtx.fillStyle = '#0f172a'; accCtx.fillRect(-6 * sc, -8 * sc, 12 * sc, 16 * sc);
+        accCtx.strokeStyle = '#94a3b8'; accCtx.strokeRect(-6 * sc, -8 * sc, 12 * sc, 16 * sc);
+        break;
+      case 'cargo_crane':
+        accCtx.strokeStyle = '#64748b'; accCtx.lineWidth = 2 * sc;
+        accCtx.beginPath(); accCtx.moveTo(0, 10 * sc); accCtx.lineTo(0, -20 * sc); accCtx.lineTo(15 * sc, -25 * sc); accCtx.stroke();
+        accCtx.fillRect(12 * sc, -25 * sc, 8 * sc, 4 * sc);
+        break;
+      case 'relay_tower':
+        accCtx.strokeStyle = '#475569'; accCtx.lineWidth = 1.5 * sc;
+        accCtx.beginPath(); accCtx.moveTo(0, 10 * sc); accCtx.lineTo(0, -18 * sc); accCtx.stroke();
+        accCtx.fillStyle = Math.sin(t * 0.06 + a.phase) > 0 ? '#34d399' : '#065f46';
+        accCtx.beginPath(); accCtx.arc(0, -18 * sc, 2 * sc, 0, TAU); accCtx.fill();
+        break;
+      case 'scratch':
+        accCtx.strokeStyle = 'rgba(100,116,139,0.3)'; accCtx.lineWidth = 0.5;
+        accCtx.beginPath(); accCtx.moveTo(-10 * sc, 0); accCtx.lineTo(8 * sc, -2 * sc); accCtx.stroke();
+        break;
+      case 'hatch':
+        accCtx.strokeStyle = '#475569'; accCtx.strokeRect(-8 * sc, -10 * sc, 16 * sc, 20 * sc);
+        accCtx.beginPath(); accCtx.moveTo(-8 * sc, 0); accCtx.lineTo(8 * sc, 0); accCtx.stroke();
+        break;
+      case 'holo_kb':
+        accCtx.globalAlpha *= 0.03; accCtx.fillStyle = '#38bdf8';
+        for (let r = 0; r < 3; r++) for (let c2 = 0; c2 < 8; c2++) accCtx.fillRect((c2 * 3 - 10) * sc, (r * 3 - 4) * sc, 2 * sc, 2 * sc);
+        break;
+      case 'coffee':
+        accCtx.globalAlpha *= 0.15; accCtx.strokeStyle = '#78716c';
+        accCtx.beginPath(); accCtx.ellipse(0, 0, 8 * sc, 6 * sc, 0, 0, TAU); accCtx.stroke();
+        break;
+      case 'shield':
+        accCtx.fillStyle = alert ? 'rgba(245,158,11,0.5)' : 'rgba(56,189,248,0.35)';
+        accCtx.beginPath(); accCtx.moveTo(0, -8 * sc); accCtx.lineTo(7 * sc, -2 * sc); accCtx.lineTo(5 * sc, 8 * sc);
+        accCtx.lineTo(-5 * sc, 8 * sc); accCtx.lineTo(-7 * sc, -2 * sc); accCtx.closePath(); accCtx.fill();
+        break;
+      case 'correlation':
+        accCtx.strokeStyle = alert ? 'rgba(245,158,11,0.6)' : 'rgba(56,189,248,0.35)';
+        accCtx.lineWidth = 2 * sc;
+        accCtx.beginPath(); accCtx.moveTo(-15 * sc, 0); accCtx.quadraticCurveTo(0, -12 * sc, 15 * sc, 0); accCtx.stroke();
+        break;
+      case 'thruster':
+        if ((t % 480) < 24) {
+          accCtx.fillStyle = 'rgba(251,146,60,0.4)'; accCtx.beginPath(); accCtx.arc(0, 0, (t % 24) * sc * 0.5, 0, TAU); accCtx.fill();
+        }
+        break;
+      case 'micro_chip':
+        accCtx.fillStyle = 'rgba(120,113,108,0.4)'; accCtx.fillRect(-2 * sc, -1 * sc, 4 * sc, 2 * sc);
+        break;
+      default: break;
+    }
+    accCtx.restore();
+  }
+
+  function drawAccessories() {
+    accCtx.clearRect(0, 0, W, H);
+    drawAtmosphereLayer();
+    accCtx.save();
+    accCtx.translate(-camX, -camY);
+    accCtx.scale(camScale, camScale);
+    const alert = isAlertMode();
+    const cx = whX(), cy = whY();
+    for (const a of accessories) {
+      if (a.type === 'hull_arc' || a.type === 'dyson_torus') continue;
+      if (a.motion === 'orbital' && a.dist) {
+        a.phase += 0.00008 * SPIN * (a.type === 'comms_buoy' ? 1.2 : 0.6);
+        a.x = cx + Math.cos(a.angle + a.phase) * a.dist;
+        a.y = cy + Math.sin(a.angle + a.phase) * a.dist * 0.88;
+      }
+      const sx = a.x - camX, sy = a.y - camY;
+      if (sx < -120 || sx > W + 120 || sy < -120 || sy > H + 120) continue;
+      drawAccItem(a, alert);
+    }
+    accCtx.restore();
+  }
+
+  function drawInflowParticles() {
+    drawInteractionFx();
+  }
+
+  function drawIncidentTrail() {
+    if (!incidentTrailOn || REDUCED) return;
+    trailPulse += 0.04;
+    const pts = TRAIL_PATH.map((lbl) => nodeByLabel(lbl)).filter(Boolean);
+    if (pts.length < 2) return;
+    fxCtx.save();
+    applyFxTransform();
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i], b = pts[i + 1];
+      const pulse = 0.5 + Math.sin(trailPulse + i * 0.8) * 0.5;
+      fxCtx.strokeStyle = 'rgba(254,249,195,' + (0.35 + pulse * 0.45) + ')';
+      fxCtx.lineWidth = 2 + pulse * 1.5;
+      fxCtx.setLineDash([6, 10]);
+      fxCtx.beginPath();
+      fxCtx.moveTo(a.x, a.y);
+      fxCtx.lineTo(b.x, b.y);
+      fxCtx.stroke();
+      fxCtx.setLineDash([]);
+      const t = (trailPulse * 0.15 + i * 0.25) % 1;
+      const px = a.x + (b.x - a.x) * t;
+      const py = a.y + (b.y - a.y) * t;
+      fxCtx.fillStyle = '#fef9c3';
+      fxCtx.shadowColor = '#a78bfa';
+      fxCtx.shadowBlur = 12;
+      fxCtx.beginPath();
+      fxCtx.arc(px, py, 3.5 * S, 0, TAU);
+      fxCtx.fill();
+      fxCtx.shadowBlur = 0;
+    }
+    fxCtx.restore();
+    wormhole.heat = Math.max(wormhole.heat, 0.25 + Math.sin(trailPulse) * 0.15);
+  }
+
+  function drawPlanet(n, isH, alpha) {
+    if (n.isRoot) return;
+    if (window.siemDeckExt && window.siemDeckExt.nodeAlphaModifier) {
+      alpha = window.siemDeckExt.nodeAlphaModifier(n, alpha);
+    }
+    let scaleMul = 1;
+    if (window.siemDeckExt && window.siemDeckExt.nodeScaleModifier) {
+      scaleMul = window.siemDeckExt.nodeScaleModifier(n);
+    }
+    const roleBlocked = !canAccessLabel(n.label);
+    const alertPulse = alertSimOn && RULE_LABELS.has(n.label);
+    if (roleBlocked) alpha *= 0.18;
+    const prox = nodeProximity(n);
+    const pulse = isH ? 1 : prox;
+    const r = n.r * scaleMul * (1 + pulse * 0.35 + (isH ? 0.45 : 0));
+    if (isH || prox > 0.05 || (quality > 0.68 && !REDUCED)) {
+      const atmR = r * (2.4 + pulse * 0.8);
+      const atm = ctx.createRadialGradient(n.x, n.y, r * 0.4, n.x, n.y, atmR);
+      atm.addColorStop(0, n.color + (isH ? 'aa' : '66'));
+      atm.addColorStop(0.55, n.color + '33');
+      atm.addColorStop(1, 'transparent');
+      ctx.globalAlpha = alpha * (0.5 + pulse * 0.5);
+      ctx.fillStyle = atm;
+      ctx.beginPath(); ctx.arc(n.x, n.y, atmR, 0, TAU); ctx.fill();
+    }
+    if (n.rings && quality > 0.5 && false) {
+      ctx.globalAlpha = alpha * 0.5; ctx.strokeStyle = n.color + '88'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.ellipse(n.x, n.y, r * 2.1, r * 0.44, n.lightAngle * 0.1 + t * 0.00012 * SPIN, 0, TAU); ctx.stroke();
+    }
+    const la = n.lightAngle + t * 0.0006 * SPIN;
+    const body = ctx.createRadialGradient(n.x + Math.cos(la) * r * 0.35, n.y + Math.sin(la) * r * 0.35, 1, n.x, n.y, r);
+    body.addColorStop(0, '#fff'); body.addColorStop(0.45, n.color); body.addColorStop(1, '#0a0a12');
+    ctx.globalAlpha = alpha; ctx.fillStyle = body;
+    ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, TAU); ctx.fill();
+    if (!roleBlocked && !REDUCED) {
+      const heat = heatClassFor(n.label);
+      if (heat === 'node-heat-fresh' || isH) {
+        ctx.globalAlpha = alpha * (isH ? 0.55 : 0.28);
+        ctx.strokeStyle = heat === 'node-heat-fresh' ? 'rgba(52,211,153,0.55)' : n.color + '88';
+        ctx.lineWidth = isH ? 2 : 1;
+        ctx.beginPath(); ctx.arc(n.x, n.y, r + 3, 0, TAU); ctx.stroke();
+      }
+    }
+    if (alertPulse && !REDUCED) {
+      ctx.globalAlpha = 0.45 + Math.sin(t * 0.14) * 0.35;
+      ctx.strokeStyle = '#f87171';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(n.x, n.y, r + 6 + Math.sin(t * 0.1) * 2, 0, TAU); ctx.stroke();
+    }
+    if (filter && match(n) && !REDUCED) {
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+      ctx.globalAlpha = 0.5 + Math.sin(t * 0.06) * 0.5;
+      ctx.beginPath(); ctx.arc(n.x, n.y, r + 4, 0, TAU); ctx.stroke();
+    }
+  }
+
+  function drawOrbitRings() {
+    return;
+  }
+
+  function drawLinkStrings() {
+    const step = quality < 0.55 ? 3 : quality < 0.7 ? 2 : 1;
+    for (let wi = 0; wi < linkGraph.length; wi += step) {
+      const w = linkGraph[wi];
+      const a = nodes[w.a], b = nodes[w.b];
+      if (!a || !b) continue;
+      const mxp = (a.x + b.x) / 2 + Math.sin(t * 0.014 * SPIN + w.phase) * w.amp;
+      const myp = (a.y + b.y) / 2 + Math.cos(t * 0.011 * SPIN + w.phase) * w.amp * 0.7;
+      ctx.globalAlpha = 0.07 + Math.sin(t * 0.02 + w.phase) * 0.03;
+      ctx.strokeStyle = a.color || '#a78bfa';
+      ctx.lineWidth = 0.35;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.quadraticCurveTo(mxp, myp, b.x, b.y); ctx.stroke();
+    }
+    if (quality > 0.68) {
+      for (const s of streams) {
+        const w = linkGraph[s.wi]; if (!w) continue;
+        const a = nodes[w.a], b = nodes[w.b]; if (!a || !b) continue;
+        s.t += s.spd; if (s.t > 1) s.t = 0;
+        const u = s.t, u2 = 1 - u;
+        const mxp = (a.x + b.x) / 2 + Math.sin(t * 0.014 * SPIN + w.phase) * w.amp;
+        const myp = (a.y + b.y) / 2 + Math.cos(t * 0.011 * SPIN + w.phase) * w.amp * 0.7;
+        const px = u2 * u2 * a.x + 2 * u2 * u * mxp + u * u * b.x;
+        const py = u2 * u2 * a.y + 2 * u2 * u * myp + u * u * b.y;
+        ctx.globalAlpha = 0.65; ctx.fillStyle = '#e9d5ff';
+        ctx.beginPath(); ctx.arc(px, py, 1.4 * S, 0, TAU); ctx.fill();
+      }
+    }
+  }
+
+  function pointerWorld() {
+    return screenToWorld(mx, my);
+  }
+
+  function applyChase(n, homeX, homeY, opts) {
+    const { fleeR, fleeF, spring, damp, maxRun } = opts;
+    if (!Number.isFinite(n.vx)) n.vx = 0;
+    if (!Number.isFinite(n.vy)) n.vy = 0;
+    let chased = false;
+    if (mx > 0) {
+      const { wx, wy } = pointerWorld();
+      const sx = n.x - wx, sy = n.y - wy;
+      const d = Math.hypot(sx, sy);
+      if (d < fleeR && d > 0.5) {
+        chased = true;
+        const panic = (1 - d / fleeR) ** 2;
+        const kick = panic * fleeF * (n.fleeMul || 1);
+        n.vx += (sx / d) * kick;
+        n.vy += (sy / d) * kick;
+      }
+    }
+    const spr = chased ? spring * 0.35 : spring;
+    n.vx += (homeX - n.x) * spr;
+    n.vy += (homeY - n.y) * spr;
+    n.vx *= damp; n.vy *= damp;
+    if (maxRun) {
+      const dx = n.x - homeX, dy = n.y - homeY;
+      const dist = Math.hypot(dx, dy);
+      if (dist > maxRun) {
+        n.x = homeX + (dx / dist) * maxRun;
+        n.y = homeY + (dy / dist) * maxRun;
+        n.vx *= 0.5; n.vy *= 0.5;
+      }
+    }
+    n.x += n.vx; n.y += n.vy;
+    if (!Number.isFinite(n.x)) { n.x = homeX; n.y = homeY; n.vx = n.vy = 0; }
+  }
+
+  function physics() {
+    updateCamFocus();
+    const cx = CX(), cy = CY();
+    camX = camAnim.x;
+    camY = camAnim.y;
+    camScale = camAnim.scale;
+    const root = nodes[0];
+    if (root) { root.x = cx; root.y = cy; root.vx = root.vy = 0; root.r = root.baseR * S; }
+
+    if (!REDUCED && performance.now() - lastInput > 30000) {
+      if (Math.hypot(camX, camY) > 40) recenterWormhole();
+    }
+
+    if (throatT > 0) {
+      throatT--;
+      if (throatT <= 0) {
+        throatView = false;
+        focusWorldPoint(whX(), whY(), W / 2, H / 2, 1, { ease: 0.04, easeS: 0.03 });
+        tweenWormhole({ spinMul: 1, heat: 0 }, 800);
+      }
+    }
+
+    if (!filter && !isAlertMode() && wormhole.heat > 0) {
+      wormhole.heat *= 0.92;
+      if (wormhole.heat < 0.02) wormhole.heat = 0;
+    }
+
+    if (typeof Atmosphere !== 'undefined' && atmosphere.length) {
+      Atmosphere.update(atmosphere, whX(), whY(), t, wormhole.spinMul * (REDUCED ? 0.3 : 1), REDUCED);
+    }
+
+    for (let i = 1; i < CORE.length; i++) {
+      const n = nodes[i];
+      n.orbitAng += n.orbitSpd * (REDUCED ? 0.15 : 1);
+      const home = orbitPos(n, cx, cy);
+      applyChase(n, home.x, home.y, {
+        fleeR: 110 * S, fleeF: 1.8, spring: 0.07, damp: 0.86, maxRun: sysRadius() * 0.06,
+      });
+    }
+    for (let i = CORE.length; i < nodes.length; i++) {
+      const n = nodes[i];
+      n.orbitAng += n.orbitSpd * (REDUCED ? 0.15 : 1);
+      const home = orbitPos(n, cx, cy);
+      applyChase(n, home.x, home.y, {
+        fleeR: 150 * S, fleeF: 3.2, spring: 0.1, damp: 0.8, maxRun: n.maxRun || sysRadius() * 0.12,
+      });
+    }
+  }
+
+  function draw() {
+    t++; bootT++;
+    if (!bootDone && REDUCED && bootT > 30) { bootDone = true; bootEl.classList.add('hide'); }
+    if (recenterFlash > 0) recenterFlash--;
+    physics();
+
+    const now = performance.now();
+    fps = fps * 0.9 + (1000 / Math.max(now - lastT, 8)) * 0.1;
+    lastT = now;
+    if (fps < 22) {
+      lowFpsStreak++;
+      if (lowFpsStreak > 45) {
+        resetClickFx();
+        quality = Math.max(0.5, quality - 0.08);
+        lowFpsStreak = 0;
+      }
+    } else {
+      lowFpsStreak = Math.max(0, lowFpsStreak - 1);
+    }
+    if (fps < 20 && quality > 0.55) quality = Math.max(0.55, quality - 0.015);
+    else if (fps < 28 && quality > 0.5) quality = Math.max(0.5, quality - 0.008);
+    else if (fps > 54 && quality < 1) quality = Math.min(1, quality + 0.006);
+
+    if ((t & 127) === 0 && performance.now() - lastFxClickAt > 6000) {
+      if (window.siemWebCorruption && window.siemWebCorruption.getCorruption() > 0.08) {
+        window.siemWebCorruption.reset();
+      }
+      if (window.siemFogBurst) window.siemFogBurst.reset();
+    }
+
+    if (t % (quality < 0.6 ? 4 : quality < 0.8 ? 2 : 2) === 0) { drawNebula(); drawStars(); }
+    drawWebLayer();
+    drawAccessories();
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.save();
+    applyCameraToCtx(ctx, true, true);
+
+    drawOrbitRings();
+    drawLinkStrings();
+
+    for (const l of links) {
+      const a = nodes[l.a], b = nodes[l.b];
+      if (!a || !b) continue;
+      const vis = match(a) && match(b);
+      const hot = hover && (a === hover || b === hover);
+      ctx.globalAlpha = hot ? 0.55 : (vis ? 0.12 : 0.02);
+      ctx.strokeStyle = hot ? '#e9d5ff' : '#c4b5fd';
+      ctx.lineWidth = hot ? 1.4 : 0.5;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    }
+
+    for (const n of nodes) {
+      if (n.core) continue;
+      ctx.globalAlpha = n.alpha || 0.35;
+      ctx.fillStyle = n.color;
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, TAU); ctx.fill();
+    }
+
+    for (const n of nodes) {
+      if (!n.core || n.isRoot) continue;
+      const isH = n === hover;
+      const vis = match(n);
+      const roleOk = canAccessLabel(n.label);
+      let alpha = vis && roleOk ? 1 : (vis ? 0.18 : 0.12);
+      if (!roleOk) alpha = 0.14;
+      drawPlanet(n, isH, alpha);
+      if (vis && roleOk && (isH || n.r >= 8 * S)) {
+        ctx.globalAlpha = isH ? 1 : 0.8;
+        ctx.fillStyle = isH ? '#e9d5ff' : '#a78bfa';
+        ctx.font = ((isH ? 12 : 9) * Math.max(0.85, S)) + 'px Consolas,monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(n.label, n.x, n.y + n.r + 14);
+      }
+    }
+
+    const root = nodes[0];
+    if (root) {
+      drawWormhole(ctx, root.x, root.y, whR(), { heat: wormhole.heat, spinMul: wormhole.spinMul * (REDUCED ? 0.3 : 1) });
+      if (hover === root) {
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#e9d5ff';
+        ctx.font = (13 * Math.max(0.85, S)) + 'px Consolas,monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(root.label, root.x, root.y + whR() * 2.2 + 8);
+      }
+    }
+    ctx.restore();
+
+    drawInteractionFx();
+    drawIncidentTrail();
+    if (window.siemDeckExt && window.siemDeckExt.onDraw) window.siemDeckExt.onDraw(ctx, fxCtx, t);
+    if (window.siemWebCorruption) window.siemWebCorruption.draw(quality);
+    if (window.siemFogBurst) window.siemFogBurst.draw(quality);
+
+    if (hover) {
+      card.querySelector('b').textContent = hover.label;
+      card.querySelector('span').textContent = hover.desc;
+      if (hover !== lastHover) {
+        lastHover = hover;
+        showCard(true);
+      }
+    } else if (lastHover) {
+      lastHover = null;
+      showCard(false);
+    }
+
+    const stableCls = isAlertMode() ? 'alert' : 'stable';
+    const webN = cosmicMesh && cosmicMesh.stats ? cosmicMesh.stats.nodes : 0;
+    const webE = cosmicMesh && cosmicMesh.stats ? cosmicMesh.stats.edges : 0;
+    const corruptPct = window.siemWebCorruption ? Math.round(window.siemWebCorruption.getCorruption() * 100) : 0;
+    if ((t & 31) === 0) {
+      stats.innerHTML = nodes.length + ' nodes · ' + atmosphere.length + ' atmosphere · web ' + webN + '/' + webE + ' · corrupt ' + corruptPct + '% · ' + accessories.length + ' vessels · wormhole: <span class="' + stableCls + '">' + (isAlertMode() ? 'ALERT' : 'STABLE') + '</span> · ' + Math.round(fps) + ' fps · q' + Math.round(quality * 100) + ' · v' + VER;
+    }
+    requestAnimationFrame(draw);
+  }
+
+  window.siemDeck = {
+    ready: false,
+    getQuality: function () { return quality; },
+    getExclude: function () {
+      const p = worldToScreen(whX(), whY(), { parallax: false, shake: false });
+      return {
+        cx: p.sx,
+        cy: p.sy,
+        r: sysRadius() * 0.42 * camScale,
+      };
+    },
+    getFps: function () { return fps; },
+    W: function () { return W; },
+    H: function () { return H; },
+    getNodes: function () { return nodes; },
+    nodeByLabel: nodeByLabel,
+    frameNode: frameNode,
+    navigateToModule: navigateToModule,
+    openDeckBrief: openDeckBrief,
+    closeDeckBrief: closeDeckBrief,
+    getBriefs: function () { return deckBriefs; },
+    getCore: function () { return CORE; },
+    worldToScreen: worldToScreen,
+    applyFxTransform: applyFxTransform,
+    match: match,
+    canAccessLabel: canAccessLabel,
+    getHover: function () { return hover; },
+    applyGlossary: applyGlossary,
+    labelToSlug: labelToSlug,
+    registerModes: function (cb) {
+      if (window.siemDeckModes) cb(window.siemDeckModes);
+      else addEventListener('siem-deck-modes-ready', function () { cb(window.siemDeckModes); }, { once: true });
+    },
+    getCanvas: function () { return canvas; },
+    wormholeHit: function (cx, cy) {
+      const wh = wormholeScreen();
+      return Math.hypot(cx - wh.sx, cy - wh.sy) < wh.hitR;
+    },
+    focusWorldAtScreen: function (sx, sy, scale) {
+      const w = screenToWorld(sx, sy, { parallax: false, shake: false });
+      focusWorldPoint(w.x, w.y, sx, sy, scale || camScale, { ease: 0.04, easeS: 0.03 });
+    },
+  };
+
+  window.siemDeckFxPaused = function () {
+    return performance.now() < fxDisabledUntil;
+  };
+
+  window.siemDeckResetFx = resetClickFx;
+
+  window.deckSiteRoot = deckSiteRoot;
+  window.deckAssetUrl = deckAssetUrl;
+
+  draw();
+})();
+  </script>
+  <script src="../assets/deck-modes.js?v=14.0.0-deck-modes"></script>
+  <link rel="stylesheet" href="../assets/palette.css" />
+  <script src="../assets/siem-core.js"></script>
+  <script src="../assets/palette.js"></script>
+  <script src="../assets/deck-nav.js?v=16.1"></script>
+  <script src="../assets/deck-features-v2.js?v=15.9.0-center-fix"></script>
+  <script>SiemCore.bootPage('brain'); SiemCore.AchievementSystem.check('visit_brain');
+  (function () {
+    function wireExperienceLinks() {
+      var root = deckSiteRoot();
+      document.querySelectorAll('.deck-exp-tile[href], .deck-exp-hub-link[href]').forEach(function (a) {
+        var file = a.getAttribute('href').replace(/^\.\.\//, '');
+        a.href = root + file;
+        a.addEventListener('click', function (e) {
+          e.stopPropagation();
+        });
+      });
+    }
+    wireExperienceLinks();
+    var hub = document.getElementById('deck-experience-hub');
+    var btn = document.getElementById('deck-experience-hub-toggle');
+    if (!hub || !btn) return;
+    btn.addEventListener('click', function () {
+      var open = hub.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  })();
+  </script>
+  <script type="module">
+    import { mountSmoke } from '../assets/volumetric-smoke.js?v=13.3.0-camdrift';
+    import { initDeckParticles } from '../assets/particles-init.js?v=13.3.0-camdrift';
+    import { createWebCorruption } from '../assets/deck-web-corruption.js?v=15.1.3-nav-fix';
+    import { createFogBurstLayer } from '../assets/deck-fog-burst.js?v=15.1.3-nav-fix';
+
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const webCanvas = document.getElementById('web-corruption');
+    const webFx = createWebCorruption(webCanvas);
+    webFx.resize(innerWidth, innerHeight);
+    window.siemWebCorruption = webFx;
+
+    const fogCanvas = document.getElementById('fog-burst');
+    const fogFx = createFogBurstLayer(fogCanvas);
+    fogFx.resize(innerWidth, innerHeight);
+    window.siemFogBurst = fogFx;
+
+    addEventListener('resize', () => {
+      webFx.resize(innerWidth, innerHeight);
+      fogFx.resize(innerWidth, innerHeight);
+    });
+
+    // Peripheral smoke layer — wisps stay outside the CORE exclusion disc
+    // so deck module labels and the wormhole rim remain crisp. We re-feed
+    // the exclusion ring every 250ms because the wormhole drifts with the
+    // camera; the underlying setExclude call is cheap.
+    const smokeCanvas = document.getElementById('deck-smoke');
+    const smoke = mountSmoke(smokeCanvas, {
+      mode: 'peripheral',
+      palette: ['#6d28d9', '#0e7490', '#a78bfa', '#312e81'],
+      opacity: reduced ? 0.16 : 0.22,
+      count: reduced ? 9 : 14,
+      driftSpeed: 0.00014,
+      qualityRef: function () {
+        return window.siemDeck && window.siemDeck.getQuality
+          ? window.siemDeck.getQuality()
+          : 1;
+      },
+    });
+
+    function pumpExclude() {
+      if (!smoke) return;
+      if (window.siemDeck && window.siemDeck.getExclude) {
+        smoke.setExclude(window.siemDeck.getExclude());
+      }
+    }
+    pumpExclude();
+    setInterval(pumpExclude, 250);
+
+    // Reveal smoke once the boot overlay has cleared; users with reduced
+    // motion still get the static frame, so we just light it in.
+    setTimeout(function () { smokeCanvas.classList.add('lit'); }, 900);
+
+    // Faint floating motes — density follows the deck's adaptive quality.
+    initDeckParticles('deck-particles', {
+      quality: window.siemDeck && window.siemDeck.getQuality
+        ? window.siemDeck.getQuality()
+        : 1,
+    }).then(function () {
+      document.getElementById('deck-particles').classList.add('lit');
+    }).catch(function () { /* no tsParticles, no problem */ });
   </script>
 </body>
 </html>
