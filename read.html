@@ -1104,9 +1104,13 @@
           { path: 'guides/monitor/alert-manager/02-alert-lifecycle.md', label: 'Alert lifecycle' },
           { path: 'guides/investigate/event-graph/02-graph-theory-basics.md', label: 'Graph theory basics' }
         ];
+    var fileProto = (location.protocol === 'file:');
+    var lead = fileProto
+      ? 'This reader loads pages with fetch(), which the browser blocks when the site is opened straight from disk (file://). Open the published site or run a local server (for example <code>python -m http.server</code> in the project folder), then reload.'
+      : escapeHTML(message || 'The requested page could not be loaded.');
     var html =
       '<h2>Document not available</h2>' +
-      '<p>' + escapeHTML(message || 'The requested page could not be loaded.') + '</p>' +
+      '<p>' + lead + '</p>' +
       '<p>Requested path: <code>' + escapeHTML(docPath) + '</code></p>' +
       '<div class="popular"><h3>Popular pages</h3><ul>';
     popular.forEach(function (p) {
